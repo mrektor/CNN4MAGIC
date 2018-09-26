@@ -630,6 +630,7 @@ class InterpolateMagic:  # TODO make it parallel
         interpolated_result = interpolate.griddata(points=(self.__xcoord, self.__ycoord),
                                                    values=intensity,
                                                    xi=(self._XX, self._YY),
+                                                   fill_value=0,
                                                    method=method)
         if plot:
             plt.pcolormesh(self._XX, self._YY, interpolated_result)
@@ -647,6 +648,6 @@ ou = np.random.randn(1183) * 5
 
 bef = time.time()
 for _ in range(10):
-    out = test.interpolate(ou, plot=False)
+    out = test.interpolate(ou, plot=True)
 
 print('time elapsed: = ', str(time.time() - bef))
