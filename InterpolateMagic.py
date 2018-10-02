@@ -641,13 +641,13 @@ class InterpolateMagic:  # TODO make it parallel
 
 
 ## Test code
-test = InterpolateMagic(10)
-import time
-
-ou = np.random.randn(1183) * 5
-
-bef = time.time()
-for _ in range(10):
-    out = test.interpolate(ou, plot=True)
-
-print('time elapsed: = ', str(time.time() - bef))
+# test = InterpolateMagic(10)
+# import time
+#
+# ou = np.random.randn(1183) * 5
+#
+# bef = time.time()
+# for _ in range(10):
+#     out = test.interpolate(ou, plot=True)
+#
+# print('time elapsed: = ', str(time.time() - bef))
