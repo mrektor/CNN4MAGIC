@@ -635,7 +635,8 @@ class InterpolateMagic:  # TODO make it parallel
         if plot:
             plt.pcolormesh(self._XX, self._YY, interpolated_result)
             plt.colorbar()
-            plt.title('Quadratic Interpolation with step:' + str(self.step))
+            plt.title('Linear Interpolation with step:' + str(self.step))
+            plt.savefig('interp.jpg')
             plt.show()
         return interpolated_result
 
