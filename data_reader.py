@@ -1,7 +1,7 @@
-import multiprocessing
 import pickle
 import time
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
@@ -47,17 +47,39 @@ gamma_np = np.zeros((gamma.shape[0], a.shape[0], a.shape[1]))
 
 def interp_gamma(idx):
     if idx % 100 == 0:
-        print(f'progress: {idx/gamma.shape[0]*3000} %')
+        print(f'progress: {idx/gamma.shape[0]*100} %')
     gamma_np[idx, :, :] = interpolator.interpolate(gamma.iloc[idx], remove_last=False, plot=False)
 
 
-# Parallel interpolation
+# interpolation
 bef = time.time()
-pool = multiprocessing.Pool()
-pool.map(interp_gamma, range(gamma.shape[0]))
-pool.close()
-pool.join()
+for idx in range(gamma.shape[0]):
+    interp_gamma(idx)
 now = time.time()
+
+idx = 1
+plt.figure()
+plt.imshow(gamma_np[idx])
+plt.colorbar()
+plt.savefig('gamma_example11.jpg')
+
+idx = 2
+plt.figure()
+plt.imshow(gamma_np[idx])
+plt.colorbar()
+plt.savefig('gamma_example12.jpg')
+
+idx = 3
+plt.figure()
+plt.imshow(gamma_np[idx])
+plt.colorbar()
+plt.savefig('gamma_example13.jpg')
+
+idx = 4
+plt.figure()
+plt.imshow(gamma_np[idx])
+plt.colorbar()
+plt.savefig('gamma_example14.jpg')
 
 print(f'Time taken for the interpolation: {(now-bef)/60} minutes')
 # % Interpolate the hadron

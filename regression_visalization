@@ -1,0 +1,81 @@
+import pickle
+
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+from keras.models import load_model
+
+# %% Load the model
+regressor = load_model('checkpoints/energy_regressor.hdf5')
+regressor_deep = load_model('checkpoints/energy_regressor_deep.hdf5')
+
+# %% Load the data
+
+with open('pickle_data/gamma_energy_numpy_test.pkl', 'rb') as f:
+    x_test = pickle.load(f)
+
+with open('pickle_data/energy_test.pkl', 'rb') as f:
+    raw_energy_test = pickle.load(f)
+
+img_rows, img_cols = 67, 68
+x_test = x_test.reshape(x_test.shape[0], img_rows, img_cols, 1)
+
+y_test = np.log(raw_energy_test)
+
+# %% Predict the data
+
+y_pred_1 = regressor.predict(x_test)
+y_pred_deep = regressor_deep.predict(x_test)
+# %%
+
+sns.set()
+plt.scatter(x=y_test, y=y_pred_1, marker='.')
+plt.plot([3.5, 10], [3.5, 10], 'k--')
+plt.xlabel('True Energy (log)')
+plt.ylabel('Predicted Energy (log)')
+plt.title('Regression Performances Model 1 (Energy in log scale)')
+plt.savefig('scatter_log1.jpg')
+# plt.show()
+
+sns.set()
+plt.scatter(x=y_test, y=y_pred_deep, marker='.')
+plt.plot([3.5, 10], [3.5, 10], 'k--')
+plt.xlabel('True Energy (log)')
+plt.ylabel('Predicted Energy (log)')
+plt.title('Regression Performances Deep (Energy in log scale)')
+plt.savefig('scatter_log_deep.jpg')
+# plt.show()
+
+# %%
+plt.figure()
+plt.scatter(x=np.exp(y_test), y=np.exp(y_pred_1), marker='.')
+plt.plot([3.5, 30000], [3.5, 30000], 'k--')
+plt.xlabel('True Energy')
+plt.ylabel('Predicted Energy')
+plt.title('Regression Performances (Energy in linear scale)')
+# plt.legend('Ideal Line')
+plt.show()
+
+# %%
+
+norm_gaus = np.divide((y_pred_1.flatten() - y_test), y_test)
+norm_gaus_deep = np.divide((y_pred_deep.flatten() - y_test), y_test)
+
+# %%
+plt.figure()
+sns.distplot(norm_gaus, bins=500)
+sns.distplot(norm_gaus_deep, bins=500)
+plt.title('Normalized error')
+plt.xlabel('Relative Error')
+plt.legend(['First model', 'Deep Model'])
+plt.savefig('error_distribution.jpg')
+
+# %%
+plt.figure()
+sns.jointplot(x=y_test, y=y_pred_1.flatten(), kind='hex').set_axis_labels(xlabel='True Energy',
+                                                                          ylabel='Predicted Energy')
+plt.savefig('scatter_FIGO_shallow.jpg')
+
+sns.jointplot(x=y_test, y=y_pred_deep.flatten(), kind='hex', color='r').set_axis_labels(xlabel='True Energy',
+                                                                                        ylabel='Predicted Energy')
+plt.savefig('scatter_FIGO_deep.jpg')
