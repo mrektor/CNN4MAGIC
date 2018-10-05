@@ -3,16 +3,11 @@ from __future__ import print_function
 
 import pickle
 
-import keras
-import matplotlib.pyplot as plt
-import numpy as np
-from keras import Sequential
-from keras import backend as K
-from keras.callbacks import ModelCheckpoint, EarlyStopping, TensorBoard
-from keras.layers import Conv2D, Dense, MaxPooling2D, GlobalAveragePooling2D
-from keras.models import load_model
+from models import *
+from resnet import *
+from utils import *
 
-# %% Data Loading
+# % Data Loading
 print('loading data')
 with open('pickle_data/gamma_energy_numpy_train.pkl', 'rb') as f:
     x_train = pickle.load(f)
@@ -20,7 +15,7 @@ with open('pickle_data/gamma_energy_numpy_train.pkl', 'rb') as f:
 with open('pickle_data/energy_train.pkl', 'rb') as f:
     raw_energy_train = pickle.load(f)
 
-y_train = np.log(raw_energy_train)
+y_train = np.log10(raw_energy_train)
 
 with open('pickle_data/gamma_energy_numpy_test.pkl', 'rb') as f:
     x_test = pickle.load(f)
@@ -28,18 +23,19 @@ with open('pickle_data/gamma_energy_numpy_test.pkl', 'rb') as f:
 with open('pickle_data/energy_test.pkl', 'rb') as f:
     raw_energy_test = pickle.load(f)
 
-y_test = np.log(raw_energy_test)
+y_test = np.log10(raw_energy_test)
 
 print('Data dimensions:')
 print(x_train.shape, y_train.shape)
 print(x_test.shape, y_test.shape)
 
 # %
-batch_size = 350
+batch_size = 256
 
 # input image dimensions
 img_rows, img_cols = 67, 68
 
+# %
 if K.image_data_format() == 'channels_first':
     x_train = x_train.reshape(x_train.shape[0], 1, img_rows, img_cols)
     x_test = x_test.reshape(x_test.shape[0], 1, img_rows, img_cols)
@@ -53,9 +49,19 @@ print('x_train shape:', x_train.shape)
 print(x_train.shape[0], 'train samples')
 print(x_test.shape[0], 'test samples')
 
+# # %%
+# from models import tinyDarknet
+# tinyDarknet_nn = tinyDarknet(x_train, y_train, num_class=1)
+# tinyDarknet_nn.summary()
+
+# %%
+# from resnet import ResnetBuilder
+#
+# resnet_piccina = ResnetBuilder().build_resnet_18(input_shape=(1, 67, 68), num_outputs=1)
+# resnet_piccina.summary()
 # %%
 # %
-#
+# #
 num_classes = 1
 energy_regressor_net = Sequential()
 energy_regressor_net.add(Conv2D(32, kernel_size=(3, 3),
@@ -91,35 +97,12 @@ energy_regressor_net.add(Dense(num_classes, activation='linear'))
 energy_regressor_net.summary()
 
 # %% Compile and fit
-energy_regressor_net = load_model('checkpoints/energy_regressor_deep.hdf5')
-energy_regressor_net.compile(loss=keras.losses.mean_squared_error,
-                             optimizer=keras.optimizers.SGD(lr=0.0001))
 
-tensorboard = TensorBoard(log_dir='logs_reg_2/')
-early_stop = EarlyStopping(patience=3)
-check = ModelCheckpoint('checkpoints/energy_regressor_deep.hdf5')
+model = energy_regressor_net
 
-epochs = 20
+loss, std_err, std_error_log = train_adam_sgd(model,
+                                              x_train, y_train, x_test, y_test,
+                                              log_dir_tensorboard='test_dir',
+                                              net_name='deepnet')
 
-energy_regressor_net.fit(x_train, y_train,
-                         batch_size=batch_size,
-                         epochs=epochs,
-                         verbose=1,
-                         validation_data=(x_test, y_test),
-                         callbacks=[tensorboard, early_stop, check])
-
-# %%
-
-
-# %% accuracy CURVE
-y_pred = energy_regressor_net.predict(x_test)
-plt.figure()
-plt.scatter(y_test, y_pred)
-plt.xlabel('true Energy (log)')
-plt.ylabel('Energy prediction (log)')
-plt.title('Regression Accuracy (Energy is in Log scale)')
-plt.savefig('regression_accuracy_2.jpg')
-
-score = energy_regressor_net.evaluate(x_test, y_test, verbose=0)
-print('Test loss:', score)
-# print('Test accuracy:', score[1])
+# %% Plot stuf

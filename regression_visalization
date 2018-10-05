@@ -6,7 +6,7 @@ import seaborn as sns
 from keras.models import load_model
 
 # %% Load the model
-regressor = load_model('checkpoints/energy_regressor.hdf5')
+regressor = load_model('checkpoints/energy_regressor_resnet.hdf5')
 regressor_deep = load_model('checkpoints/energy_regressor_deep.hdf5')
 
 # %% Load the data
@@ -60,6 +60,10 @@ plt.show()
 
 norm_gaus = np.divide((y_pred_1.flatten() - y_test), y_test)
 norm_gaus_deep = np.divide((y_pred_deep.flatten() - y_test), y_test)
+
+# %
+print(f'The STD for the tiny darknet model is: {np.std(norm_gaus)}, mean: {np.mean(norm_gaus)}')
+print(f'The STD for the deep model is: {np.std(norm_gaus_deep)},  mean: {np.mean(norm_gaus_deep)}')
 
 # %%
 plt.figure()
