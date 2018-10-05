@@ -1,8 +1,6 @@
 # %%
 from __future__ import print_function
 
-import pickle
-
 from models import *
 from resnet import *
 from utils import *
@@ -15,6 +13,7 @@ with open('pickle_data/gamma_energy_numpy_train.pkl', 'rb') as f:
 with open('pickle_data/energy_train.pkl', 'rb') as f:
     raw_energy_train = pickle.load(f)
 
+# y_train = raw_energy_train
 y_train = np.log10(raw_energy_train)
 
 with open('pickle_data/gamma_energy_numpy_test.pkl', 'rb') as f:
@@ -23,6 +22,7 @@ with open('pickle_data/gamma_energy_numpy_test.pkl', 'rb') as f:
 with open('pickle_data/energy_test.pkl', 'rb') as f:
     raw_energy_test = pickle.load(f)
 
+# y_test = raw_energy_test
 y_test = np.log10(raw_energy_test)
 
 print('Data dimensions:')
@@ -36,7 +36,7 @@ batch_size = 256
 img_rows, img_cols = 67, 68
 
 # %
-if K.image_data_format() == 'channels_first':
+if keras.backend.image_data_format() == 'channels_first':
     x_train = x_train.reshape(x_train.shape[0], 1, img_rows, img_cols)
     x_test = x_test.reshape(x_test.shape[0], 1, img_rows, img_cols)
     input_shape = (1, img_rows, img_cols)
@@ -84,6 +84,9 @@ energy_regressor_net.add(Conv2D(128, (3, 3), activation='relu'))
 energy_regressor_net.add(Conv2D(64, (1, 1), activation='relu'))
 
 energy_regressor_net.add(Conv2D(256, (3, 3), activation='relu'))
+energy_regressor_net.add(Conv2D(64, (1, 1), activation='relu'))
+
+energy_regressor_net.add(Conv2D(256, (3, 3), activation='relu'))
 
 energy_regressor_net.add(GlobalAveragePooling2D())
 
@@ -102,7 +105,5 @@ model = energy_regressor_net
 
 loss, std_err, std_error_log = train_adam_sgd(model,
                                               x_train, y_train, x_test, y_test,
-                                              log_dir_tensorboard='test_dir',
-                                              net_name='deepnet')
-
-# %% Plot stuf
+                                              log_dir_tensorboard='test_dir_lin',
+                                              net_name='deepernet_log')

@@ -1,6 +1,5 @@
-from keras.layers.advanced_activations import LeakyReLU
 from keras.layers import Dense, Activation, Flatten, Dropout, Convolution2D, MaxPooling2D, BatchNormalization, \
-    GlobalAveragePooling2D
+    GlobalAveragePooling2D, Conv2D
 from keras.layers.advanced_activations import LeakyReLU
 from keras.models import Sequential
 
@@ -179,7 +178,7 @@ from keras.models import Model
 
 
 def cBN(inputLayer, filt=64, size=(1, 1), padding='same', activation='relu', regu=0.0, dropout=0.05, strides=(1, 1)):
-    cbn = Convolution2D(filt, size, padding=padding, use_bias=False, kernel_regularizer=regularizers.l2(regu),
+    cbn = Convolution2D(filt, size, padding=padding, use_bias=False,
                         strides=(1, 1))(inputLayer)
     cbn = Activation(activation)(cbn)
     # cbn = BatchNormalization(epsilon=1e-05, momentum=0.1, axis=-1)(cbn)
@@ -311,3 +310,42 @@ def SiMoInception(x_train, y_train, baseDim=64, dropout=0.6):
     cnn = Model(inputs=input_img, outputs=[output2, output1, output0])
 
     return cnn
+
+
+def deep_magic(input_shape, activation):
+    num_classes = 1
+    energy_regressor_net = Sequential()
+    energy_regressor_net.add(Conv2D(32, kernel_size=(3, 3),
+                                    activation=activation,
+                                    input_shape=input_shape))
+    energy_regressor_net.add(Conv2D(32, (1, 1), activation=activation))
+
+    energy_regressor_net.add(Conv2D(64, (3, 3), activation=activation))
+    energy_regressor_net.add(Conv2D(64, (1, 1), activation=activation))
+    energy_regressor_net.add(MaxPooling2D(pool_size=(2, 2)))
+
+    energy_regressor_net.add(Conv2D(128, (3, 3), activation=activation))
+    energy_regressor_net.add(Conv2D(64, (1, 1), activation=activation))
+    energy_regressor_net.add(MaxPooling2D(pool_size=(2, 2)))
+
+    energy_regressor_net.add(Conv2D(128, (3, 3), activation=activation))
+    energy_regressor_net.add(Conv2D(64, (1, 1), activation=activation))
+
+    energy_regressor_net.add(Conv2D(128, (3, 3), activation=activation))
+    energy_regressor_net.add(Conv2D(64, (1, 1), activation=activation))
+
+    energy_regressor_net.add(Conv2D(256, (3, 3), activation=activation))
+    energy_regressor_net.add(Conv2D(64, (1, 1), activation=activation))
+
+    energy_regressor_net.add(Conv2D(256, (3, 3), activation=activation))
+    energy_regressor_net.add(Conv2D(64, (1, 1), activation=activation))
+
+    energy_regressor_net.add(Conv2D(256, (3, 3), activation=activation))
+
+    energy_regressor_net.add(GlobalAveragePooling2D())
+
+    energy_regressor_net.add(Dense(num_classes, activation='linear'))
+
+    energy_regressor_net.summary()
+
+    return energy_regressor_net

@@ -1,4 +1,5 @@
 import itertools
+import pickle
 
 import keras
 import matplotlib.pyplot as plt
@@ -6,6 +7,52 @@ import numpy as np
 import seaborn as sns
 import tensorflow as tf
 from keras.callbacks import ModelCheckpoint, EarlyStopping, TensorBoard, ReduceLROnPlateau, TerminateOnNaN
+
+
+def load_magic_data():
+    print('loading data')
+    with open('pickle_data/gamma_energy_numpy_train.pkl', 'rb') as f:
+        x_train = pickle.load(f)
+
+    with open('pickle_data/energy_train.pkl', 'rb') as f:
+        raw_energy_train = pickle.load(f)
+
+    # y_train = raw_energy_train
+    y_train = np.log10(raw_energy_train)
+
+    with open('pickle_data/gamma_energy_numpy_test.pkl', 'rb') as f:
+        x_test = pickle.load(f)
+
+    with open('pickle_data/energy_test.pkl', 'rb') as f:
+        raw_energy_test = pickle.load(f)
+
+    # y_test = raw_energy_test
+    y_test = np.log10(raw_energy_test)
+
+    print('Data dimensions:')
+    print(x_train.shape, y_train.shape)
+    print(x_test.shape, y_test.shape)
+
+    # %
+    batch_size = 256
+
+    # input image dimensions
+    img_rows, img_cols = 67, 68
+
+    # %
+    if keras.backend.image_data_format() == 'channels_first':
+        x_train = x_train.reshape(x_train.shape[0], 1, img_rows, img_cols)
+        x_test = x_test.reshape(x_test.shape[0], 1, img_rows, img_cols)
+        input_shape = (1, img_rows, img_cols)
+    else:
+        x_train = x_train.reshape(x_train.shape[0], img_rows, img_cols, 1)
+        x_test = x_test.reshape(x_test.shape[0], img_rows, img_cols, 1)
+        input_shape = (img_rows, img_cols, 1)
+
+    print('x_train shape:', x_train.shape)
+    print(x_train.shape[0], 'train samples')
+    print(x_test.shape[0], 'test samples')
+    return x_train, y_train, x_test, y_test, input_shape
 
 
 def plot_confusion_matrix(cm, classes,
@@ -58,41 +105,41 @@ def std_error(y_true, y_pred):
 def train_adam_sgd(model, x_train, y_train, x_test, y_test, log_dir_tensorboard, net_name, epochs=100, batch_size=350):
     model.compile(loss=keras.losses.mean_squared_error,
                   optimizer='adam',
-                  metrics=[std_error, std_error_log])
+                  metrics=[std_error])
 
     tensorboard = TensorBoard(log_dir=log_dir_tensorboard)
     early_stop = EarlyStopping(patience=8)
     nan_stop = TerminateOnNaN()
     check = ModelCheckpoint('checkpoints/energy_regressor_' + net_name + '.hdf5')
-    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.3,
+    reduce_lr = ReduceLROnPlateau(monitor='loss', factor=0.3,
                                   patience=4, min_lr=0.0001)
 
     model.fit(x_train, y_train,
               batch_size=batch_size,
               epochs=epochs,
-              verbose=1,
+              verbose=2,
               validation_data=(x_test, y_test),
-              callbacks=[tensorboard, early_stop, check, nan_stop])
+              callbacks=[tensorboard, early_stop, check, nan_stop, reduce_lr])
 
     model.compile(loss=keras.losses.mean_squared_error,
                   optimizer='sgd',
-                  metrics=[std_error, std_error_log])
+                  metrics=[std_error])
 
     model.fit(x_train, y_train,
               batch_size=batch_size,
               epochs=epochs,
-              verbose=1,
+              verbose=2,
               validation_data=(x_test, y_test),
-              callbacks=[tensorboard, early_stop, check, nan_stop])
+              callbacks=[tensorboard, early_stop, check, nan_stop, reduce_lr])
 
     y_pred = model.predict(x_test)
-    std_err_log = std_error_log(y_test, y_pred)
     std_err = std_error(y_test, y_pred)
     loss = model.evaluate(x_test, y_test)
 
+    print('Plotting stuff...')
     plot_stuff(model, x_test, y_test, net_name)
 
-    return loss, std_err, std_error_log
+    return loss, std_err
 
 
 def plot_stuff(model, x_test, y_test, net_name):
