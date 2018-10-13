@@ -18,7 +18,7 @@ def load_magic_data():
         raw_energy_train = pickle.load(f)
 
     # y_train = raw_energy_train
-    y_train = np.log10(raw_energy_train)
+    y_train = np.log10(raw_energy_train).values
 
     with open('pickle_data/gamma_energy_numpy_test.pkl', 'rb') as f:
         x_test = pickle.load(f)
@@ -27,7 +27,7 @@ def load_magic_data():
         raw_energy_test = pickle.load(f)
 
     # y_test = raw_energy_test
-    y_test = np.log10(raw_energy_test)
+    y_test = np.log10(raw_energy_test).values
 
     print('Data dimensions:')
     print(x_train.shape, y_train.shape)
@@ -96,16 +96,25 @@ def std_error_log(y_true, y_pred):
 
 
 def std_error(y_true, y_pred):
+    # print(y_true.shape)
     y_true = tf.pow(10.0, y_true)
     y_pred = tf.pow(10.0, y_pred)
     relativ_err = tf.divide((y_true - y_pred), y_true)
     return tf.keras.backend.std(relativ_err)
 
 
-def train_adam_sgd(model, x_train, y_train, x_test, y_test, log_dir_tensorboard, net_name, epochs=100, batch_size=350):
+def mean_error(y_true, y_pred):
+    y_true = tf.pow(10.0, y_true)
+    y_pred = tf.pow(10.0, y_pred)
+    return tf.add(y_true, -y_pred)
+
+
+def train_adam_sgd(model, x_train, y_train, x_test, y_test, log_dir_tensorboard, net_name, initial_lr=0.001, epochs=100,
+                   batch_size=350):
+    # print(f'The dimension of y_tests are: {y_test.shape}, its first two elements are: {y_test[:2]}')
     model.compile(loss=keras.losses.mean_squared_error,
-                  optimizer='adam',
-                  metrics=[std_error])
+                  optimizer=keras.optimizers.Adam(lr=initial_lr),
+                  metrics=[std_error, mean_error])
 
     tensorboard = TensorBoard(log_dir=log_dir_tensorboard)
     early_stop = EarlyStopping(patience=8)
@@ -117,23 +126,24 @@ def train_adam_sgd(model, x_train, y_train, x_test, y_test, log_dir_tensorboard,
     model.fit(x_train, y_train,
               batch_size=batch_size,
               epochs=epochs,
-              verbose=2,
+              verbose=1,
               validation_data=(x_test, y_test),
               callbacks=[tensorboard, early_stop, check, nan_stop, reduce_lr])
 
     model.compile(loss=keras.losses.mean_squared_error,
                   optimizer='sgd',
-                  metrics=[std_error])
+                  metrics=[std_error, mean_error])
 
     model.fit(x_train, y_train,
               batch_size=batch_size,
               epochs=epochs,
-              verbose=2,
+              verbose=1,
               validation_data=(x_test, y_test),
               callbacks=[tensorboard, early_stop, check, nan_stop, reduce_lr])
 
     y_pred = model.predict(x_test)
     std_err = std_error(y_test, y_pred)
+    print(f'stderr=  {std_err}')
     loss = model.evaluate(x_test, y_test)
 
     print('Plotting stuff...')
@@ -142,20 +152,52 @@ def train_adam_sgd(model, x_train, y_train, x_test, y_test, log_dir_tensorboard,
     return loss, std_err
 
 
+def train_adam(model, x_train, y_train, x_test, y_test, log_dir_tensorboard, net_name, custom_loss, initial_lr=0.001,
+               epochs=100, batch_size=350):
+    # print(f'The dimension of y_tests are: {y_test.shape}, its first two elements are: {y_test[:2]}')
+    model.compile(loss=custom_loss,
+                  optimizer=keras.optimizers.Adam(lr=initial_lr),
+                  metrics=[std_error, mean_error])
+
+    tensorboard = TensorBoard(log_dir=log_dir_tensorboard)
+    early_stop = EarlyStopping(patience=9, min_delta=0.0001)
+    nan_stop = TerminateOnNaN()
+    check = ModelCheckpoint('checkpoints/energy_regressor_' + net_name + '.hdf5')
+    reduce_lr = ReduceLROnPlateau(monitor='loss', factor=0.5,
+                                  patience=4, min_lr=0.000005)
+
+    result = model.fit(x_train, y_train,
+              batch_size=batch_size,
+              epochs=epochs,
+              verbose=2,
+              validation_data=(x_test, y_test),
+              callbacks=[tensorboard, early_stop, check, nan_stop, reduce_lr])
+
+    validation_loss = np.amin(result.history['val_loss'])
+    validation_std = np.amin(result.history['val_std_error'])
+
+
+    print('Plotting stuff...')
+    plot_stuff(model, x_test, y_test, net_name)
+
+    return validation_loss, validation_std
+
 def plot_stuff(model, x_test, y_test, net_name):
     sns.set()
     y_pred = model.predict(x_test)
     norm_gaus = np.divide((y_pred.flatten() - y_test), y_test)
-    print(f'The STD for the shallow model is: {np.std(norm_gaus)}')
+    STD = np.std(norm_gaus)
+    print(f'The STD for the shallow model is: {STD}')
 
-    plt.figure()
-    sns.jointplot(x=y_test, y=y_pred.flatten(), kind='hex').set_axis_labels(xlabel='True Energy',
-                                                                            ylabel='Predicted Energy')
-    plt.savefig('scatter_FIGO_' + net_name + '.jpg')
+    if not np.isnan(np.std(norm_gaus)):
+        plt.figure()
+        sns.jointplot(x=y_test, y=y_pred.flatten(), kind='hex').set_axis_labels(xlabel='True Energy',
+                                                                                ylabel='Predicted Energy')
+        plt.savefig('scatter_FIGO_' + net_name + '.jpg')
 
-    plt.figure()
-    sns.distplot(norm_gaus, bins=500)
-    plt.title('Normalized error')
-    plt.xlabel('Relative Error')
-    plt.legend([net_name])
-    plt.savefig('error_distribution_' + net_name + '.jpg')
+        plt.figure()
+        sns.distplot(norm_gaus, bins=500)
+        plt.title('Normalized error')
+        plt.xlabel('Relative Error')
+        plt.legend([net_name + ' STD=' + str(STD)])
+        plt.savefig('error_distribution_' + net_name + '.jpg')
