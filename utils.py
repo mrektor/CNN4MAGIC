@@ -7,6 +7,8 @@ import numpy as np
 import seaborn as sns
 import tensorflow as tf
 from keras.callbacks import ModelCheckpoint, EarlyStopping, TensorBoard, ReduceLROnPlateau, TerminateOnNaN
+from matplotlib.colors import PowerNorm
+from sklearn.mixture import GaussianMixture
 
 
 def load_magic_data():
@@ -119,7 +121,7 @@ def train_adam_sgd(model, x_train, y_train, x_test, y_test, log_dir_tensorboard,
     tensorboard = TensorBoard(log_dir=log_dir_tensorboard)
     early_stop = EarlyStopping(patience=8)
     nan_stop = TerminateOnNaN()
-    check = ModelCheckpoint('checkpoints/energy_regressor_' + net_name + '.hdf5')
+    check = ModelCheckpoint('checkpoints/energy_regressor_' + net_name + '.hdf5', period=6)
     reduce_lr = ReduceLROnPlateau(monitor='loss', factor=0.3,
                                   patience=4, min_lr=0.0001)
 
@@ -160,27 +162,27 @@ def train_adam(model, x_train, y_train, x_test, y_test, log_dir_tensorboard, net
                   metrics=[std_error, mean_error])
 
     tensorboard = TensorBoard(log_dir=log_dir_tensorboard)
-    early_stop = EarlyStopping(patience=9, min_delta=0.0001)
+    early_stop = EarlyStopping(patience=15, min_delta=0.0001)
     nan_stop = TerminateOnNaN()
-    check = ModelCheckpoint('checkpoints/energy_regressor_' + net_name + '.hdf5')
+    check = ModelCheckpoint('checkpoints/grid_inc_filt_' + net_name + '.hdf5', period=5)
     reduce_lr = ReduceLROnPlateau(monitor='loss', factor=0.5,
                                   patience=4, min_lr=0.000005)
 
     result = model.fit(x_train, y_train,
-              batch_size=batch_size,
-              epochs=epochs,
-              verbose=2,
-              validation_data=(x_test, y_test),
-              callbacks=[tensorboard, early_stop, check, nan_stop, reduce_lr])
+                       batch_size=batch_size,
+                       epochs=epochs,
+                       verbose=2,
+                       validation_data=(x_test, y_test),
+                       callbacks=[tensorboard, early_stop, nan_stop, reduce_lr, check])
 
     validation_loss = np.amin(result.history['val_loss'])
     validation_std = np.amin(result.history['val_std_error'])
 
-
-    print('Plotting stuff...')
-    plot_stuff(model, x_test, y_test, net_name)
+    # print('Plotting stuff...')
+    # plot_stuff(model, x_test, y_test, net_name)
 
     return validation_loss, validation_std
+
 
 def plot_stuff(model, x_test, y_test, net_name):
     sns.set()
@@ -201,3 +203,75 @@ def plot_stuff(model, x_test, y_test, net_name):
         plt.xlabel('Relative Error')
         plt.legend([net_name + ' STD=' + str(STD)])
         plt.savefig('error_distribution_' + net_name + '.jpg')
+
+
+def compute_bin_gaussian_error(y_true, y_pred, num_bins=10):
+    '''
+    Helper function that compute the gaussian fit statistics for a nuber of bins
+    :param y_pred: Predicted y (Log Scale)
+    :param y_true: True y (Log scale)
+    :param num_bin: Number of bins
+    :return: bins_mu, bins_sigma, bins_mean_value
+    '''
+    gaussian = GaussianMixture(n_components=1)
+    bins = np.linspace(1, max(y_true), num_bins)
+
+    bins_mu = np.zeros(num_bins - 1)
+    bins_sigma = np.zeros(num_bins - 1)
+    bins_mean_value = np.zeros(num_bins - 1)
+
+    for i in range(num_bins - 1):
+        idx_bin = np.logical_and(y_true > bins[i], y_true < bins[i + 1])
+        y_bin_true = np.power(10, y_true[idx_bin])
+        y_bin_pred = np.power(10, y_pred[idx_bin].flatten())
+        error = np.divide((y_bin_true - y_bin_pred), y_bin_true)
+        error = error[:, np.newaxis]  # Add a new axis just for interface with Gaussian Mixture
+
+        gaussian.fit(error)
+        mu = gaussian.means_
+        sigma = np.sqrt(gaussian.covariances_)
+        bins_mu[i] = mu
+        bins_sigma[i] = sigma
+        bins_mean_value[i] = np.mean([bins[i], bins[i + 1]])
+    return bins_mu, bins_sigma, bins_mean_value
+
+
+def plot_gaussian_error(y_true, y_pred, net_name, num_bins=10):
+    bins_mu, bins_sigma, bins_mean_value = compute_bin_gaussian_error(y_true, y_pred, num_bins)
+    fig_width = 9
+    plt.figure(figsize=(fig_width, fig_width * 0.618))
+    plt.subplot(1, 2, 1)
+    plt.plot(bins_mean_value, bins_mu, '-*g')
+    plt.plot([min(bins_mean_value), max(bins_mean_value)], [np.mean(bins_mu), np.mean(bins_mu)], 'r--')
+    plt.legend(['Estimated $\mu$', 'Average $\mu$'])
+    plt.xlabel('Bin mean value ($\log_{10}$)')
+    plt.ylabel('$\mu$ of linear prediction error')
+    plt.title('$\mu$ distribution for each bin')
+    plt.grid(which='both')
+    # plt.savefig('pics/bins_mu.jpg')
+
+    plt.subplot(1, 2, 2)
+    # plt.figure()
+    plt.plot(bins_mean_value, bins_sigma, '-o')
+    plt.plot([min(bins_mean_value), max(bins_mean_value)], [np.mean(bins_sigma), np.mean(bins_sigma)], 'r--')
+    plt.grid(which='both')
+    plt.ylabel('$\sigma$ of linear prediction error')
+    plt.xlabel('Bin mean value ($\log_{10}$)')
+    plt.title('$\sigma$ distribution for each bin')
+    plt.legend(['Estimated $\sigma$', 'Average $\sigma$'])
+    plt.tight_layout()
+    plt.savefig('pics/bins_gaussian_error' + net_name + '.jpg')
+    plt.close()
+
+
+def plot_hist2D(y_true, y_pred, net_name, num_bins=10):
+    plt.figure()
+    plt.hist2d(x=y_true, y=y_pred.flatten(), bins=num_bins, cmap='inferno', norm=PowerNorm(0.65))
+    plt.plot([1, 10], [1, 10], 'w-')
+    plt.xlabel('True Energy (Log10)')
+    plt.ylabel('Predicted Energy (Log10)')
+    plt.colorbar()
+    plt.title('Regression Performances ' + net_name)
+    plt.legend(['Ideal Line'])
+    plt.savefig('pics/Histogram2D_' + net_name + '.jpg')
+    plt.close()
