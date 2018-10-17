@@ -283,6 +283,6 @@ def bin_data(data, num_bins):
     binned_values = np.zeros(data.shape)
     for i, bin in enumerate(bins):
         if i < bins.shape[0] - 1:
-            mask = np.logical_and(data > bins[i], data <= bins[i + 1])
+            mask = np.logical_and(data >= bins[i], data <= bins[i + 1])
             binned_values[mask] = bin
     return binned_values
