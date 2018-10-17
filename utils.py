@@ -222,9 +222,9 @@ def compute_bin_gaussian_error(y_true, y_pred, num_bins=10):
 
     for i in range(num_bins - 1):
         idx_bin = np.logical_and(y_true > bins[i], y_true < bins[i + 1])
-        y_bin_true = np.power(10, y_true[idx_bin])
-        y_bin_pred = np.power(10, y_pred[idx_bin].flatten())
-        error = np.divide((y_bin_true - y_bin_pred), y_bin_true)
+        y_bin_true_lin = np.power(10, y_true[idx_bin])
+        y_bin_pred_lin = np.power(10, y_pred[idx_bin].flatten())
+        error = np.divide((y_bin_true_lin - y_bin_pred_lin), y_bin_true_lin)
         error = error[:, np.newaxis]  # Add a new axis just for interface with Gaussian Mixture
 
         gaussian.fit(error)
@@ -233,7 +233,8 @@ def compute_bin_gaussian_error(y_true, y_pred, num_bins=10):
         bins_mu[i] = mu
         bins_sigma[i] = sigma
         bins_mean_value[i] = np.mean([bins[i], bins[i + 1]])
-    return bins_mu, bins_sigma, bins_mean_value
+    bins_mean_value_lin = np.power(10, bins_mean_value)  # Bins back to linear
+    return bins_mu, bins_sigma, bins_mean_value_lin
 
 
 def plot_gaussian_error(y_true, y_pred, net_name, num_bins=10):
@@ -241,22 +242,22 @@ def plot_gaussian_error(y_true, y_pred, net_name, num_bins=10):
     fig_width = 9
     plt.figure(figsize=(fig_width, fig_width * 0.618))
     plt.subplot(1, 2, 1)
-    plt.plot(bins_mean_value, bins_mu, '-*g')
-    plt.plot([min(bins_mean_value), max(bins_mean_value)], [np.mean(bins_mu), np.mean(bins_mu)], 'r--')
+    plt.semilogx(bins_mean_value, bins_mu, '-*g')
+    plt.semilogx([min(bins_mean_value), max(bins_mean_value)], [np.mean(bins_mu), np.mean(bins_mu)], 'r--')
+    plt.grid(which='both')
     plt.legend(['Estimated $\mu$', 'Average $\mu$'])
-    plt.xlabel('Bin mean value ($\log_{10}$)')
+    plt.xlabel('Bin mean value')
     plt.ylabel('$\mu$ of linear prediction error')
     plt.title('$\mu$ distribution for each bin')
-    plt.grid(which='both')
     # plt.savefig('pics/bins_mu.jpg')
 
     plt.subplot(1, 2, 2)
     # plt.figure()
-    plt.plot(bins_mean_value, bins_sigma, '-o')
-    plt.plot([min(bins_mean_value), max(bins_mean_value)], [np.mean(bins_sigma), np.mean(bins_sigma)], 'r--')
+    plt.semilogx(bins_mean_value, bins_sigma, '-o')
+    plt.semilogx([min(bins_mean_value), max(bins_mean_value)], [np.mean(bins_sigma), np.mean(bins_sigma)], 'r--')
     plt.grid(which='both')
     plt.ylabel('$\sigma$ of linear prediction error')
-    plt.xlabel('Bin mean value ($\log_{10}$)')
+    plt.xlabel('Bin mean value')
     plt.title('$\sigma$ distribution for each bin')
     plt.legend(['Estimated $\sigma$', 'Average $\sigma$'])
     plt.tight_layout()
