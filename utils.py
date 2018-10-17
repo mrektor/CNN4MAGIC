@@ -276,3 +276,13 @@ def plot_hist2D(y_true, y_pred, net_name, num_bins=10):
     plt.legend(['Ideal Line'])
     plt.savefig('pics/Histogram2D_' + net_name + '.jpg')
     plt.close()
+
+
+def bin_data(data, num_bins):
+    bins = np.linspace(np.min(data), np.max(data), num_bins)
+    binned_values = np.zeros(data.shape)
+    for i, bin in enumerate(bins):
+        if i < bins.shape[0] - 1:
+            mask = np.logical_and(data > bins[i], data <= bins[i + 1])
+            binned_values[mask] = bin
+    return binned_values
