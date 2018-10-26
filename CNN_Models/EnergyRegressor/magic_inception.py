@@ -109,7 +109,7 @@ def inception_module(input, dropout, num_filters, do_res=False):
     tower_3 = Conv2D(num_filters, (1, 3), strides=(1, 1), padding='same')(tower_3)
     tower_3 = common_shit(tower_3, dropout)
     tower_3 = MaxPooling2D((2, 2), strides=(1, 1), padding='same')(tower_3)
-    tower_3 = common_shit(tower_3, dropout)
+    # tower_3 = common_shit(tower_3, dropout)
     ######
     tower_3 = Conv2D(num_filters, (1, 1), padding='same')(tower_3)
     tower_3 = common_shit(tower_3, dropout)
@@ -161,7 +161,7 @@ def magic_inception(input_shape, num_filters_first_conv, dropout, num_classes,
     # last = Dropout(0.8)(last)
     last = Dense(num_filters_first_conv)(last)
     last = LeakyReLU()(last)
-    last = Dropout(0.5)(last)
+    last = Dropout(0.3)(last)
     last = Dense(int(num_filters_first_conv / 3))(last)
     last = LeakyReLU()(last)
     # last = Dropout(0.5)(last)
