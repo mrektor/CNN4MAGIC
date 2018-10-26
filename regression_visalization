@@ -1,85 +1,131 @@
-import pickle
-
-import matplotlib.pyplot as plt
-import numpy as np
-import seaborn as sns
 from keras.models import load_model
+from keras.utils.np_utils import to_categorical
+from sklearn.metrics import confusion_matrix
+from sklearn.preprocessing import LabelEncoder
+
+from utils import *
 
 # %% Load the model
-regressor = load_model('checkpoints/energy_regressor_resnet.hdf5')
-regressor_deep = load_model('checkpoints/energy_regressor_deep.hdf5')
+x_train, y_train, x_test, y_test, input_shape = load_magic_data()
 
-# %% Load the data
+num_classes = 10
+net_name = 'energy_class_crossentropy_inc_' + str(num_classes) + 'class'
+filepath = '/data/mariotti_data/checkpoints/grid_inc_filt_energy_class_crossentropy_inc_10class.hdf5'  # '/data/mariotti_data/checkpoints/grid_inc_filt_inc_' + net_name + '.hdf5'
+regressor = load_model(filepath)
+# custom_objects={'std_error': std_error, 'mean_error': mean_error})
 
-with open('pickle_data/gamma_energy_numpy_test.pkl', 'rb') as f:
-    x_test = pickle.load(f)
+# % Load the test data and predict
 
-with open('pickle_data/energy_test.pkl', 'rb') as f:
-    raw_energy_test = pickle.load(f)
+# with open('pickle_data/gamma_energy_numpy_test.pkl', 'rb') as f:
+#     x_test = pickle.load(f)
+#
+# with open('pickle_data/energy_test.pkl', 'rb') as f:
+#     raw_energy_test = pickle.load(f)
+#
+# img_rows, img_cols = 67, 68
+# x_test = x_test.reshape(x_test.shape[0], img_rows, img_cols, 1)
+#
+# # Load the true energies and transform them in Log scale
+# y_test = np.log10(raw_energy_test).values
 
-img_rows, img_cols = 67, 68
-x_test = x_test.reshape(x_test.shape[0], img_rows, img_cols, 1)
 
-y_test = np.log(raw_energy_test)
+# Predict the data
+# y_pred = regressor.predict(x_test)
 
-# %% Predict the data
+values_bin_train, bins = bin_data(y_train, num_bins=num_classes)
+values_bin_test, _ = bin_data(y_test, num_bins=num_classes, bins=bins)
 
-y_pred_1 = regressor.predict(x_test)
-y_pred_deep = regressor_deep.predict(x_test)
-# %%
+encoder = LabelEncoder()
+y_train_cat = encoder.fit_transform(values_bin_train)
+y_test_cat = encoder.transform(values_bin_test)
 
-sns.set()
-plt.scatter(x=y_test, y=y_pred_1, marker='.')
-plt.plot([3.5, 10], [3.5, 10], 'k--')
-plt.xlabel('True Energy (log)')
-plt.ylabel('Predicted Energy (log)')
-plt.title('Regression Performances Model 1 (Energy in log scale)')
-plt.savefig('scatter_log1.jpg')
-# plt.show()
+y_train_keras_cat = to_categorical(y_train_cat, num_classes=num_classes)
+y_test_keras_cat = to_categorical(y_test_cat, num_classes=num_classes)
 
-sns.set()
-plt.scatter(x=y_test, y=y_pred_deep, marker='.')
-plt.plot([3.5, 10], [3.5, 10], 'k--')
-plt.xlabel('True Energy (log)')
-plt.ylabel('Predicted Energy (log)')
-plt.title('Regression Performances Deep (Energy in log scale)')
-plt.savefig('scatter_log_deep.jpg')
-# plt.show()
+y_pred_hot = regressor.predict(x_test)
 
 # %%
+num_bins = bins.shape[0]
+bins_mean_value = np.zeros(num_bins - 1)
+for i in range(num_bins - 1):
+    bins_mean_value[i] = np.mean([bins[i], bins[i + 1]])
+
+cmap = plt.cm.Blues
+title = 'Confusion Matrix 100'
+classes = np.around(bins_mean_value, 2)
+cm = confusion_matrix(y_true=np.argmax(y_test_keras_cat, 1), y_pred=np.argmax(y_pred_hot, 1))
 plt.figure()
-plt.scatter(x=np.exp(y_test), y=np.exp(y_pred_1), marker='.')
-plt.plot([3.5, 30000], [3.5, 30000], 'k--')
-plt.xlabel('True Energy')
-plt.ylabel('Predicted Energy')
-plt.title('Regression Performances (Energy in linear scale)')
-# plt.legend('Ideal Line')
-plt.show()
-
+plt.imshow(cm, interpolation='nearest', cmap=cmap)
+plt.title(title)
+plt.colorbar()
+tick_marks = np.arange(len(classes))
+plt.xticks(tick_marks, classes, rotation=45)
+plt.yticks(tick_marks, classes)
+plt.ylabel('True label')
+plt.xlabel('Predicted label')
+plt.tight_layout()
+plt.savefig('conf_matr_10.jpg')
 # %%
 
-norm_gaus = np.divide((y_pred_1.flatten() - y_test), y_test)
-norm_gaus_deep = np.divide((y_pred_deep.flatten() - y_test), y_test)
+# plot_hist2D(y_test, y_pred, net_name='Inc138-log', num_bins=50)
+y_pred = encoder.inverse_transform(np.argmax(y_pred_hot, 1))
+plot_gaussian_error(y_test, y_pred, net_name=net_name + '20bin', num_bins=20)
 
+# %%
+y_test_lin = np.power(10.0, y_test)
+y_pred_lin = np.power(10.0, y_pred.flatten())
+
+lin_err = np.divide((y_test_lin - y_pred_lin), y_test_lin)
+s = np.std(lin_err)
+print(s)
+
+# %%
+# a = regressor.layers.pop()
+regressor.summary()
+# %%
+from keras.layers import Dense
+
+# new_layer = Dense(1, activation='linear', name='new_dense')(regressor.layers[-1].output)
+
+regressor.compile(optimizer='adam', loss=keras.losses.mean_absolute_error)
+
+# %%
+regressor.summary()
+
+# %%
+from keras.models import Model
+
+new_layer = Dense(10, activation='sigmoid', name='new_dense')(regressor.layers[-1].output)
+new_layer = Dense(1, activation='linear', name='new_dense2')(new_layer)
+model2 = Model(input=regressor.input, output=[new_layer])
+model2.summary()
+# %%
+for layer in model2.layers[:-2]:
+    layer.trainable = False
+# %%
+model2.compile(optimizer='sgd', loss=keras.losses.mean_absolute_error)
+# %%
+
+early_stop = EarlyStopping(patience=2, min_delta=0.0001)
+nan_stop = TerminateOnNaN()
+check = ModelCheckpoint(
+    '/data/mariotti_data/checkpoints/grid_inc_filt_' + net_name + 'mae_sgd_sig10_lin_minust2freeze.hdf5', period=5)
+reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.5,
+                              patience=4, min_lr=0.000005)
+model2.fit(x_train, y_train,
+           batch_size=512,
+           epochs=10,
+           verbose=2,
+           validation_data=(x_test, y_test),
+           callbacks=[early_stop, nan_stop, reduce_lr, check])
+
+# %%
+y_pred = model2.predict(x_test)
 # %
-print(f'The STD for the tiny darknet model is: {np.std(norm_gaus)}, mean: {np.mean(norm_gaus)}')
-print(f'The STD for the deep model is: {np.std(norm_gaus_deep)},  mean: {np.mean(norm_gaus_deep)}')
+plot_gaussian_error(y_test, y_pred, net_name='inc_200_doubletrain_mae_sgd_sig10_lin_minust2freeze' + '20bin',
+                    num_bins=20)
+# %
+plot_hist2D(y_test, y_pred, net_name='inc_200_doubletrain_mae_sgd_sig10_lin_minust2freeze', num_bins=50)
 
 # %%
-plt.figure()
-sns.distplot(norm_gaus, bins=500)
-sns.distplot(norm_gaus_deep, bins=500)
-plt.title('Normalized error')
-plt.xlabel('Relative Error')
-plt.legend(['First model', 'Deep Model'])
-plt.savefig('error_distribution.jpg')
-
-# %%
-plt.figure()
-sns.jointplot(x=y_test, y=y_pred_1.flatten(), kind='hex').set_axis_labels(xlabel='True Energy',
-                                                                          ylabel='Predicted Energy')
-plt.savefig('scatter_FIGO_shallow.jpg')
-
-sns.jointplot(x=y_test, y=y_pred_deep.flatten(), kind='hex', color='r').set_axis_labels(xlabel='True Energy',
-                                                                                        ylabel='Predicted Energy')
-plt.savefig('scatter_FIGO_deep.jpg')
+del model2

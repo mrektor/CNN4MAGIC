@@ -314,8 +314,7 @@ def SiMoInception(x_train, y_train, baseDim=64, dropout=0.6):
     return cnn
 
 
-def deep_magic(input_shape, activation):
-    num_classes = 1
+def deep_magic(input_shape, activation, num_classes):
     energy_regressor_net = Sequential()
     energy_regressor_net.add(Conv2D(64, kernel_size=(3, 3),
                                     activation=activation,
@@ -361,7 +360,7 @@ def deep_magic(input_shape, activation):
                                                                                                              stddev=1 / np.sqrt(
                                                                                                                  60),
                                                                                                              seed=None)))
-    energy_regressor_net.add(Dense(num_classes, activation='linear'))
+    energy_regressor_net.add(Dense(num_classes, activation='softmax'))
 
     energy_regressor_net.summary()
 

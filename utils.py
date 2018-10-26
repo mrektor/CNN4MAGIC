@@ -11,21 +11,21 @@ from matplotlib.colors import PowerNorm
 from sklearn.mixture import GaussianMixture
 
 
-def load_magic_data():
+def load_magic_data(logx=False, energy_th=0):
     print('loading data')
-    with open('pickle_data/gamma_energy_numpy_train.pkl', 'rb') as f:
+    with open('/data/mariotti_data/pickle_data/gamma_energy_numpy_train.pkl', 'rb') as f:
         x_train = pickle.load(f)
 
-    with open('pickle_data/energy_train.pkl', 'rb') as f:
+    with open('/data/mariotti_data/pickle_data/energy_train.pkl', 'rb') as f:
         raw_energy_train = pickle.load(f)
 
     # y_train = raw_energy_train
     y_train = np.log10(raw_energy_train).values
 
-    with open('pickle_data/gamma_energy_numpy_test.pkl', 'rb') as f:
+    with open('/data/mariotti_data/pickle_data/gamma_energy_numpy_test.pkl', 'rb') as f:
         x_test = pickle.load(f)
 
-    with open('pickle_data/energy_test.pkl', 'rb') as f:
+    with open('/data/mariotti_data/pickle_data/energy_test.pkl', 'rb') as f:
         raw_energy_test = pickle.load(f)
 
     # y_test = raw_energy_test
@@ -51,9 +51,25 @@ def load_magic_data():
         x_test = x_test.reshape(x_test.shape[0], img_rows, img_cols, 1)
         input_shape = (img_rows, img_cols, 1)
 
+    if logx is True:
+        x_train = np.log10(x_train)
+        x_test = np.log10(x_test)
+
     print('x_train shape:', x_train.shape)
     print(x_train.shape[0], 'train samples')
     print(x_test.shape[0], 'test samples')
+
+    if energy_th > 0:
+        # Create the mask and apply it to the train
+        mask_tr = y_train >= energy_th
+        y_train = y_train[mask_tr]
+        x_train = x_train[mask_tr]
+
+        # Do the same for the test
+        mask_te = y_test >= energy_th
+        y_test = y_test[mask_te]
+        x_test = x_test[mask_te]
+
     return x_train, y_train, x_test, y_test, input_shape
 
 
@@ -218,7 +234,7 @@ def compute_bin_gaussian_error(y_true, y_pred, num_bins=10):
 
     bins_mu = np.zeros(num_bins - 1)
     bins_sigma = np.zeros(num_bins - 1)
-    bins_mean_value = np.zeros(num_bins - 1)
+    bins_median_value = np.zeros(num_bins - 1)
 
     for i in range(num_bins - 1):
         idx_bin = np.logical_and(y_true > bins[i], y_true < bins[i + 1])
@@ -232,18 +248,18 @@ def compute_bin_gaussian_error(y_true, y_pred, num_bins=10):
         sigma = np.sqrt(gaussian.covariances_)
         bins_mu[i] = mu
         bins_sigma[i] = sigma
-        bins_mean_value[i] = np.mean([bins[i], bins[i + 1]])
-    bins_mean_value_lin = np.power(10, bins_mean_value)  # Bins back to linear
-    return bins_mu, bins_sigma, bins_mean_value_lin
+        bins_median_value[i] = np.median([bins[i], bins[i + 1]])
+    bins_median_value_lin = np.power(10, bins_median_value)  # Bins back to linear
+    return bins_mu, bins_sigma, bins_median_value_lin
 
 
 def plot_gaussian_error(y_true, y_pred, net_name, num_bins=10):
-    bins_mu, bins_sigma, bins_mean_value = compute_bin_gaussian_error(y_true, y_pred, num_bins)
-    fig_width = 9
+    bins_mu, bins_sigma, bins_median_value = compute_bin_gaussian_error(y_true, y_pred, num_bins)
+    fig_width = 14
     plt.figure(figsize=(fig_width, fig_width * 0.618))
     plt.subplot(1, 2, 1)
-    plt.semilogx(bins_mean_value, bins_mu, '-*g')
-    plt.semilogx([min(bins_mean_value), max(bins_mean_value)], [np.mean(bins_mu), np.mean(bins_mu)], 'r--')
+    plt.semilogx(bins_median_value, bins_mu, '-*g')
+    plt.semilogx([min(bins_median_value), max(bins_median_value)], [np.mean(bins_mu), np.mean(bins_mu)], 'r--')
     plt.grid(which='both')
     plt.legend(['Estimated $\mu$', 'Average $\mu$'])
     plt.xlabel('Bin mean value')
@@ -253,15 +269,15 @@ def plot_gaussian_error(y_true, y_pred, net_name, num_bins=10):
 
     plt.subplot(1, 2, 2)
     # plt.figure()
-    plt.semilogx(bins_mean_value, bins_sigma, '-o')
-    plt.semilogx([min(bins_mean_value), max(bins_mean_value)], [np.mean(bins_sigma), np.mean(bins_sigma)], 'r--')
+    plt.semilogx(bins_median_value, bins_sigma, '-o')
+    plt.semilogx([min(bins_median_value), max(bins_median_value)], [np.mean(bins_sigma), np.mean(bins_sigma)], 'r--')
     plt.grid(which='both')
     plt.ylabel('$\sigma$ of linear prediction error')
     plt.xlabel('Bin mean value')
     plt.title('$\sigma$ distribution for each bin')
     plt.legend(['Estimated $\sigma$', 'Average $\sigma$'])
     plt.tight_layout()
-    plt.savefig('pics/bins_gaussian_error' + net_name + '.jpg')
+    plt.savefig('/data/mariotti_data/pics/bins_gaussian_error' + net_name + '.jpg')
     plt.close()
 
 
@@ -274,15 +290,16 @@ def plot_hist2D(y_true, y_pred, net_name, num_bins=10):
     plt.colorbar()
     plt.title('Regression Performances ' + net_name)
     plt.legend(['Ideal Line'])
-    plt.savefig('pics/Histogram2D_' + net_name + '.jpg')
+    plt.savefig('/data/mariotti_data/pics/Histogram2D_' + net_name + '.jpg')
     plt.close()
 
 
-def bin_data(data, num_bins):
-    bins = np.linspace(np.min(data), np.max(data), num_bins)
+def bin_data(data, num_bins, bins=None):
+    if bins is None:
+        bins = np.linspace(np.min(data), np.max(data), num_bins)
     binned_values = np.zeros(data.shape)
     for i, bin in enumerate(bins):
         if i < bins.shape[0] - 1:
             mask = np.logical_and(data >= bins[i], data <= bins[i + 1])
             binned_values[mask] = bin
-    return binned_values
+    return binned_values, bins

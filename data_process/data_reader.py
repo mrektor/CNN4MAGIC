@@ -5,10 +5,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from InterpolateMagic import InterpolateMagic
+from data_process.InterpolateMagic import InterpolateMagic
 
 # %% Load the data
+bef = time.time()
 gamma_raw = pd.read_csv('/data/data/MC/M1/energy_gammas.txt', sep=" ", header=None)
+now = time.time()
+print('time for loading')
+print(now - bef)
 # hadron = pd.read_csv('/data/data/Data/M2/20180912_M2_05075292.001_Y_SS433-e1-reg-W0.40+135.txt', sep=" ", header=None)
 
 # % Remove the trailing zeros
@@ -19,6 +23,9 @@ energy = gamma_raw.iloc[:, 1]
 # hadron.loc[:, 'class'] = 'hadron'
 
 print(f'gamma shape: {gamma.shape}')  # , hadron shape: {hadron.shape}')
+
+# %%
+print(f'gamma raw shape: {gamma_raw.shape}')
 
 # %% Call the interpolator
 interpolator = InterpolateMagic(15)

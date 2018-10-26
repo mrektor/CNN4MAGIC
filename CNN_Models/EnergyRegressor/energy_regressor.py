@@ -1,8 +1,7 @@
 # %%
 from __future__ import print_function
 
-from models import *
-from resnet import *
+from CNN_Models.EnergyRegressor.models import *
 from utils import *
 
 # % Data Loading
@@ -54,11 +53,7 @@ print(x_test.shape[0], 'test samples')
 # tinyDarknet_nn = tinyDarknet(x_train, y_train, num_class=1)
 # tinyDarknet_nn.summary()
 
-# %%
-# from resnet import ResnetBuilder
-#
-# resnet_piccina = ResnetBuilder().build_resnet_18(input_shape=(1, 67, 68), num_outputs=1)
-# resnet_piccina.summary()
+
 # %%
 # %
 # #
