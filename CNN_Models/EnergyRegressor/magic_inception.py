@@ -166,7 +166,7 @@ def magic_inception(input_shape, num_filters_first_conv, dropout, num_classes,
     last = LeakyReLU()(last)
     # last = Dropout(0.5)(last)
 
-    out = Dense(num_classes, activation='sigmoid')(last)
+    out = Dense(num_classes, activation='linear')(last)
     cnn = Model(inputs=input_img, outputs=out)
 
     return cnn

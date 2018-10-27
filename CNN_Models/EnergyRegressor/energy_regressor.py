@@ -1,104 +1,37 @@
 # %%
 from __future__ import print_function
 
-from CNN_Models.EnergyRegressor.models import *
+from CNN_Models.EnergyRegressor.magic_inception import magic_inception
 from utils import *
 
 # % Data Loading
-print('loading data')
-with open('pickle_data/gamma_energy_numpy_train.pkl', 'rb') as f:
-    x_train = pickle.load(f)
+x_train, y_train, x_test, y_test, input_shape = load_magic_data(logx=False, energy_th=2)
 
-with open('pickle_data/energy_train.pkl', 'rb') as f:
-    raw_energy_train = pickle.load(f)
+model_reg = magic_inception(input_shape=input_shape, num_filters_first_conv=132, dropout=0, num_classes=1)
 
-# y_train = raw_energy_train
-y_train = np.log10(raw_energy_train)
+model_reg.compile(optimizer='adam', loss='mse')
 
-with open('pickle_data/gamma_energy_numpy_test.pkl', 'rb') as f:
-    x_test = pickle.load(f)
+net_name = 'energy_class_reg_magicInception_CBAM_th2'
 
-with open('pickle_data/energy_test.pkl', 'rb') as f:
-    raw_energy_test = pickle.load(f)
+early_stop = EarlyStopping(patience=8, min_delta=0.0001)
+nan_stop = TerminateOnNaN()
+check = ModelCheckpoint('/data/mariotti_data/checkpoints/' + net_name + '.hdf5', period=5)
+reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.4,
+                              patience=4, min_lr=0.000005)
 
-# y_test = raw_energy_test
-y_test = np.log10(raw_energy_test)
-
-print('Data dimensions:')
-print(x_train.shape, y_train.shape)
-print(x_test.shape, y_test.shape)
-
-# %
-batch_size = 256
-
-# input image dimensions
-img_rows, img_cols = 67, 68
-
-# %
-if keras.backend.image_data_format() == 'channels_first':
-    x_train = x_train.reshape(x_train.shape[0], 1, img_rows, img_cols)
-    x_test = x_test.reshape(x_test.shape[0], 1, img_rows, img_cols)
-    input_shape = (1, img_rows, img_cols)
-else:
-    x_train = x_train.reshape(x_train.shape[0], img_rows, img_cols, 1)
-    x_test = x_test.reshape(x_test.shape[0], img_rows, img_cols, 1)
-    input_shape = (img_rows, img_cols, 1)
-
-print('x_train shape:', x_train.shape)
-print(x_train.shape[0], 'train samples')
-print(x_test.shape[0], 'test samples')
-
-# # %%
-# from models import tinyDarknet
-# tinyDarknet_nn = tinyDarknet(x_train, y_train, num_class=1)
-# tinyDarknet_nn.summary()
-
+result = model_reg.fit(x_train, y_train,
+                       batch_size=512,
+                       epochs=100,
+                       verbose=1,
+                       validation_data=(x_test, y_test),
+                       callbacks=[early_stop, nan_stop, reduce_lr, check])
 
 # %%
+
+
+y_pred = model_reg.predict(x_test)
+plot_gaussian_error(y_test, y_pred, net_name=net_name + '_10bin', num_bins=10)
+# plot_gaussian_error(y_test, y_pred, net_name=net_name + '_20bin', num_bins=20)
+
 # %
-# #
-num_classes = 1
-energy_regressor_net = Sequential()
-energy_regressor_net.add(Conv2D(32, kernel_size=(3, 3),
-                                activation='relu',
-                                input_shape=input_shape))
-energy_regressor_net.add(Conv2D(32, (1, 1), activation='relu'))
-
-energy_regressor_net.add(Conv2D(64, (3, 3), activation='relu'))
-energy_regressor_net.add(Conv2D(64, (1, 1), activation='relu'))
-energy_regressor_net.add(MaxPooling2D(pool_size=(2, 2)))
-
-energy_regressor_net.add(Conv2D(128, (3, 3), activation='relu'))
-energy_regressor_net.add(Conv2D(64, (1, 1), activation='relu'))
-energy_regressor_net.add(MaxPooling2D(pool_size=(2, 2)))
-
-energy_regressor_net.add(Conv2D(128, (3, 3), activation='relu'))
-energy_regressor_net.add(Conv2D(64, (1, 1), activation='relu'))
-
-energy_regressor_net.add(Conv2D(128, (3, 3), activation='relu'))
-energy_regressor_net.add(Conv2D(64, (1, 1), activation='relu'))
-
-energy_regressor_net.add(Conv2D(256, (3, 3), activation='relu'))
-energy_regressor_net.add(Conv2D(64, (1, 1), activation='relu'))
-
-energy_regressor_net.add(Conv2D(256, (3, 3), activation='relu'))
-
-energy_regressor_net.add(GlobalAveragePooling2D())
-
-# energy_regressor_net.add(Flatten())
-# energy_regressor_net.add(Dense(100, activation='relu'))
-# energy_regressor_net.add(Dropout(0.5))
-# energy_regressor_net.add(Dense(30, activation='relu'))
-
-energy_regressor_net.add(Dense(num_classes, activation='linear'))
-
-energy_regressor_net.summary()
-
-# %% Compile and fit
-
-model = energy_regressor_net
-
-loss, std_err, std_error_log = train_adam_sgd(model,
-                                              x_train, y_train, x_test, y_test,
-                                              log_dir_tensorboard='test_dir_lin',
-                                              net_name='deepernet_log')
+plot_hist2D(y_test, y_pred, net_name=net_name, num_bins=50)

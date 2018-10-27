@@ -5,13 +5,14 @@ from sklearn.preprocessing import LabelEncoder
 
 from utils import *
 
-# %% Load the model
-x_train, y_train, x_test, y_test, input_shape = load_magic_data()
+# % Load the model
+x_train, y_train, x_test, y_test, input_shape = load_magic_data(energy_th=2)
 
-num_classes = 10
-net_name = 'energy_class_crossentropy_inc_' + str(num_classes) + 'class'
-filepath = '/data/mariotti_data/checkpoints/grid_inc_filt_energy_class_crossentropy_inc_10class.hdf5'  # '/data/mariotti_data/checkpoints/grid_inc_filt_inc_' + net_name + '.hdf5'
+net_name = 'energy_class_reg_magicInception_CBAM_th2'
+filepath = '/data/mariotti_data/checkpoints/' + net_name + '.hdf5'  # '/data/mariotti_data/checkpoints/grid_inc_filt_inc_' + net_name + '.hdf5'
 regressor = load_model(filepath)
+
+# %%
 # custom_objects={'std_error': std_error, 'mean_error': mean_error})
 
 # % Load the test data and predict
@@ -120,12 +121,12 @@ model2.fit(x_train, y_train,
            callbacks=[early_stop, nan_stop, reduce_lr, check])
 
 # %%
-y_pred = model2.predict(x_test)
-# %
-plot_gaussian_error(y_test, y_pred, net_name='inc_200_doubletrain_mae_sgd_sig10_lin_minust2freeze' + '20bin',
-                    num_bins=20)
-# %
-plot_hist2D(y_test, y_pred, net_name='inc_200_doubletrain_mae_sgd_sig10_lin_minust2freeze', num_bins=50)
+y_pred = regressor.predict(x_test)
+# %%
+plot_gaussian_error(y_test, y_pred, net_name=net_name + '4bin',
+                    num_bins=4)
+# %%
+plot_hist2D(y_test, y_pred, net_name=net_name, num_bins=50)
 
 # %%
 del model2
