@@ -11,7 +11,7 @@ from utils import *
 x_train, y_train, x_test, y_test, input_shape = load_magic_data(logx=False, energy_th=2)
 print(input_shape)
 
-num_classes = 8
+num_classes = 9
 
 values_bin_train, bins = bin_data(y_train, num_bins=num_classes)
 values_bin_test, _ = bin_data(y_test, num_bins=num_classes, bins=bins)
@@ -34,7 +34,7 @@ y_test_keras_cat = to_categorical(y_test_cat, num_classes=num_classes)
 # model_class.compile(loss=keras.losses.binary_crossentropy,
 #                     optimizer=keras.optimizers.Adadelta(),
 #                     metrics=['accuracy'])
-model_class = magic_inception(input_shape=input_shape, num_filters_first_conv=96, dropout=0, num_classes=num_classes)
+model_class = magic_inception(input_shape=input_shape, num_filters_first_conv=132, dropout=0, num_classes=num_classes)
 # model_class = deep_magic(input_shape, 'relu', num_classes)
 
 model_class.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['acc'])
@@ -76,8 +76,8 @@ plt.savefig('/data/mariotti_data/pics/confusion_matrix_' + net_name + '.jpg')
 # %%
 # %
 y_pred = encoder.inverse_transform(np.argmax(y_pred_hot, 1))
-plot_gaussian_error(y_test, y_pred, net_name=net_name + '_20bin', num_bins=20)
-plot_gaussian_error(y_test, y_pred, net_name=net_name + '_10bin', num_bins=10)
+# plot_gaussian_error(y_test, y_pred, net_name=net_name + '_20bin', num_bins=20)
+plot_gaussian_error(y_test, y_pred, net_name=net_name + '_' + str(num_classes) + 'bin', num_bins=num_classes)
 
 # %
 plot_hist2D(y_test, y_pred, net_name=net_name, num_bins=50)
