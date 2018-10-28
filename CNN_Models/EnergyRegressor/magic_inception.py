@@ -89,7 +89,7 @@ def common_shit(input_layer, dropout=0.05):
     # out = SpatialDropout2D(dropout)(out)
     out = ReLU()(input_layer)
     out = BatchNormalization(center=False, scale=False)(out)
-    out = cbam_block(out, ratio=8)
+    # out = cbam_block(out, ratio=8)
 
     return out
 
@@ -103,7 +103,7 @@ def inception_module(input, dropout, num_filters, do_res=False):
     tower_2 = Conv2D(num_filters, (1, 1), padding='same')(input)
     tower_2 = common_shit(tower_2, dropout)
     tower_2 = Conv2D(num_filters, (4, 4), padding='same')(tower_2)
-    tower_1 = common_shit(tower_1, dropout)
+    tower_2 = common_shit(tower_2, dropout)
 
     tower_3 = Conv2D(num_filters, (3, 1), strides=(1, 1), padding='same')(input)
     tower_3 = Conv2D(num_filters, (1, 3), strides=(1, 1), padding='same')(tower_3)

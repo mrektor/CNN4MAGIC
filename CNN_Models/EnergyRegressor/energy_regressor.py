@@ -11,7 +11,7 @@ model_reg = magic_inception(input_shape=input_shape, num_filters_first_conv=132,
 
 model_reg.compile(optimizer='adam', loss='mse')
 
-net_name = 'energy_class_reg_magicInception_CBAM_th2'
+net_name = 'energy_reg_magicInception_CBAM_th0_mse'
 
 early_stop = EarlyStopping(patience=8, min_delta=0.0001)
 nan_stop = TerminateOnNaN()
