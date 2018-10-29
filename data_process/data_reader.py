@@ -1,23 +1,24 @@
-import pickle
+import json
 import time
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
-from data_process.InterpolateMagic import InterpolateMagic
+from InterpolateMagic import InterpolateMagic
 
 # %% Load the data
 bef = time.time()
-gamma_raw = pd.read_csv('/data/data/MC/M1/energy_gammas.txt', sep=" ", header=None)
+gamma_raw = pd.read_csv('/data/mariotti_data/CNN4MAGIC/dataset/MC/Energy_SrcPosCam/M1/allGammaM1.txt', sep=" ",
+                        header=None)
 now = time.time()
 print('time for loading')
 print(now - bef)
 # hadron = pd.read_csv('/data/data/Data/M2/20180912_M2_05075292.001_Y_SS433-e1-reg-W0.40+135.txt', sep=" ", header=None)
 
 # % Remove the trailing zeros
-gamma = gamma_raw.iloc[:, 2:1041]
+gamma = gamma_raw.iloc[:, 2 + 2:1041 + 2]
 energy = gamma_raw.iloc[:, 1]
+position = gamma_raw.iloc[:, 2:4]
 # gamma.loc[:, 'class'] = 'gamma'
 # hadron = hadron.iloc[:, 1:1040]
 # hadron.loc[:, 'class'] = 'hadron'
@@ -109,18 +110,24 @@ def get_train_test(ndarray, frac, secondarray=None):
     num_el = ndarray.shape[0]
     random_idxs = np.random.permutation(num_el)
     train_idx = random_idxs[:int(num_el * frac)]
-    test_idx = random_idxs[int(num_el * frac):]
+    non_train_idx = random_idxs[int(num_el * frac):]
+    validation_idx = non_train_idx[:len(non_train_idx)]
+    test_idx = non_train_idx[len(non_train_idx):]
     train = ndarray[train_idx, :, :]
+    validation = ndarray[validation_idx, :, :]
     test = ndarray[test_idx, :, :]
     if secondarray is not None:
         train_y = secondarray[train_idx]
+        validation_y = secondarray[validation_idx]
         test_y = secondarray[test_idx]
-        return train, test, train_y, test_y
+        return train, validation, test, train_y, validation_y, test_y
     else:
-        return train, test
+        return train, validation, test
 
 
-gamma_numpy_train, gamma_numpy_test, energy_train, energy_test = get_train_test(gamma_np, 0.8, secondarray=energy)
+gamma_numpy_train, gamma_numpy_val, gamma_numpy_test, energy_train, energy_val, energy_test = get_train_test(gamma_np,
+                                                                                                             0.5,
+                                                                                                             secondarray=energy)
 # hadron_numpy_train, hadron_numpy_test = get_train_test(hadron_np, 0.8)
 
 # %% Check the dimensions
@@ -131,17 +138,24 @@ print(energy_train.shape, energy_test.shape)
 # %% Save All
 print('Saving...')
 
-with open('pickle_data/gamma_energy_numpy_train.pkl', 'wb') as f:
-    pickle.dump(gamma_numpy_train, f, protocol=4)
+with open('/data/mariotti_data/CNN4MAGIC/pickle_data/gamma_energy_numpy_train.json', 'wb') as f:
+    json.dump(gamma_numpy_train, f)
 
-with open('pickle_data/gamma_energy_numpy_test.pkl', 'wb') as f:
-    pickle.dump(gamma_numpy_test, f, protocol=4)
+with open('/data/mariotti_data/CNN4MAGIC/pickle_data/gamma_energy_numpy_test.json', 'wb') as f:
+    json.dump(gamma_numpy_test, f)
 
-with open('pickle_data/energy_train.pkl', 'wb') as f:
-    pickle.dump(energy_train, f, protocol=4)
+with open('/data/mariotti_data/CNN4MAGIC/pickle_data/gamma_energy_numpy_val.json', 'wb') as f:
+    json.dump(gamma_numpy_val, f)
 
-with open('pickle_data/energy_test.pkl', 'wb') as f:
-    pickle.dump(energy_test, f, protocol=4)
+with open('/data/mariotti_data/CNN4MAGIC/pickle_data/energy_train.json', 'wb') as f:
+    json.dump(energy_train, f)
+
+with open('/data/mariotti_data/CNN4MAGIC/pickle_data/energy_val.json', 'wb') as f:
+    json.dump(energy_val, f)
+
+with open('/data/mariotti_data/CNN4MAGIC/pickle_data/energy_test.json', 'wb') as f:
+    json.dump(energy_test, f)
+
 
 # with open('pickle_data/hadron_numpy_train.pkl', 'wb') as f:
 #     pickle.dump(hadron_numpy_train, f)
