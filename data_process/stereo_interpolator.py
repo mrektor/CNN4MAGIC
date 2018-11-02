@@ -9,7 +9,6 @@ from InterpolateMagic import InterpolateMagic
 
 
 def stereo_interp_from_txt(filenames):
-
     filenameM1 = filenames[0]
     filenameM2 = filenames[1]
 
@@ -46,33 +45,16 @@ def stereo_interp_from_txt(filenames):
         pickle.dump(result, f, protocol=4)
 
 
-# %% Load all the filenames
-
+# Load all the filenames
 file1 = glob.glob('/data/mariotti_data/CNN4MAGIC/dataset/MC/Energy_SrcPosCam/M1/GA_M1_*.txt')
-file2 = glob.glob('/data/mariotti_data/CNN4MAGIC/dataset/MC/Energy_SrcPosCam/M1/GA_M1_*.txt')
+file2 = glob.glob('/data/mariotti_data/CNN4MAGIC/dataset/MC/Energy_SrcPosCam/M2/GA_M2_*.txt')
 
-list_of_files = np.array([file1, file2]).T.tolist()
+list_of_files = np.array([file1, file2]).T.tolist()  # Each line here is a couple of filenames of the same simulation
 
+# Start the parallel computing
 print('start multiprocessing')
-
 pool = multiprocessing.Pool(processes=16)
 pool.map(stereo_interp_from_txt, list_of_files)
 pool.close()
 pool.join()
 print('All done, everything is fine')
-
-# # %% Test
-#
-# idx = 2
-#
-# # Plot
-# plt.figure()
-# plt.subplot(1, 2, 1)
-# plt.imshow(result['M1_interp'][idx])
-# plt.title('M1')
-#
-# plt.subplot(1, 2, 2)
-# plt.imshow(result['M2_interp'][idx])
-# plt.title('M2')
-# plt.tight_layout()
-# plt.savefig('test.png')
