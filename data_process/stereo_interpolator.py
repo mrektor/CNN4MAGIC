@@ -14,7 +14,7 @@ def stereo_interp_from_txt(filenames):
 
     if filenameM1[-26:-7] != filenameM2[-26:-7]:
         print('Ostia! filename are different: ', filenameM1, filenameM2)
-        raise ValueError
+        return None
 
     m1 = pd.read_csv(filenameM1, sep=' ', header=None)
     m2 = pd.read_csv(filenameM2, sep=' ', header=None)
@@ -45,16 +45,36 @@ def stereo_interp_from_txt(filenames):
         pickle.dump(result, f, protocol=4)
 
 
+# %%
 # Load all the filenames
-file1 = glob.glob('/data/mariotti_data/CNN4MAGIC/dataset/MC/Energy_SrcPosCam/M1/GA_M1_*.txt')
-file2 = glob.glob('/data/mariotti_data/CNN4MAGIC/dataset/MC/Energy_SrcPosCam/M2/GA_M2_*.txt')
+fileM1 = glob.glob('/data/mariotti_data/CNN4MAGIC/dataset/MC/Energy_SrcPosCam/M1/GA_M1_*.txt')
+fileM2 = glob.glob('/data/mariotti_data/CNN4MAGIC/dataset/MC/Energy_SrcPosCam/M2/GA_M2_*.txt')
 
-list_of_files = np.array([file1, file2]).T.tolist()  # Each line here is a couple of filenames of the same simulation
+# %% check the same number of simulation
+nameM1 = np.array([fileM1[i][-26:-7] for i in range(len(fileM1))])
+nameM2 = np.array([fileM1[i][-26:-7] for i in range(len(fileM2))])
+name_mask1 = np.isin(nameM1, nameM2)
+name_mask2 = np.isin(nameM2, nameM1)
 
+# %%
+m1 = np.array(fileM1)[name_mask1]
+m2 = np.array(fileM2)[name_mask2]
+m1 = np.sort(m1)
+m2 = np.sort(m2)
+mFull = [(m1[i], m2[i]) for i in range(len(m1))]
+# %%
+# a = np.where(nameM1 == nameM2, m1, m2)
+# %%
+# print(mFull[10])
+# %%
+# Each line here is a couple of filenames of the same simulation
+# list_of_files = np.array([np.sort(fileM1)[name_mask1], np.sort(fileM2)[name_mask2]]).T.tolist()
+
+# %%
 # Start the parallel computing
 print('start multiprocessing')
 pool = multiprocessing.Pool(processes=16)
-pool.map(stereo_interp_from_txt, list_of_files)
+pool.map(stereo_interp_from_txt, mFull)
 pool.close()
 pool.join()
 print('All done, everything is fine')
