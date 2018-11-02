@@ -1,22 +1,11 @@
+import glob
+import multiprocessing
 import pickle
 
 import numpy as np
 import pandas as pd
-from pyspark import SparkConf, SparkContext
 
-# %%
-
-# %%
-config = SparkConf().setAppName('Homework 2').setMaster('local[*]')
-sc = SparkContext(conf=config)
-import matplotlib.pyplot as plt
 from InterpolateMagic import InterpolateMagic
-
-# %%
-filenameM1 = '/data/mariotti_data/CNN4MAGIC/dataset/MC/Energy_SrcPosCam/M1/GA_M1_za05to35_8_821318_Y_w0.txt'
-filenameM2 = '/data/mariotti_data/CNN4MAGIC/dataset/MC/Energy_SrcPosCam/M2/GA_M2_za05to35_8_821318_Y_w0.txt'
-
-filenames = [filenameM1, filenameM2]
 
 
 def stereo_interp_from_txt(filenames):
@@ -26,6 +15,7 @@ def stereo_interp_from_txt(filenames):
 
     if filenameM1[-26:-7] != filenameM2[-26:-7]:
         print('Ostia! filename are different: ', filenameM1, filenameM2)
+        raise ValueError
 
     m1 = pd.read_csv(filenameM1, sep=' ', header=None)
     m2 = pd.read_csv(filenameM2, sep=' ', header=None)
@@ -56,31 +46,33 @@ def stereo_interp_from_txt(filenames):
         pickle.dump(result, f, protocol=4)
 
 
-# %%
-import glob
+# %% Load all the filenames
 
 file1 = glob.glob('/data/mariotti_data/CNN4MAGIC/dataset/MC/Energy_SrcPosCam/M1/GA_M1_*.txt')
 file2 = glob.glob('/data/mariotti_data/CNN4MAGIC/dataset/MC/Energy_SrcPosCam/M1/GA_M1_*.txt')
 
 list_of_files = np.array([file1, file2]).T.tolist()
 
-# %%
+print('start multiprocessing')
 
+pool = multiprocessing.Pool(processes=16)
+pool.map(stereo_interp_from_txt, list_of_files)
+pool.close()
+pool.join()
+print('All done, everything is fine')
 
-stereo_interp_from_txt(filenames)
-
-# %% Test
-
-idx = 2
-
-# Plot
-plt.figure()
-plt.subplot(1, 2, 1)
-plt.imshow(result['M1_interp'][idx])
-plt.title('M1')
-
-plt.subplot(1, 2, 2)
-plt.imshow(result['M2_interp'][idx])
-plt.title('M2')
-plt.tight_layout()
-plt.savefig('test.png')
+# # %% Test
+#
+# idx = 2
+#
+# # Plot
+# plt.figure()
+# plt.subplot(1, 2, 1)
+# plt.imshow(result['M1_interp'][idx])
+# plt.title('M1')
+#
+# plt.subplot(1, 2, 2)
+# plt.imshow(result['M2_interp'][idx])
+# plt.title('M2')
+# plt.tight_layout()
+# plt.savefig('test.png')
