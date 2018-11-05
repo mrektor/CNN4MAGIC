@@ -14,7 +14,7 @@ def stereo_interp_from_txt(filenames):
 
     if filenameM1[-26:-7] != filenameM2[-26:-7]:
         print('Ostia! filename are different: ', filenameM1, filenameM2)
-        return None
+        return None  # Escape
 
     m1 = pd.read_csv(filenameM1, sep=' ', header=None)
     m2 = pd.read_csv(filenameM2, sep=' ', header=None)
@@ -22,7 +22,7 @@ def stereo_interp_from_txt(filenames):
     trigger1 = np.array(m1.iloc[:, 0])
     trigger2 = np.array(m2.iloc[:, 0])
 
-    m1_idx_mask = np.isin(trigger1, trigger2)
+    m1_idx_mask = np.isin(trigger1, trigger2)  # TODO: check the smallest then do the isin accordingly
 
     trigger_values = m1.iloc[m1_idx_mask, 0].values
     position_1 = m1.iloc[m1_idx_mask, 2:4].values
@@ -46,22 +46,32 @@ def stereo_interp_from_txt(filenames):
 
 
 # %%
+def get_pair_match(a, b):
+    result = []
+    for i in a:
+        for j in b:
+            if i[-26:-7] == j[-26:-7]:
+                result.append((i, j))
+    return result
+
 # Load all the filenames
 fileM1 = glob.glob('/data/mariotti_data/CNN4MAGIC/dataset/MC/Energy_SrcPosCam/M1/GA_M1_*.txt')
 fileM2 = glob.glob('/data/mariotti_data/CNN4MAGIC/dataset/MC/Energy_SrcPosCam/M2/GA_M2_*.txt')
 
 # %% check the same number of simulation
-nameM1 = np.array([fileM1[i][-26:-7] for i in range(len(fileM1))])
-nameM2 = np.array([fileM1[i][-26:-7] for i in range(len(fileM2))])
-name_mask1 = np.isin(nameM1, nameM2)
-name_mask2 = np.isin(nameM2, nameM1)
+# nameM1 = np.array([fileM1[i][-26:-7] for i in range(len(fileM1))])
+# nameM2 = np.array([fileM1[i][-26:-7] for i in range(len(fileM2))])
+# name_mask1 = np.isin(nameM1, nameM2)
+# name_mask2 = np.isin(nameM2, nameM1)
+
+mFull = get_pair_match(fileM1, fileM2)
 
 # %%
-m1 = np.array(fileM1)[name_mask1]
-m2 = np.array(fileM2)[name_mask2]
-m1 = np.sort(m1)
-m2 = np.sort(m2)
-mFull = [(m1[i], m2[i]) for i in range(len(m1))]
+# m1 = np.array(fileM1)[name_mask1]
+# m2 = np.array(fileM2)[name_mask2]
+# m1 = np.sort(m1)
+# m2 = np.sort(m2)
+# mFull = [(m1[i], m2[i]) for i in range(len(m1))]
 # %%
 # a = np.where(nameM1 == nameM2, m1, m2)
 # %%
