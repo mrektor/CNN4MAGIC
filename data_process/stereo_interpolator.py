@@ -1,5 +1,6 @@
 import glob
 import multiprocessing
+import os
 import pickle
 
 import numpy as np
@@ -15,6 +16,14 @@ def stereo_interp_from_txt(filenames):
     if filenameM1[-26:-7] != filenameM2[-26:-7]:
         print('Ostia! filename are different: ', filenameM1, filenameM2)
         return None  # Escape
+
+    if os.stat(filenameM1).st_size != 0:
+        print('Empty file: ' + filenameM1)
+        return None
+
+    if os.stat(filenameM2).st_size != 0:
+        print('Empty file: ' + filenameM2)
+        return None
 
     m1 = pd.read_csv(filenameM1, sep=' ', header=None)
     m2 = pd.read_csv(filenameM2, sep=' ', header=None)
