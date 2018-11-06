@@ -19,6 +19,14 @@ def stereo_interp_from_txt(filenames):
     m1 = pd.read_csv(filenameM1, sep=' ', header=None)
     m2 = pd.read_csv(filenameM2, sep=' ', header=None)
 
+    if m1.shape[1] < 1000:
+        print('OSTIA! It is not full in columns the file:' + filenameM1)
+        return None
+
+    if m2.shape[1] < 1000:
+        print('OSTIA! It is not full in columns the file:' + filenameM2)
+        return None
+
     # put int trigger1 the values of the trigger of the txt that have the highest number of simulated events.
     # Not really elegant, but it should work.
     if m1.iloc[:, 0].shape[0] < m2.iloc[:, 0].shape[0]:
@@ -46,15 +54,15 @@ def stereo_interp_from_txt(filenames):
               'positionM1': position_1, 'positionM2': position_2,
               'M1_interp': m1_interp, 'M2_interp': m2_interp}
     print(filenameM1[-26:-7])
-    with open('/data2T/mariotti_data_2/energy_interp_stereo/result_' + filenameM1[-26:-7] + '.pkl',
+    with open('/data2T/mariotti_data_2/energy_MC_diffuse/result_' + filenameM1[-26:-7] + '.pkl',
               'wb') as f:
         pickle.dump(result, f, protocol=4)
 
 
 # %%
 # Load all the filenames
-fileM1 = glob.glob('/data/mariotti_data/CNN4MAGIC/dataset/MC/Energy_SrcPosCam/M1/GA_M1_*.txt')
-fileM2 = glob.glob('/data/mariotti_data/CNN4MAGIC/dataset/MC/Energy_SrcPosCam/M2/GA_M2_*.txt')
+fileM1 = glob.glob('/data/mariotti_data/CNN4MAGIC/dataset/MC/Diffuse/M1/GA_M1_*.txt')
+fileM2 = glob.glob('/data/mariotti_data/CNN4MAGIC/dataset/MC/Diffuse/M2/GA_M2_*.txt')
 
 
 def get_pair_match(a, b):
