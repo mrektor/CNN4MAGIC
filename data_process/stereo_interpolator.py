@@ -45,7 +45,7 @@ def stereo_interp_from_txt(filenames):
         trigger2 = np.array(m1.iloc[:, 0])
         trigger1 = np.array(m2.iloc[:, 0])
 
-    m1_idx_mask = np.isin(trigger1, trigger2)  # TODO: check the smallest then do the isin accordingly
+    m1_idx_mask = np.isin(trigger1, trigger2)
 
     trigger_values = m1.iloc[m1_idx_mask, 0].values
     position_1 = m1.iloc[m1_idx_mask, 2:4].values
@@ -63,15 +63,15 @@ def stereo_interp_from_txt(filenames):
               'positionM1': position_1, 'positionM2': position_2,
               'M1_interp': m1_interp, 'M2_interp': m2_interp}
     print(filenameM1[-26:-7])
-    with open('/data2T/mariotti_data_2/energy_MC_diffuse/result_' + filenameM1[-26:-7] + '.pkl',
+    with open('/data2T/mariotti_data_2/src_pos_cam/result_' + filenameM1[-26:-7] + '.pkl',
               'wb') as f:
         pickle.dump(result, f, protocol=4)
 
 
 # %%
 # Load all the filenames
-fileM1 = glob.glob('/data/mariotti_data/CNN4MAGIC/dataset/MC/Diffuse/M1/GA_M1_*.txt')
-fileM2 = glob.glob('/data/mariotti_data/CNN4MAGIC/dataset/MC/Diffuse/M2/GA_M2_*.txt')
+fileM1 = glob.glob('/data/mariotti_data/CNN4MAGIC/dataset/MC/Energy_SrcPosCam/M1/GA_M1_*.txt')
+fileM2 = glob.glob('/data/mariotti_data/CNN4MAGIC/dataset/MC/Energy_SrcPosCam/M2/GA_M2_*.txt')
 
 
 def get_pair_match(a, b):
@@ -88,7 +88,7 @@ mFull = get_pair_match(fileM1, fileM2)
 # %%
 # Start the parallel computing
 print('start multiprocessing')
-pool = multiprocessing.Pool(processes=16)
+pool = multiprocessing.Pool(processes=12)
 pool.map(stereo_interp_from_txt, mFull)
 pool.close()
 pool.join()

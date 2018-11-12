@@ -9,8 +9,7 @@ with open('/data2T/mariotti_data_2/energy_MC_diffuse/result_za05to35_8_821327_Y.
 
 # %%
 print(dict.keys())
-# %%
-dict['energy'][2]
+
 # %%
 for idx in range(len(dict['energy'])):
     plt.figure()
