@@ -15,6 +15,9 @@ ARRAY_COLUMNS = {
     'MMcEvt.fImpact': 'impact',
     'MMcEvt.fTelescopePhi': 'telescope_phi',
     'MMcEvt.fTelescopeTheta': 'telescope_theta',
+    'MSrcPosCam.fX': 'srcpos_x',
+    'MSrcPosCam.fY': 'srcpos_y',
+    'MRawEvtHeader.fStereoEvtNumber': 'stereo_evt_number'
 }
 
 PIXEL_COLUMNS = {
@@ -23,7 +26,7 @@ PIXEL_COLUMNS = {
 }
 
 logging.info('Opening file')
-filename = '/data/mariotti_data/data_process/GA_M1_za05to35_8_855599_Y_w0.root'
+filename = '/data/mariotti_data/download_magic/MC/GA_M2_za05to35_8_824312_Y_w0.root'
 f = uproot.open(filename)
 # f = uproot.open('../GA_za05to35_8_S_w0_1.root')
 
@@ -35,12 +38,21 @@ dfs = []
 
 df = tree.pandas.df(ARRAY_COLUMNS.keys())
 df.rename(columns=ARRAY_COLUMNS, inplace=True)
-df['event_id'] = ids
-df
+
+df = df[df['stereo_evt_number'] > 0]
 
 # %%
 df2 = tree.pandas.df(PIXEL_COLUMNS.keys())
+# df2 = df2[df['stereo_evt_number']>0]
 df2.rename(columns=PIXEL_COLUMNS, inplace=True)
 # %% EVENT START FROM 1
-event_idx = 1
-df2['photon_time'][event_idx]
+event_idx = df['event_id'].values
+# %%
+time = df2['photon_time'].loc[event_idx].unstack(level=-1)
+phe = df2['phe'].loc[event_idx].unstack(level=-1)
+# %%
+print(phe.shape)
+print(time.shape)
+print(event_idx.shape)
+
+# pix = df2['phe'][event_idx]
