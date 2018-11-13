@@ -178,7 +178,7 @@ mFull = get_pair_match(fileM1, fileM2)
 # %%
 # Start the parallel computing
 print('start multiprocessing')
-pool = multiprocessing.Pool(processes=12)
+pool = multiprocessing.Pool(processes=18)
 pool.map(stereo_interp_from_root, mFull)
 pool.close()
 pool.join()
