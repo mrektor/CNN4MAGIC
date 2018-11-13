@@ -135,11 +135,11 @@ def stereo_interp_from_root(filenames):
     m1_interp = np.zeros((num_events, 2, 67, 68))
     m2_interp = np.zeros((num_events, 2, 67, 68))
     for idx in range(len(phe1)):
-        m1_interp[idx, 0, :, :] = interpolator.interpolate(time1.iloc[idx, :].values, remove_last=False, plot=False)
-        m1_interp[idx, 1, :, :] = interpolator.interpolate(phe1.iloc[idx, :].values, remove_last=False, plot=False)
+        m1_interp[idx, 0, :, :] = interpolator.interpolate(time1.iloc[idx, :1039].values, remove_last=False, plot=False)
+        m1_interp[idx, 1, :, :] = interpolator.interpolate(phe1.iloc[idx, :1039].values, remove_last=False, plot=False)
 
-        m2_interp[idx, 0, :, :] = interpolator.interpolate(time2.iloc[idx, :].values, remove_last=False, plot=False)
-        m2_interp[idx, 1, :, :] = interpolator.interpolate(phe2.iloc[idx, :].values, remove_last=False, plot=False)
+        m2_interp[idx, 0, :, :] = interpolator.interpolate(time2.iloc[idx, :1039].values, remove_last=False, plot=False)
+        m2_interp[idx, 1, :, :] = interpolator.interpolate(phe2.iloc[idx, :1039].values, remove_last=False, plot=False)
 
     result = {'corsika_event_number_1': df1['corsika_event_number'].values,
               'corsika_event_number_2': df2['corsika_event_number'].values,
@@ -148,6 +148,7 @@ def stereo_interp_from_root(filenames):
               'src_X2': df2['srcpos_x'], 'src_Y2': df2['srcpos_y'],
               'M1_interp': m1_interp, 'M2_interp': m2_interp}
     print(filenameM1[-26:-7])
+
     with open('/data2T/mariotti_data_2/src_pos_cam/result_' + filenameM1[-26:-7] + '.pkl',
               'wb') as f:
         pickle.dump(result, f, protocol=4)
@@ -155,8 +156,12 @@ def stereo_interp_from_root(filenames):
 
 # %%
 # Load all the filenames
-fileM1 = glob.glob('/data/mariotti_data/CNN4MAGIC/dataset/MC/Energy_SrcPosCam/M1/GA_M1_*.txt')
-fileM2 = glob.glob('/data/mariotti_data/CNN4MAGIC/dataset/MC/Energy_SrcPosCam/M2/GA_M2_*.txt')
+# fileM1 = glob.glob('/data/mariotti_data/CNN4MAGIC/dataset/MC/Energy_SrcPosCam/M1/GA_M1_*.txt')
+# fileM2 = glob.glob('/data/mariotti_data/CNN4MAGIC/dataset/MC/Energy_SrcPosCam/M2/GA_M2_*.txt')
+
+
+fileM1 = glob.glob('/data/mariotti_data/download_magic/MC/GA_M1_*.root')
+fileM2 = glob.glob('/data/mariotti_data/download_magic/MC/GA_M2_*.root')
 
 
 def get_pair_match(a, b):
@@ -178,5 +183,3 @@ pool.map(stereo_interp_from_txt, mFull)
 pool.close()
 pool.join()
 print('All done, everything is fine')
-# %%
-print(ah)
