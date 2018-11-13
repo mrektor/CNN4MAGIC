@@ -149,7 +149,7 @@ def stereo_interp_from_root(filenames):
               'M1_interp': m1_interp, 'M2_interp': m2_interp}
     print(filenameM1[-26:-7])
 
-    with open('/data2T/mariotti_data_2/src_pos_cam/result_' + filenameM1[-26:-7] + '.pkl',
+    with open('/data2T/mariotti_data_2/interp_from_root/MC/result_' + filenameM1[-26:-7] + '.pkl',
               'wb') as f:
         pickle.dump(result, f, protocol=4)
 
@@ -179,7 +179,7 @@ mFull = get_pair_match(fileM1, fileM2)
 # Start the parallel computing
 print('start multiprocessing')
 pool = multiprocessing.Pool(processes=12)
-pool.map(stereo_interp_from_txt, mFull)
+pool.map(stereo_interp_from_root, mFull)
 pool.close()
 pool.join()
 print('All done, everything is fine')

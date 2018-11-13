@@ -19,8 +19,32 @@ print('loading...')
 # with open('pickle_data/hadron_numpy_train.pkl', 'rb') as f:
 #     hadron = pickle.load(f)
 
-with open('/data2T/mariotti_data_2/src_pos_cam/result_za05to35_8_821318_Y.pkl', 'rb') as f:
+with open('/data2T/mariotti_data_2/interp_from_root/MC/result_a05to35_8_821325_Y_.pkl', 'rb') as f:
     y_test = pickle.load(f)
+
+# %%
+a = y_test['M1_interp']
+b = y_test['M2_interp']
+for i in range(10):
+    event_idx = np.random.random_integers(0, 100)
+    event_pix = a[event_idx, 1, :, :]
+    event_time = a[event_idx, 0, :, :]
+    event_pix2 = b[event_idx, 1, :, :]
+    event_time2 = b[event_idx, 0, :, :]
+    fig, axs = plt.subplots(2, 2)
+
+    axs[0, 0].imshow(event_pix)
+    axs[0, 0].set_title('Pixels M1')
+    axs[0, 1].imshow(event_time)
+    axs[0, 1].set_title('Time M1')
+
+    axs[1, 0].imshow(event_pix2)
+    axs[1, 0].set_title('Pixels M2')
+    axs[1, 1].imshow(event_time2)
+    axs[1, 1].set_title('Time M2')
+    fig.suptitle('Energy ' + str(y_test['energy'][event_idx]))
+    # ax.colorbar()
+    plt.savefig('test' + str(i) + '.png')
 
 # %%
 sns.set()
