@@ -9,17 +9,17 @@ import seaborn as sns
 #     x_train = pickle.load(f)
 print('loading...')
 
-with open('pickle_data/energy_train.pkl', 'rb') as f:
-    y_train = pickle.load(f)
+# with open('pickle_data/energy_train.pkl', 'rb') as f:
+#     y_train = pickle.load(f)
+#
+# print('loading x...')
+# with open('pickle_data/gamma_energy_numpy_test.pkl', 'rb') as f:
+#     x_test = pickle.load(f)
+#
+# with open('pickle_data/hadron_numpy_train.pkl', 'rb') as f:
+#     hadron = pickle.load(f)
 
-print('loading x...')
-with open('pickle_data/gamma_energy_numpy_test.pkl', 'rb') as f:
-    x_test = pickle.load(f)
-
-with open('pickle_data/hadron_numpy_train.pkl', 'rb') as f:
-    hadron = pickle.load(f)
-
-with open('pickle_data/energy_test.pkl', 'rb') as f:
+with open('/data2T/mariotti_data_2/src_pos_cam/result_za05to35_8_821318_Y.pkl', 'rb') as f:
     y_test = pickle.load(f)
 
 # %%
