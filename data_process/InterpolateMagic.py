@@ -640,6 +640,25 @@ class InterpolateMagic:  # TODO make it parallel
             plt.show()
         return interpolated_result
 
+    def interp_pos(self, pos):
+        pos_x = pos[0]
+        pos_y = pos[1]
+        idx = np.argmin((self.__xcoord - pos_x) ** 2 + (self.__ycoord - pos_y) ** 2)  # index that give lowest MSE
+        # idx_y = np.argmin((self.__ycoord - pos_y)**2)  # index that give lowest MSE
+        # print(idx)
+        # print(idx)
+        values_pos = np.zeros(len(self.__xcoord))
+        values_pos[idx] = 10
+        interpolated_result = interpolate.griddata(points=(self.__xcoord, self.__ycoord),
+                                                   values=values_pos,
+                                                   xi=(self._XX, self._YY),
+                                                   fill_value=0,
+                                                   method='linear')
+        pos_int = np.where(interpolated_result == np.max(interpolated_result))
+        pos_int_x = pos_int[1][0]
+        pos_int_y = pos_int[0][0]
+        return pos_int_x, pos_int_y
+
 
 ## Test code
 # test = InterpolateMagic(10)
@@ -652,3 +671,58 @@ class InterpolateMagic:  # TODO make it parallel
 #     out = test.interpolate(ou, plot=True)
 #
 # print('time elapsed: = ', str(time.time() - bef))
+# %%
+# event_idx=33
+#
+# interpolator = InterpolateMagic(15)
+# en = [df['srcpos_x'].iloc[event_idx], df['srcpos_y'].iloc[event_idx]]
+# #%%
+# res = interpolator.interp_pos(en)
+# #%%
+# pos=np.where(res==np.max(res))
+# #%%
+# pos[1][0]
+# #%%
+# plt.figure()
+# plt.plot(time.values)
+# plt.plot(phe.values)
+# plt.legend(['time','phe'])
+# plt.title('Event '+ str(event_idx) + '. Energy = ' + str(df['energy'].iloc[event_idx]))
+# # plt.show()
+# plt.savefig('time_phe_fig' + str(event_idx) + '_M2_pos.png')
+#
+# #%%
+# plt.imshow(res)
+# plt.savefig('POSITION_yeye2.png')
+#
+# #%%
+# a = y_test['M1_interp']
+# b = y_test['M2_interp']
+# # event_idx = np.random.random_integers(0, 100)
+# # event_idx=y_test['M1_interp'].shape[0]
+# print(y_test['energy'][event_idx])
+# event_pix = a[event_idx, 1, :, :]
+# event_time = a[event_idx, 0, :, :]
+# event_pix2 = b[event_idx, 1, :, :]
+# event_time2 = b[event_idx, 0, :, :]
+# fig, axs = plt.subplots(2, 2)
+#
+# axs[0, 0].imshow(event_pix)
+# # axs[0, 0].colorbar()
+# axs[0, 0].plot(pos[1][0], pos[0][0],'xr')
+# axs[0, 0].set_title('Pixels M1')
+#
+# axs[0, 1].imshow(event_time)
+# axs[0, 1].plot(pos,'xr')
+# # axs[0, 1].colorbar()
+# axs[0, 1].set_title('Time M1')
+#
+# axs[1, 0].imshow(res)
+# plt.plot((pos[0][0], pos[1][0]),'xr')
+# axs[1, 0].set_title('Position M1')
+# axs[1, 1].imshow(event_time2)
+#
+# axs[1, 1].set_title('Time M2')
+# fig.suptitle('Event ' + str(i) + ' Energy ' + str(y_test['energy'][event_idx]))
+# plt.tight_layout()
+# plt.savefig('POS_wow3_1.png')
