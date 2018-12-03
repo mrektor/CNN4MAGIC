@@ -1,15 +1,18 @@
 import glob
 import pickle
 import random
+import time
 
 import keras
-import matplotlib.pyplot as plt
+# import matplotlib
+# matplotlib.use('TkAgg')
+# import matplotlib.pyplot as plt
 import numpy as np
 
 # %%
 fileList = glob.glob('/data2T/mariotti_data_2/interp_from_root/MC/*.pkl')
 random.shuffle(fileList)
-
+print(len(fileList))
 # %%
 trainList = fileList[:int(len(fileList) * 0.5)]
 valList = fileList[int(len(fileList) * 0.5):int(len(fileList) * 0.75)]
@@ -116,9 +119,11 @@ energy_regressor.compile(optimizer='adam', loss='mse')
 energy_regressor.summary()
 
 # %%
-num_epochs = 5
+num_epochs = 100
 tr_losses = []
 te_losses = []
+times = []
+
 for epoch in range(num_epochs):
 
     random.shuffle(trainList)
@@ -126,6 +131,7 @@ for epoch in range(num_epochs):
     print(f'Epoch {epoch}')
     print('=============')
 
+    bef = time.time()
     for batch in trainList:
         with open(batch, 'rb') as f:
             data = pickle.load(f)
@@ -135,6 +141,8 @@ for epoch in range(num_epochs):
         loss = energy_regressor.train_on_batch(x=[m1interp, m2interp], y=data['energy'])
         tr_losses.append(loss)
         print(f'Log Train loss: {np.log10(loss)}')
+    now = time.time()
+    times.append(now - bef)
 
     for batch in valList:
         with open(batch, 'rb') as f:
@@ -145,6 +153,15 @@ for epoch in range(num_epochs):
         te_losses.append(loss)
         print(f'Log Loss on validation set: {np.log10(loss)}')
 
+    # Model checkpoint
     energy_regressor.save('/data2T/mariotti_data_2/stereo_models/energy_regressor.h5')
-    plt.plot(tr_losses)
-    plt.plot()
+    with open('/data2T/mariotti_data_2/stereo_models/energy_regressor_losses.pkl',
+              'wb') as f:
+        pickle.dump({'train': tr_losses, 'test': te_losses}, f, protocol=4)
+    # Model online assessment
+    # plt.figure()
+    # plt.plot(tr_losses)
+    # plt.plot(te_losses)
+    # plt.title('Time for one full epoch: ' + str(np.mean(np.array(times))))
+    # plt.legend(['train loss','validation loss'])
+    # plt.savefig('/data2T/mariotti_data_2/stereo_models/energy_regressor_val_status.png')

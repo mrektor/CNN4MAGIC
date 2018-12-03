@@ -2,6 +2,7 @@
 from __future__ import print_function
 
 from CNN_Models.EnergyRegressor.magic_inception import magic_inception
+
 from utils import *
 
 # % Data Loading

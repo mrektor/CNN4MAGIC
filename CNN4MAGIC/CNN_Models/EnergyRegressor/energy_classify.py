@@ -2,7 +2,7 @@ from keras.utils.np_utils import to_categorical
 from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import LabelEncoder
 
-from CNN_Models.EnergyRegressor.magic_inception import magic_inception
+from CNN4MAGIC.CNN_Models.EnergyRegressor.magic_inception import magic_inception
 # from CNN_Models.EnergyRegressor.magic_inception import magic_inception
 # from magic_inception import magic_inception
 from utils import *
