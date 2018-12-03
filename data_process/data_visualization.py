@@ -23,10 +23,14 @@ with open('/data2T/mariotti_data_2/interp_from_root/MC/result_a05to35_8_821325_Y
     y_test = pickle.load(f)
 
 # %%
+en = y_test['energy']
+# %%
 a = y_test['M1_interp']
 b = y_test['M2_interp']
-for i in range(10):
-    event_idx = np.random.random_integers(0, 100)
+for i in range(1):
+    # event_idx = np.random.random_integers(0, 100)
+    event_idx = y_test['M1_interp'].shape[0]
+    print(y_test['energy'][event_idx])
     event_pix = a[event_idx, 1, :, :]
     event_time = a[event_idx, 0, :, :]
     event_pix2 = b[event_idx, 1, :, :]
@@ -42,9 +46,12 @@ for i in range(10):
     axs[1, 0].set_title('Pixels M2')
     axs[1, 1].imshow(event_time2)
     axs[1, 1].set_title('Time M2')
-    fig.suptitle('Energy ' + str(y_test['energy'][event_idx]))
+    fig.suptitle('Event ' + str(i) + ' Energy ' + str(y_test['energy'][event_idx]))
     # ax.colorbar()
-    plt.savefig('test' + str(i) + '.png')
+    # plt.show()
+    plt.savefig('/data/mariotti_data/CNN4MAGIC/pics/sanity_time_interp_pic/test' + str(i) + '.png')
+# %%
+c = b[9, 0, :, :]
 
 # %%
 sns.set()
@@ -102,3 +109,4 @@ for i in range(5):
     plt.title('Hadron')
     plt.colorbar()
     plt.savefig('hadron_example' + str(i) + '.png')
+

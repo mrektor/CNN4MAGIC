@@ -108,25 +108,25 @@ fig, axs = plt.subplots(10, 4, figsize=(6 * 2, 12 * 2))
 idx = 1
 for row in range(10):
     axs[row, 0].imshow(res['M1_interp'][idx, 1, :, :])
-    axs[row, 0].plot(res['pos_interp1'][idx][0], res['pos_interp1'][idx][1], 'xr', markersize=21)
+    axs[row, 0].plot(res['pos_interp1'][idx][0], res['pos_interp1'][idx][1], 'xr', markersize=18)
     axs[row, 0].set_title('M1, event ' + str(idx))
 
     axs[row, 1].imshow(res['M1_interp'][idx, 0, :, :])
-    axs[row, 1].plot(res['pos_interp1'][idx][0], res['pos_interp1'][idx][1], 'xr', markersize=21)
+    axs[row, 1].plot(res['pos_interp1'][idx][0], res['pos_interp1'][idx][1], 'xr', markersize=18)
     axs[row, 1].set_title('M1, Time')
 
     axs[row, 2].imshow(res['M2_interp'][idx, 1, :, :])
-    axs[row, 2].plot(res['pos_interp2'][idx][0], res['pos_interp2'][idx][1], 'xr', markersize=21)
+    axs[row, 2].plot(res['pos_interp2'][idx][0], res['pos_interp2'][idx][1], 'xr', markersize=18)
     axs[row, 2].set_title('M2, event ' + str(idx))
 
     axs[row, 3].imshow(res['M2_interp'][idx, 0, :, :])
-    axs[row, 3].plot(res['pos_interp2'][idx][0], res['pos_interp2'][idx][1], 'xr', markersize=21)
+    axs[row, 3].plot(res['pos_interp2'][idx][0], res['pos_interp2'][idx][1], 'xr', markersize=18)
     axs[row, 3].set_title('M2, Time')
     idx += 1
 
 plt.tight_layout()
 # fig.suptitle('Event ' + str(idx) + ' Energy = ' + str(res['energy'][idx]))
-plt.savefig('/data/mariotti_data/data_process/energy_time_pos/fig' + str(idx) + '.png')
+plt.savefig('/data/mariotti_data/data_process/energy_time_pos/new_fig' + str(idx) + '.png')
 plt.savefig('/data/mariotti_data/data_process/energy_time_pos/fig' + str(idx) + '.eps')
 plt.savefig('/data/mariotti_data/data_process/energy_time_pos/fig' + str(idx) + '.pdf')
 
