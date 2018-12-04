@@ -1,25 +1,15 @@
-import glob
-import pickle
-import random
-import time
-
 import keras
-# import matplotlib
-# matplotlib.use('TkAgg')
-# import matplotlib.pyplot as plt
 import numpy as np
-
-# %%
-fileList = glob.glob('/data2T/mariotti_data_2/interp_from_root/MC_channel_last/*.pkl')
-random.shuffle(fileList)
-print(len(fileList))
-# %%
-trainList = fileList[:int(len(fileList) * 0.5)]
-valList = fileList[int(len(fileList) * 0.5):int(len(fileList) * 0.75)]
-testList = fileList[int(len(fileList) * 0.75):]
-
-# %% model definition
+from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau, TerminateOnNaN
 from keras.layers import Dropout, GlobalAveragePooling2D, BatchNormalization, ReLU
+
+from CNN4MAGIC.CNN_Models.BigData.loader import load_data_train, load_data_val
+
+m1_tr, m2_tr, energy_tr = load_data_train()
+m1_val, m2_val, energy_val = load_data_val()
+
+energy_tr = np.log10(energy_tr)
+energy_val = np.log10(energy_val)
 
 
 def feats(x_train, input_shape, baseDim=16, padding="valid", dropout=0.1):
@@ -100,8 +90,8 @@ def feats(x_train, input_shape, baseDim=16, padding="valid", dropout=0.1):
 from keras.layers import Conv2D, MaxPooling2D, Input, Dense
 from keras.models import Model
 
-m1 = Input(shape=(67, 68, 2))
-m2 = Input(shape=(67, 68, 2))
+m1 = Input(shape=(67, 68, 2), name='m1')
+m2 = Input(shape=(67, 68, 2), name='m2')
 # %%
 out_a = feats(m1, (67, 68, 2))
 out_b = feats(m2, (67, 68, 2))
@@ -118,50 +108,16 @@ energy_regressor = Model(inputs=[m1, m2], outputs=out)
 energy_regressor.compile(optimizer='adam', loss='mse')
 energy_regressor.summary()
 
-# %%
-num_epochs = 100
-tr_losses = []
-te_losses = []
-times = []
+net_name = 'EnergyRegressorStereoTime'
+early_stop = EarlyStopping(patience=8, min_delta=0.0001)
+nan_stop = TerminateOnNaN()
+check = ModelCheckpoint('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints' + net_name + '.hdf5', period=5)
+reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.4,
+                              patience=4, min_lr=0.000005)
 
-for epoch in range(num_epochs):
-
-    random.shuffle(trainList)
-    print('=============')
-    print(f'Epoch {epoch}')
-    print('=============')
-
-    bef = time.time()
-    for batch in trainList:
-        with open(batch, 'rb') as f:
-            data = pickle.load(f)
-        m1interp = data['M1_interp']  # .reshape(data['M1_interp'].shape[0], 67, 68, 2)  # Channel last porca puttana
-        m2interp = data['M2_interp']  # .reshape(data['M2_interp'].shape[0], 67, 68, 2)  # Channel last porca puttana
-
-        loss = energy_regressor.train_on_batch(x=[m1interp, m2interp], y=data['energy'])
-        tr_losses.append(loss)
-        print(f'Log Train loss: {np.log10(loss)}')
-    now = time.time()
-    times.append(now - bef)
-
-    for batch in valList:
-        with open(batch, 'rb') as f:
-            data = pickle.load(f)
-        m1interp = data['M1_interp']  # .reshape(data['M1_interp'].shape[0], 67, 68, 2)  # Channel last porca puttana
-        m2interp = data['M2_interp']  #.reshape(data['M2_interp'].shape[0], 67, 68, 2)  # Channel last porca puttana
-        loss = energy_regressor.test_on_batch(x=[m1interp, m2interp], y=data['energy'])
-        te_losses.append(loss)
-        print(f'Log Loss on validation set: {np.log10(loss)}')
-
-    # Model checkpoint
-    energy_regressor.save('/data2T/mariotti_data_2/stereo_models/energy_regressor.h5')
-    with open('/data2T/mariotti_data_2/stereo_models/energy_regressor_losses.pkl',
-              'wb') as f:
-        pickle.dump({'train': tr_losses, 'test': te_losses}, f, protocol=4)
-    # Model online assessment
-    # plt.figure()
-    # plt.plot(tr_losses)
-    # plt.plot(te_losses)
-    # plt.title('Time for one full epoch: ' + str(np.mean(np.array(times))))
-    # plt.legend(['train loss','validation loss'])
-    # plt.savefig('/data2T/mariotti_data_2/stereo_models/energy_regressor_val_status.png')
+result = energy_regressor.fit({'m1': m1_tr, 'm2': m2_tr}, energy_tr,
+                              batch_size=128,
+                              epochs=100,
+                              verbose=1,
+                              validation_data=({'m1': m1_val, 'm2': m2_val}, energy_val),
+                              callbacks=[early_stop, nan_stop, reduce_lr, check])

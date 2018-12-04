@@ -1,3 +1,8 @@
+import glob
+import pickle
+import random
+import time
+
 import keras
 import numpy as np
 
@@ -54,3 +59,114 @@ class DataGenerator(keras.utils.Sequence):
         X, y = self.__data_generation(list_IDs_temp)
 
         return X, y
+
+
+def load_data_train():
+    fileList = glob.glob('/data2T/mariotti_data_2/interp_from_root/MC_channel_last/*.pkl')
+    random.seed(42)
+    random.shuffle(fileList)
+    # %%
+    befbef = time.time()
+    times = []
+    tot_items = 134997
+    full_energy = np.zeros(tot_items)
+    full_interp_M1 = np.zeros((tot_items, 67, 68, 2))
+    full_interp_M2 = np.zeros((tot_items, 67, 68, 2))
+
+    old = 0
+    print(f'number of files: {len(fileList)}')
+    print('start loading...')
+    for i, file in enumerate(fileList[:1500]):
+        if i % 5 == 0:
+            print('Loading training data: ' + str(int(i * 10000 / len(fileList[:1500])) / 100) + '%')
+        bef = time.time()
+        with open(file, 'rb') as f:
+            data = pickle.load(f)
+            num_items = len(data['energy'])
+            full_energy[old:old + num_items] = data['energy']
+            full_interp_M1[old:old + num_items, :, :, :] = data['M1_interp']
+            full_interp_M2[old:old + num_items, :, :, :] = data['M2_interp']
+            old = old + num_items
+        now = time.time()
+        times.append(now - bef)
+    nownow = time.time()
+
+    print('Number of items: ' + str(len(full_energy)))
+    print(f'Time for loading all the files: {nownow-befbef}')
+    print(f'Average time for loading one dict: {np.mean(np.array(times))}')
+
+    return full_interp_M1, full_interp_M2, full_energy
+
+
+def load_data_val():
+    fileList = glob.glob('/data2T/mariotti_data_2/interp_from_root/MC_channel_last/*.pkl')
+    random.seed(42)
+    random.shuffle(fileList)
+    # %%
+    befbef = time.time()
+    times = []
+    tot_items = 67322
+    full_energy = np.zeros(tot_items)
+    full_interp_M1 = np.zeros((tot_items, 67, 68, 2))
+    full_interp_M2 = np.zeros((tot_items, 67, 68, 2))
+
+    old = 0
+    print(f'number of files: {len(fileList[1500:2250])}')
+    print('start loading...')
+    for i, file in enumerate(fileList[1500:2250]):
+        if i % 5 == 0:
+            print('Loading validation data: ' + str(int(i * 10000 / len(fileList[1500:2250])) / 100) + '%')
+        bef = time.time()
+        with open(file, 'rb') as f:
+            data = pickle.load(f)
+            num_items = len(data['energy'])
+            full_energy[old:old + num_items] = data['energy']
+            full_interp_M1[old:old + num_items, :, :, :] = data['M1_interp']
+            full_interp_M2[old:old + num_items, :, :, :] = data['M2_interp']
+            old = old + num_items
+        now = time.time()
+        times.append(now - bef)
+    nownow = time.time()
+
+    print('Number of items: ' + str(len(full_energy)))
+    print(f'Time for loading all the files: {nownow-befbef}')
+    print(f'Average time for loading one dict: {np.mean(np.array(times))}')
+
+    return full_interp_M1, full_interp_M2, full_energy
+
+
+def load_data_test():
+    fileList = glob.glob('/data2T/mariotti_data_2/interp_from_root/MC_channel_last/*.pkl')
+    random.seed(42)
+    random.shuffle(fileList)
+    # %%
+    befbef = time.time()
+    times = []
+    tot_items = 67509
+    full_energy = np.zeros(tot_items)
+    full_interp_M1 = np.zeros((tot_items, 67, 68, 2))
+    full_interp_M2 = np.zeros((tot_items, 67, 68, 2))
+
+    old = 0
+    print(f'number of files: {len(fileList[2250:])}')
+    print('start loading...')
+    for i, file in enumerate(fileList[2250:]):
+        if i % 5 == 0:
+            print('Loading test data: ' + str(int(i * 10000 / len(fileList[2250:])) / 100) + '%')
+        bef = time.time()
+        with open(file, 'rb') as f:
+            data = pickle.load(f)
+            num_items = len(data['energy'])
+            full_energy[old:old + num_items] = data['energy']
+            full_interp_M1[old:old + num_items, :, :, :] = data['M1_interp']
+            full_interp_M2[old:old + num_items, :, :, :] = data['M2_interp']
+            old = old + num_items
+        now = time.time()
+        times.append(now - bef)
+    nownow = time.time()
+
+    print('Number of items: ' + str(len(full_energy)))
+    print(f'Time for loading all the files: {nownow-befbef}')
+    print(f'Average time for loading one dict: {np.mean(np.array(times))}')
+
+    return full_interp_M1, full_interp_M2, full_energy
