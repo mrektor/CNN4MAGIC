@@ -78,17 +78,17 @@ def stereo_interp_from_root(filenames):
 
     interpolator = InterpolateMagic(15)
     num_events = df1.shape[0]
-    m1_interp = np.zeros((num_events, 2, 67, 68))
-    m2_interp = np.zeros((num_events, 2, 67, 68))
+    m1_interp = np.zeros((num_events, 67, 68, 2))
+    m2_interp = np.zeros((num_events, 67, 68, 2))
     pos_interp1 = np.zeros((num_events, 2))
     pos_interp2 = np.zeros((num_events, 2))
     for idx in range(len(phe1)):
-        m1_interp[idx, 0, :, :] = interpolator.interpolate(time1.iloc[idx, :1039].values, remove_last=False, plot=False)
-        m1_interp[idx, 1, :, :] = interpolator.interpolate(phe1.iloc[idx, :1039].values, remove_last=False, plot=False)
+        m1_interp[idx, :, :, 0] = interpolator.interpolate(time1.iloc[idx, :1039].values, remove_last=False, plot=False)
+        m1_interp[idx, :, :, 1] = interpolator.interpolate(phe1.iloc[idx, :1039].values, remove_last=False, plot=False)
         pos_interp1[idx, :] = interpolator.interp_pos([df1['srcpos_x'].iloc[idx], df1['srcpos_y'].iloc[idx]])
 
-        m2_interp[idx, 0, :, :] = interpolator.interpolate(time2.iloc[idx, :1039].values, remove_last=False, plot=False)
-        m2_interp[idx, 1, :, :] = interpolator.interpolate(phe2.iloc[idx, :1039].values, remove_last=False, plot=False)
+        m2_interp[idx, :, :, 0] = interpolator.interpolate(time2.iloc[idx, :1039].values, remove_last=False, plot=False)
+        m2_interp[idx, :, :, 1] = interpolator.interpolate(phe2.iloc[idx, :1039].values, remove_last=False, plot=False)
         pos_interp2[idx, :] = interpolator.interp_pos([df2['srcpos_x'].iloc[idx], df2['srcpos_y'].iloc[idx]])
 
     result = {'corsika_event_number_1': df1['corsika_event_number'].values,
@@ -99,7 +99,7 @@ def stereo_interp_from_root(filenames):
               'pos_interp1': pos_interp1, 'pos_interp2': pos_interp2,
               'M1_interp': m1_interp, 'M2_interp': m2_interp}
 
-    with open('/data2T/mariotti_data_2/interp_from_root/MC/result_' + filenameM1[-26:-7] + '.pkl',
+    with open('/data2T/mariotti_data_2/interp_from_root/MC_channel_last/result_' + filenameM1[-26:-7] + '.pkl',
               'wb') as f:
         pickle.dump(result, f, protocol=4)
     print(f'Saved {filenameM1[-26:-7]}')
