@@ -18,7 +18,6 @@ energy_val = np.log10(energy_val)
 # LOAD and COMPILE model
 # m1 = Input(shape=(67, 68, 2), name='m1')
 # energy_regressor = magic_mobile()
-input_shape = (67, 68, 2)
 
 num_filt = 136
 energy_regressor = magic_inception(num_filt, num_classes=1, dropout=0, do_res=False)
