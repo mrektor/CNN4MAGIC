@@ -4,6 +4,8 @@ from keras.layers import Dropout, GlobalAveragePooling2D, BatchNormalization, Re
 from keras.models import Model
 
 
+# %%
+
 def feats(x_train, input_shape, baseDim=16, padding="valid", dropout=0.1):
     out = Conv2D(baseDim * 2, (3, 3), strides=(1, 1), use_bias=False, padding=padding,
                  input_shape=input_shape)(x_train)
@@ -98,11 +100,12 @@ def energy_stereo_time_v1():
     return energy_regressor
 
 
+#%%
 def bottleneck_block(x, expand=64, squeeze=16, stride=(1, 1)):
     m = Conv2D(expand, (1, 1))(x)
     m = BatchNormalization()(m)
     m = ReLU()(m)
-    m = DepthwiseConv2D((3, 3), strides=stride)(m)
+    m = DepthwiseConv2D((3, 3), strides=stride, padding='same')(m)
     m = BatchNormalization()(m)
     m = ReLU()(m)
     m = Conv2D(squeeze, (1, 1))(m)
@@ -119,26 +122,40 @@ def stem_mobilenetV2(input):
     out = BatchNormalization()(out)
     out = ReLU()(out)
 
-    out = MaxPooling2D((3, 3))(out)
+    out1 = MaxPooling2D((3, 3))(out)
 
-    out = bottleneck_block(out)
-
-    for _ in range(2):
-        out = bottleneck_block(out, expand=24 * 5, squeeze=24, stride=(2, 2))
+    out = bottleneck_block(out1, squeeze=32)
 
     for _ in range(3):
-        out = bottleneck_block(out, expand=32 * 5, squeeze=32, stride=(2, 2))
+        out = bottleneck_block(out, expand=24 * 5, squeeze=32, stride=(1, 1))
+
+    out = MaxPooling2D((2, 2))(out)
+
 
     for _ in range(4):
-        out = bottleneck_block(out, expand=64 * 5, squeeze=64, stride=(2, 2))
+        out = bottleneck_block(out, expand=32 * 5, squeeze=32, stride=(1, 1))
+
+    out = MaxPooling2D((2, 2))(out)
+
+    for _ in range(5):
+        out = bottleneck_block(out, expand=64 * 5, squeeze=32, stride=(1, 1))
 
     out = GlobalAveragePooling2D()(out)
 
     return out
 
 
-def simple_mono(input):
-    out = stem_mobilenetV2(input)
-    out = Dense(32)(out)
-    out = Dense(1)(out)
-    return out
+def magic_mobile():
+    m1 = Input(shape=(67, 68, 2), name='m1')
+    m2 = Input(shape=(67, 68, 2), name='m2')
+
+    last_out_1 = stem_mobilenetV2(m1)
+    last_out_2 = stem_mobilenetV2(m2)
+    concatenated = keras.layers.concatenate([last_out_1, last_out_2])
+    out = Dense(32)(concatenated)
+    out = BatchNormalization()(out)
+    out = ReLU()(out)
+    very_out = Dense(1)(out)
+
+    energy_regressor = Model([m1, m2], outputs=very_out)
+    return energy_regressor

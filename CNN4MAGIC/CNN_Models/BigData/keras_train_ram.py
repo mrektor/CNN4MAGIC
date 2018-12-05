@@ -1,24 +1,26 @@
+import pickle
+
 import numpy as np
 from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau, TerminateOnNaN
 from keras.layers import Input
 
-from CNN4MAGIC.CNN_Models.BigData.loader import load_data_test
-from CNN4MAGIC.CNN_Models.BigData.stereo_models import simple_mono
+from CNN4MAGIC.CNN_Models.BigData.loader import load_data_test, load_data_val, load_data_train
+from CNN4MAGIC.CNN_Models.BigData.stereo_models import magic_mobile
 from CNN4MAGIC.CNN_Models.BigData.utils import plot_hist2D, plot_gaussian_error
 
 # %%
 # LOAD DATA
-# m1_tr, m2_tr, energy_tr = load_data_train()
-# m1_val, m2_val, energy_val = load_data_val()
+m1_tr, m2_tr, energy_tr = load_data_train()
+m1_val, m2_val, energy_val = load_data_val()
 
 energy_tr = np.log10(energy_tr)
 energy_val = np.log10(energy_val)
 # %%
 # LOAD and COMPILE model
 m1 = Input(shape=(67, 68, 2), name='m1')
-energy_regressor = simple_mono(m1)
+energy_regressor = magic_mobile()
 
-energy_regressor.compile(optimizer='adam', loss='mse')
+energy_regressor.compile(optimizer='adadelta', loss='mse')
 energy_regressor.summary()
 # %%
 
@@ -51,4 +53,10 @@ plot_hist2D(y_test, y_pred, fig_folder='/data/mariotti_data/CNN4MAGIC/CNN_Models
 
 plot_gaussian_error(y_test, y_pred, net_name=net_name + '_10bin', num_bins=10,
                     fig_folder='/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/pics/')
-print('All done')
+
+# %%
+print('Saving History')
+with open('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/' + net_name + '_history.pkl', 'wb') as f:
+    pickle.dump(result, f, protocol=4)
+
+print('All done, everything went fine.')
