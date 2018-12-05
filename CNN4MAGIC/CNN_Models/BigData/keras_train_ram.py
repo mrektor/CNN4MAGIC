@@ -2,11 +2,9 @@ import pickle
 
 import numpy as np
 from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau, TerminateOnNaN
-from keras.layers import Input
-from keras.optimizers import Adadelta
 
 from CNN4MAGIC.CNN_Models.BigData.loader import load_data_test, load_data_val, load_data_train
-from CNN4MAGIC.CNN_Models.BigData.stereo_models import magic_mobile
+from CNN4MAGIC.CNN_Models.BigData.stereo_models import magic_inception
 from CNN4MAGIC.CNN_Models.BigData.utils import plot_hist2D, plot_gaussian_error
 
 # %%
@@ -18,15 +16,19 @@ energy_tr = np.log10(energy_tr)
 energy_val = np.log10(energy_val)
 # %%
 # LOAD and COMPILE model
-m1 = Input(shape=(67, 68, 2), name='m1')
-energy_regressor = magic_mobile()
+# m1 = Input(shape=(67, 68, 2), name='m1')
+# energy_regressor = magic_mobile()
+input_shape = (67, 68, 2)
 
-opt = Adadelta(lr=2.0, rho=0.95, epsilon=None, decay=0.0)
-energy_regressor.compile(optimizer='adadelta', loss='mse')
+num_filt = 136
+energy_regressor = magic_inception(num_filt, num_classes=1, dropout=0, do_res=False)
+energy_regressor.compile(optimizer='adam', loss='mse')
+
 energy_regressor.summary()
+
 # %%
 
-net_name = 'MagicMobile'
+net_name = 'Inception-SingleStem'
 early_stop = EarlyStopping(patience=8, min_delta=0.0001)
 nan_stop = TerminateOnNaN()
 check = ModelCheckpoint('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints/' + net_name + '.hdf5',
