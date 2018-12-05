@@ -126,18 +126,22 @@ def stem_mobilenetV2(input):
 
     out = bottleneck_block(out1, squeeze=32)
 
-    for _ in range(3):
+    for _ in range(5):
         out = bottleneck_block(out, expand=24 * 5, squeeze=32, stride=(1, 1))
 
     out = MaxPooling2D((2, 2))(out)
 
-
-    for _ in range(4):
+    for _ in range(5):
         out = bottleneck_block(out, expand=32 * 5, squeeze=32, stride=(1, 1))
 
     out = MaxPooling2D((2, 2))(out)
 
     for _ in range(5):
+        out = bottleneck_block(out, expand=64 * 5, squeeze=32, stride=(1, 1))
+
+    out = MaxPooling2D((2, 2))(out)
+
+    for _ in range(2):
         out = bottleneck_block(out, expand=64 * 5, squeeze=32, stride=(1, 1))
 
     out = GlobalAveragePooling2D()(out)
@@ -152,7 +156,10 @@ def magic_mobile():
     last_out_1 = stem_mobilenetV2(m1)
     last_out_2 = stem_mobilenetV2(m2)
     concatenated = keras.layers.concatenate([last_out_1, last_out_2])
-    out = Dense(32)(concatenated)
+    out = Dense(64)(concatenated)
+    out = BatchNormalization()(out)
+    out = ReLU()(out)
+    out = Dense(10)(out)
     out = BatchNormalization()(out)
     out = ReLU()(out)
     very_out = Dense(1)(out)
