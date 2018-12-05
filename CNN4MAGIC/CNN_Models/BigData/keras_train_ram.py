@@ -111,7 +111,7 @@ energy_regressor.summary()
 net_name = 'EnergyRegressorStereoTime'
 early_stop = EarlyStopping(patience=8, min_delta=0.0001)
 nan_stop = TerminateOnNaN()
-check = ModelCheckpoint('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints' + net_name + '.hdf5', period=5)
+check = ModelCheckpoint('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints' + net_name + '.hdf5', period=1)
 reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.4,
                               patience=4, min_lr=0.000005)
 
