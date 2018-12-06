@@ -125,8 +125,8 @@ def stereo_interp_from_root(filenames):
         print('Empty file: ' + filenameM2)
         return None
 
-    df1, phe1, time1 = read_from_root(filenameM1)
-    df2, phe2, time2 = read_from_root(filenameM2)
+    df1, extras1, phe1, time1 = read_from_root(filenameM1, want_extra=True, pruning=True)
+    df2, extras2, phe2, time2 = read_from_root(filenameM2, want_extra=True, pruning=True)
 
     interpolator = InterpolateMagic(15)
     num_events = df1.shape[0]
@@ -148,6 +148,8 @@ def stereo_interp_from_root(filenames):
               'energy': df1['energy'].values,
               'src_X1': df1['srcpos_x'], 'src_Y1': df1['srcpos_y'],
               'src_X2': df2['srcpos_x'], 'src_Y2': df2['srcpos_y'],
+              'extras1': extras1,
+              'extras2': extras2,
               'pos_interp1': pos_interp1, 'pos_interp2': pos_interp2,
               'M1_interp': m1_interp, 'M2_interp': m2_interp}
 
@@ -216,7 +218,6 @@ def stereo_interp_from_txt(filenames):
     with open('/data2T/mariotti_data_2/src_pos_cam/result_' + filenameM1[-26:-7] + '.pkl',
               'wb') as f:
         pickle.dump(result, f, protocol=4)
-
 
 
 # %%
