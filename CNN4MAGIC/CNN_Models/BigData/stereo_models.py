@@ -149,7 +149,7 @@ def stem_mobilenetV2(input):
     return out
 
 
-def magic_mobile():
+def magic_mobile_doubleStem():
     m1 = Input(shape=(67, 68, 2), name='m1')
     m2 = Input(shape=(67, 68, 2), name='m2')
 
@@ -157,6 +157,26 @@ def magic_mobile():
     last_out_2 = stem_mobilenetV2(m2)
     concatenated = keras.layers.concatenate([last_out_1, last_out_2])
     out = Dense(64)(concatenated)
+    out = BatchNormalization()(out)
+    out = ReLU()(out)
+    out = Dense(10)(out)
+    out = BatchNormalization()(out)
+    out = ReLU()(out)
+    very_out = Dense(1)(out)
+
+    energy_regressor = Model([m1, m2], outputs=very_out)
+    return energy_regressor
+
+
+def magic_mobile_singleStem():
+    m1 = Input(shape=(67, 68, 2), name='m1')
+    m2 = Input(shape=(67, 68, 2), name='m2')
+
+    input_img = concatenate([m1, m2])
+
+    last_out = stem_mobilenetV2(input_img)
+
+    out = Dense(64)(last_out)
     out = BatchNormalization()(out)
     out = ReLU()(out)
     out = Dense(10)(out)
@@ -211,8 +231,8 @@ def inception_module(input, dropout, num_filters, do_res=False):
 
 def magic_inception(num_filters_first_conv, dropout, num_classes,
                     do_res=False):  # num filters conv = 270 ist goot
-    m1 = Input(shape=(67, 68, 2), name='m1')
-    m2 = Input(shape=(67, 68, 2), name='m2')
+    m1 = Input(shape=(67, 68, 1), name='m1')
+    m2 = Input(shape=(67, 68, 1), name='m2')
     input_img = concatenate([m1, m2])
 
     first_step = Conv2D(filters=int(num_filters_first_conv), kernel_size=(5, 5), strides=(2, 2))(input_img)

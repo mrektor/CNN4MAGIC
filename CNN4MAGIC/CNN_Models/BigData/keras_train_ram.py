@@ -4,7 +4,7 @@ import numpy as np
 from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau, TerminateOnNaN
 
 from CNN4MAGIC.CNN_Models.BigData.loader import load_data_test, load_data_val, load_data_train
-from CNN4MAGIC.CNN_Models.BigData.stereo_models import magic_inception
+from CNN4MAGIC.CNN_Models.BigData.stereo_models import magic_mobile_singleStem
 from CNN4MAGIC.CNN_Models.BigData.utils import plot_hist2D, plot_gaussian_error
 
 # %%
@@ -20,14 +20,16 @@ energy_val = np.log10(energy_val)
 # energy_regressor = magic_mobile()
 
 num_filt = 136
-energy_regressor = magic_inception(num_filt, num_classes=1, dropout=0, do_res=False)
+# energy_regressor = magic_inception(num_filt, num_classes=1, dropout=0, do_res=False)
+# energy_regressor.compile(optimizer='adam', loss='mse')
+energy_regressor = magic_mobile_singleStem()
 energy_regressor.compile(optimizer='adam', loss='mse')
 
 energy_regressor.summary()
 
 # %%
 
-net_name = 'Inception-SingleStem'
+net_name = 'mobile-SingleStem'
 early_stop = EarlyStopping(patience=8, min_delta=0.0001)
 nan_stop = TerminateOnNaN()
 check = ModelCheckpoint('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints/' + net_name + '.hdf5',
@@ -35,7 +37,7 @@ check = ModelCheckpoint('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkp
                         save_best_only=True)
 reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.4,
                               patience=4, min_lr=0.000005)
-
+# [:,:,:,1].reshape((134997, 67, 68, 1))
 result = energy_regressor.fit({'m1': m1_tr, 'm2': m2_tr}, energy_tr,
                               batch_size=256,
                               epochs=100,
