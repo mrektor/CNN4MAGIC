@@ -118,7 +118,7 @@ from ctapipe.image.timing_parameters import timing_parameters
 from ctapipe.image.cleaning import number_of_islands
 
 
-def compute_stuff(phe_df, only_relevant=False):
+def compute_stuff(phe_df, time_df, only_relevant=False):
     camera_MAGIC = CameraGeometry.from_name('MAGICCamMars')
     all_events = []
     for i in range(phe_df.shape[0]):
@@ -130,18 +130,19 @@ def compute_stuff(phe_df, only_relevant=False):
         all_data = {}
 
         hillas_params = hillas_parameters(camera_MAGIC, event_image_cleaned)
-        leakage_params = leakage(camera_MAGIC, phe, clean)
+        leakage_params = leakage(camera_MAGIC, event_image, clean)
 
         all_data.update(hillas_params)
         all_data.update(leakage_params)
 
         if not only_relevant:
-            conc = concentration(camera_MAGIC, phe, hillas_params)
+            event_time = time_df.iloc[i, :1039]
+            conc = concentration(camera_MAGIC, event_image, hillas_params)
             n_islands, island_id = number_of_islands(camera_MAGIC, clean)
             timing = timing_parameters(
                 camera_MAGIC[clean],
-                phe[clean],
-                time[clean],
+                event_image[clean],
+                event_time[clean],
                 hillas_params,
             )
             all_data.update(conc)
@@ -155,7 +156,7 @@ def compute_stuff(phe_df, only_relevant=False):
 # %%
 print(phe1.shape)
 # %%
-testissimo2 = compute_stuff(phe1, only_relevant=True)
+testissimo2 = compute_stuff(phe1, time1, only_relevant=False)
 
 # %%
 a = []
