@@ -192,39 +192,39 @@ def bottleneck_block(x, expand=64, squeeze=16, stride=(1, 1)):
 
 
 def stem_mobilenetV2(input):
-    out = Conv2D(64, kernel_size=(5, 5), strides=(1, 1))(input)
+    out = Conv2D(64, kernel_size=(5, 5), strides=(2, 2))(input)
     out = BatchNormalization()(out)
-    out = ReLU()(out)
     out = cbam_block(out)
+    out = ReLU()(out)
 
-    out = MaxPooling2D((2, 2))(out)
+    # out = MaxPooling2D((2, 2))(out)
 
     out = Conv2D(32, kernel_size=(3, 3), strides=(1, 1))(out)
     out = BatchNormalization()(out)
-    out = ReLU()(out)
     out = cbam_block(out)
+    out = ReLU()(out)
 
     out1 = MaxPooling2D((2, 2))(out)
 
     out = bottleneck_block(out1, squeeze=32)
 
-    for _ in range(4):
+    for _ in range(6):
         out = bottleneck_block(out, expand=24 * 5, squeeze=32, stride=(1, 1))
 
     out = MaxPooling2D((2, 2))(out)
 
-    for _ in range(5):
+    for _ in range(7):
         out = bottleneck_block(out, expand=32 * 5, squeeze=32, stride=(1, 1))
 
     out = MaxPooling2D((2, 2))(out)
 
-    for _ in range(6):
+    for _ in range(8):
         out = bottleneck_block(out, expand=64 * 5, squeeze=32, stride=(1, 1))
 
-    out = MaxPooling2D((2, 2))(out)
-
-    for _ in range(5):
-        out = bottleneck_block(out, expand=64 * 5, squeeze=32, stride=(1, 1))
+    # out = MaxPooling2D((2, 2))(out)
+    #
+    # for _ in range(5):
+    #     out = bottleneck_block(out, expand=64 * 5, squeeze=32, stride=(1, 1))
 
     out = GlobalAveragePooling2D()(out)
 
