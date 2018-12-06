@@ -29,7 +29,7 @@ energy_regressor.summary()
 
 # %%
 
-net_name = 'mobile-SingleStem'
+net_name = 'mobileCBAM-fullyCNN-SingleStem'
 early_stop = EarlyStopping(patience=8, min_delta=0.0001)
 nan_stop = TerminateOnNaN()
 check = ModelCheckpoint('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints/' + net_name + '.hdf5',

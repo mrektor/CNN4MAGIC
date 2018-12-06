@@ -192,15 +192,19 @@ def bottleneck_block(x, expand=64, squeeze=16, stride=(1, 1)):
 
 
 def stem_mobilenetV2(input):
-    out = Conv2D(32, kernel_size=(3, 3), strides=(1, 1))(input)
+    out = Conv2D(64, kernel_size=(5, 5), strides=(1, 1))(input)
     out = BatchNormalization()(out)
     out = ReLU()(out)
+    out = cbam_block(out)
 
-    out = Conv2D(32, kernel_size=(3, 3), strides=(1, 1))(out)
+    out = MaxPooling2D((2, 2))(out)
+
+    out = Conv2D(128, kernel_size=(3, 3), strides=(1, 1))(out)
     out = BatchNormalization()(out)
     out = ReLU()(out)
+    out = cbam_block(out)
 
-    out1 = MaxPooling2D((3, 3))(out)
+    out1 = MaxPooling2D((2, 2))(out)
 
     out = bottleneck_block(out1, squeeze=32)
 
@@ -209,18 +213,18 @@ def stem_mobilenetV2(input):
 
     out = MaxPooling2D((2, 2))(out)
 
-    for _ in range(5):
+    for _ in range(6):
         out = bottleneck_block(out, expand=32 * 5, squeeze=32, stride=(1, 1))
 
     out = MaxPooling2D((2, 2))(out)
 
-    for _ in range(5):
+    for _ in range(7):
         out = bottleneck_block(out, expand=64 * 5, squeeze=32, stride=(1, 1))
 
     out = MaxPooling2D((2, 2))(out)
 
-    for _ in range(2):
-        out = bottleneck_block(out, expand=64 * 5, squeeze=32, stride=(1, 1))
+    for _ in range(3):
+        out = bottleneck_block(out, expand=64 * 5, squeeze=64, stride=(1, 1))
 
     out = GlobalAveragePooling2D()(out)
 
@@ -234,13 +238,13 @@ def magic_mobile_doubleStem():
     last_out_1 = stem_mobilenetV2(m1)
     last_out_2 = stem_mobilenetV2(m2)
     concatenated = keras.layers.concatenate([last_out_1, last_out_2])
-    out = Dense(64)(concatenated)
-    out = BatchNormalization()(out)
-    out = ReLU()(out)
-    out = Dense(10)(out)
-    out = BatchNormalization()(out)
-    out = ReLU()(out)
-    very_out = Dense(1)(out)
+    # out = Dense(64)(concatenated)
+    # out = BatchNormalization()(out)
+    # out = ReLU()(out)
+    # out = Dense(10)(out)
+    # out = BatchNormalization()(out)
+    # out = ReLU()(out)
+    very_out = Dense(1)(concatenated)
 
     energy_regressor = Model([m1, m2], outputs=very_out)
     return energy_regressor
