@@ -65,10 +65,11 @@ from ctapipe.instrument import CameraGeometry
 
 idx = 10
 
-phe = phe1[idx][:1039]
-time = phe1[idx][:1039]
+phe = phe1.iloc[idx, :1039]
+print(phe.shape)
+time = time1.iloc[idx, :1039]
 
-# %%
+# %
 camera_MAGIC = CameraGeometry.from_name('MAGICCamMars')
 
 # %%
@@ -77,8 +78,93 @@ from ctapipe.image import tailcuts_clean
 
 # from ctapipe.image.cleaning import number_of_islands
 
-event_image = phe1
+event_image = phe
+# %%
+print(event_image.shape)
+# %%
 clean = tailcuts_clean(camera_MAGIC, event_image, picture_thresh=6, boundary_thresh=4)
 event_image_cleaned = event_image.copy()
 event_image_cleaned[~clean] = 0
 print('ok')
+# %%
+from ctapipe.image import hillas_parameters, leakage, concentration
+from ctapipe.image.timing_parameters import timing_parameters
+
+hillas_params = hillas_parameters(camera_MAGIC, event_image_cleaned)
+
+print(hillas_params)
+
+# %%
+from ctapipe.image.cleaning import number_of_islands
+
+l = leakage(camera_MAGIC, phe, clean)
+conc = concentration(camera_MAGIC, phe, hillas_params)
+n_islands, island_id = number_of_islands(camera_MAGIC, clean)
+timing = timing_parameters(
+    camera_MAGIC[clean],
+    phe[clean],
+    time[clean],
+    hillas_params,
+)
+
+print(timing)
+print(n_islands)
+print(conc)
+print(l)
+
+# %%
+from ctapipe.image import tailcuts_clean, hillas_parameters, leakage, concentration
+from ctapipe.image.timing_parameters import timing_parameters
+from ctapipe.image.cleaning import number_of_islands
+
+
+def compute_stuff(phe_df, only_relevant=False):
+    camera_MAGIC = CameraGeometry.from_name('MAGICCamMars')
+    all_events = []
+    for i in range(phe_df.shape[0]):
+        event_image = phe_df.iloc[i, :1039]
+        clean = tailcuts_clean(camera_MAGIC, event_image, picture_thresh=6, boundary_thresh=4)
+        event_image_cleaned = event_image.copy()
+        event_image_cleaned[~clean] = 0
+
+        all_data = {}
+
+        hillas_params = hillas_parameters(camera_MAGIC, event_image_cleaned)
+        leakage_params = leakage(camera_MAGIC, phe, clean)
+
+        all_data.update(hillas_params)
+        all_data.update(leakage_params)
+
+        if not only_relevant:
+            conc = concentration(camera_MAGIC, phe, hillas_params)
+            n_islands, island_id = number_of_islands(camera_MAGIC, clean)
+            timing = timing_parameters(
+                camera_MAGIC[clean],
+                phe[clean],
+                time[clean],
+                hillas_params,
+            )
+            all_data.update(conc)
+            all_data.update(timing)
+        all_events.append(all_data)
+
+    df2 = pd.DataFrame(all_events)
+    return df2
+
+
+# %%
+print(phe1.shape)
+# %%
+testissimo2 = compute_stuff(phe1, only_relevant=True)
+
+# %%
+a = []
+b = {'c': 2, 'd': 3}
+c = {'c': 10, 'd': 15}
+
+a.append(b)
+a.append(c)
+# %%
+import pandas as pd
+
+df_test = pd.DataFrame(a)
