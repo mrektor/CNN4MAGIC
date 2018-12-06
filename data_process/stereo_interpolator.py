@@ -7,11 +7,10 @@ import numpy as np
 import pandas as pd
 import uproot
 from ctapipe.image import tailcuts_clean, hillas_parameters, leakage, concentration
-from ctapipe.image.cleaning import number_of_islands
 from ctapipe.image.timing_parameters import timing_parameters
 from ctapipe.instrument import CameraGeometry
 
-from InterpolateMagic import InterpolateMagic
+from data_process.InterpolateMagic import InterpolateMagic
 
 
 def compute_stuff(phe_df, time_df, only_relevant=False):
@@ -34,7 +33,7 @@ def compute_stuff(phe_df, time_df, only_relevant=False):
         if not only_relevant:
             event_time = time_df.iloc[i, :1039]
             conc = concentration(camera_MAGIC, event_image, hillas_params)
-            n_islands, island_id = number_of_islands(camera_MAGIC, clean)
+            # n_islands, island_id = number_of_islands(camera_MAGIC, clean)
             timing = timing_parameters(
                 camera_MAGIC[clean],
                 event_image[clean],
@@ -152,7 +151,7 @@ def stereo_interp_from_root(filenames):
               'pos_interp1': pos_interp1, 'pos_interp2': pos_interp2,
               'M1_interp': m1_interp, 'M2_interp': m2_interp}
 
-    with open('/data2T/mariotti_data_2/interp_from_root/MC_channel_last/result_' + filenameM1[-26:-7] + '.pkl',
+    with open('/data2T/mariotti_data_2/interp_from_root/MC_channel_last_pruned/result_' + filenameM1[-26:-7] + '.pkl',
               'wb') as f:
         pickle.dump(result, f, protocol=4)
     print(f'Saved {filenameM1[-26:-7]}')
@@ -219,54 +218,9 @@ def stereo_interp_from_txt(filenames):
         pickle.dump(result, f, protocol=4)
 
 
-# def stereo_interp_from_root(filenames):
-#     filenameM1 = filenames[0]
-#     filenameM2 = filenames[1]
-#
-#     if filenameM1[-26:-7] != filenameM2[-26:-7]:
-#         print('Ostia! filename are different: ', filenameM1, filenameM2)
-#         return None  # Escape
-#
-#     if os.stat(filenameM1).st_size == 0:
-#         print('Empty file: ' + filenameM1)
-#         return None
-#
-#     if os.stat(filenameM2).st_size == 0:
-#         print('Empty file: ' + filenameM2)
-#         return None
-#
-#     df1, phe1, time1 = read_from_root(filenameM1)
-#     df2, phe2, time2 = read_from_root(filenameM2)
-#
-#     interpolator = InterpolateMagic(15)
-#     num_events = df1.shape[0]
-#     m1_interp = np.zeros((num_events, 2, 67, 68))
-#     m2_interp = np.zeros((num_events, 2, 67, 68))
-#     for idx in range(len(phe1)):
-#         m1_interp[idx, 0, :, :] = interpolator.interpolate(time1.iloc[idx, :1039].values, remove_last=False, plot=False)
-#         m1_interp[idx, 1, :, :] = interpolator.interpolate(phe1.iloc[idx, :1039].values, remove_last=False, plot=False)
-#
-#         m2_interp[idx, 0, :, :] = interpolator.interpolate(time2.iloc[idx, :1039].values, remove_last=False, plot=False)
-#         m2_interp[idx, 1, :, :] = interpolator.interpolate(phe2.iloc[idx, :1039].values, remove_last=False, plot=False)
-#
-#     result = {'corsika_event_number_1': df1['corsika_event_number'].values,
-#               'corsika_event_number_2': df2['corsika_event_number'].values,
-#               'energy': df1['energy'].values,
-#               'src_X1': df1['srcpos_x'], 'src_Y1': df1['srcpos_y'],
-#               'src_X2': df2['srcpos_x'], 'src_Y2': df2['srcpos_y'],
-#               'M1_interp': m1_interp, 'M2_interp': m2_interp}
-#     print(filenameM1[-26:-7])
-#
-#     with open('/data2T/mariotti_data_2/interp_from_root/MC/result_' + filenameM1[-26:-7] + '.pkl',
-#               'wb') as f:
-#         pickle.dump(result, f, protocol=4)
-
 
 # %%
 # Load all the filenames
-# fileM1 = glob.glob('/data/mariotti_data/CNN4MAGIC/dataset/MC/Energy_SrcPosCam/M1/GA_M1_*.txt')
-# fileM2 = glob.glob('/data/mariotti_data/CNN4MAGIC/dataset/MC/Energy_SrcPosCam/M2/GA_M2_*.txt')
-
 
 fileM1 = glob.glob('/data/mariotti_data/download_magic/MC/GA_M1_*.root')
 fileM2 = glob.glob('/data/mariotti_data/download_magic/MC/GA_M2_*.root')
