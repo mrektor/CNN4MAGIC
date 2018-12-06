@@ -199,7 +199,7 @@ def stem_mobilenetV2(input):
 
     out = MaxPooling2D((2, 2))(out)
 
-    out = Conv2D(128, kernel_size=(3, 3), strides=(1, 1))(out)
+    out = Conv2D(32, kernel_size=(3, 3), strides=(1, 1))(out)
     out = BatchNormalization()(out)
     out = ReLU()(out)
     out = cbam_block(out)
@@ -208,23 +208,23 @@ def stem_mobilenetV2(input):
 
     out = bottleneck_block(out1, squeeze=32)
 
-    for _ in range(5):
+    for _ in range(4):
         out = bottleneck_block(out, expand=24 * 5, squeeze=32, stride=(1, 1))
 
     out = MaxPooling2D((2, 2))(out)
 
-    for _ in range(6):
+    for _ in range(5):
         out = bottleneck_block(out, expand=32 * 5, squeeze=32, stride=(1, 1))
 
     out = MaxPooling2D((2, 2))(out)
 
-    for _ in range(7):
+    for _ in range(6):
         out = bottleneck_block(out, expand=64 * 5, squeeze=32, stride=(1, 1))
 
     out = MaxPooling2D((2, 2))(out)
 
-    for _ in range(3):
-        out = bottleneck_block(out, expand=64 * 5, squeeze=64, stride=(1, 1))
+    for _ in range(5):
+        out = bottleneck_block(out, expand=64 * 5, squeeze=32, stride=(1, 1))
 
     out = GlobalAveragePooling2D()(out)
 
@@ -258,13 +258,13 @@ def magic_mobile_singleStem():
 
     last_out = stem_mobilenetV2(input_img)
 
-    out = Dense(64)(last_out)
-    out = BatchNormalization()(out)
-    out = ReLU()(out)
-    out = Dense(10)(out)
-    out = BatchNormalization()(out)
-    out = ReLU()(out)
-    very_out = Dense(1)(out)
+    # out = Dense(64)(last_out)
+    # out = BatchNormalization()(out)
+    # out = ReLU()(out)
+    # out = Dense(10)(out)
+    # out = BatchNormalization()(out)
+    # out = ReLU()(out)
+    very_out = Dense(1)(last_out)
 
     energy_regressor = Model([m1, m2], outputs=very_out)
     return energy_regressor
