@@ -169,3 +169,18 @@ a.append(c)
 import pandas as pd
 
 df_test = pd.DataFrame(a)
+# %%
+
+intensity_ok = testissimo2['intensity'] > 100
+leak_ok = testissimo2['leakage1_pixel'] < 0.2
+condition = np.logical_and(intensity_ok, leak_ok)
+
+# %%
+import numpy as np
+
+condition = np.logical_and(intensity_ok, leak_ok)
+
+# %%
+print(condition)
+# %%
+df1 = df1[condition.values]

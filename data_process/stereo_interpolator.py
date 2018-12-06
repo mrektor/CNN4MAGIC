@@ -49,7 +49,7 @@ def compute_stuff(phe_df, time_df, only_relevant=False):
     return df2
 
 
-def read_from_root(filename, want_extra=False):
+def read_from_root(filename, want_extra=False, pruning=False):
     ARRAY_COLUMNS = {
         'MMcEvt.fEvtNumber': 'corsika_event_number',
         'MMcEvt.fEnergy': 'energy',
@@ -96,6 +96,15 @@ def read_from_root(filename, want_extra=False):
     # Compute hillas parameters, leakage and other hand-crafted features
     if want_extra:
         extras = compute_stuff(phe, time, only_relevant=True)
+
+        # Filter with some criterion
+        if pruning:
+            intensity_ok = extras['intensity'] > 100
+            leak_ok = extras['leakage1_pixel'] < 0.2
+            condition = np.logical_and(intensity_ok, leak_ok)
+
+            return df[condition.values], extras[condition.values], phe[condition.values], time[condition.values]
+
         return df, extras, phe, time
 
     return df, phe, time
