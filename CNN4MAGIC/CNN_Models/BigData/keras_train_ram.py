@@ -9,8 +9,8 @@ from CNN4MAGIC.CNN_Models.BigData.utils import plot_hist2D, plot_gaussian_error
 
 # %%
 # LOAD DATA
-m1_tr, m2_tr, energy_tr = load_data_train()
-m1_val, m2_val, energy_val = load_data_val()
+m1_tr, m2_tr, energy_tr = load_data_train(pruned=True)
+m1_val, m2_val, energy_val = load_data_val(pruned=True)
 
 energy_tr = np.log10(energy_tr)
 energy_val = np.log10(energy_val)
@@ -29,7 +29,7 @@ energy_regressor.summary()
 
 # %%
 
-net_name = 'mobileCBAM-fullyCNN-SingleStem'
+net_name = 'mobileCBAM-fullyCNN-SingleStem-long'
 early_stop = EarlyStopping(patience=8, min_delta=0.0001)
 nan_stop = TerminateOnNaN()
 check = ModelCheckpoint('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints/' + net_name + '.hdf5',
@@ -39,7 +39,7 @@ reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.4,
                               patience=4, min_lr=0.000005)
 # [:,:,:,1].reshape((134997, 67, 68, 1))
 result = energy_regressor.fit({'m1': m1_tr, 'm2': m2_tr}, energy_tr,
-                              batch_size=256,
+                              batch_size=512,
                               epochs=100,
                               verbose=1,
                               validation_data=({'m1': m1_val, 'm2': m2_val}, energy_val),

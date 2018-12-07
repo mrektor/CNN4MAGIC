@@ -7,6 +7,7 @@ import keras
 import numpy as np
 
 
+# %%
 class DataGenerator(keras.utils.Sequence):
 
     def __init__(self, list_IDs, labels, batch_size=32, dim=(32, 32), n_channels=2,
@@ -61,14 +62,19 @@ class DataGenerator(keras.utils.Sequence):
         return X, y
 
 
-def load_data_train():
+def load_data_train(pruned=False):
     fileList = glob.glob('/data2T/mariotti_data_2/interp_from_root/MC_channel_last/*.pkl')
+    if pruned:
+        fileList = glob.glob('/data2T/mariotti_data_2/interp_from_root/MC_channel_last_pruned/*.pkl')
+
     random.seed(42)
     random.shuffle(fileList)
     # %%
     befbef = time.time()
     times = []
     tot_items = 134997
+    if pruned:
+        tot_items = 130814
     full_energy = np.zeros(tot_items)
     full_interp_M1 = np.zeros((tot_items, 67, 68, 2))
     full_interp_M2 = np.zeros((tot_items, 67, 68, 2))
@@ -98,14 +104,19 @@ def load_data_train():
     return full_interp_M1, full_interp_M2, full_energy
 
 
-def load_data_val():
+def load_data_val(pruned=False):
     fileList = glob.glob('/data2T/mariotti_data_2/interp_from_root/MC_channel_last/*.pkl')
+    if pruned:
+        fileList = glob.glob('/data2T/mariotti_data_2/interp_from_root/MC_channel_last_pruned/*.pkl')
+
     random.seed(42)
     random.shuffle(fileList)
     # %%
     befbef = time.time()
     times = []
     tot_items = 67322
+    if pruned:
+        tot_items = 65194
     full_energy = np.zeros(tot_items)
     full_interp_M1 = np.zeros((tot_items, 67, 68, 2))
     full_interp_M2 = np.zeros((tot_items, 67, 68, 2))
@@ -135,14 +146,19 @@ def load_data_val():
     return full_interp_M1, full_interp_M2, full_energy
 
 
-def load_data_test():
+def load_data_test(pruned=False):
     fileList = glob.glob('/data2T/mariotti_data_2/interp_from_root/MC_channel_last/*.pkl')
+    if pruned:
+        fileList = glob.glob('/data2T/mariotti_data_2/interp_from_root/MC_channel_last_pruned/*.pkl')
+
     random.seed(42)
     random.shuffle(fileList)
     # %%
     befbef = time.time()
     times = []
     tot_items = 67509
+    if pruned:
+        tot_items = 65388
     full_energy = np.zeros(tot_items)
     full_interp_M1 = np.zeros((tot_items, 67, 68, 2))
     full_interp_M2 = np.zeros((tot_items, 67, 68, 2))
@@ -170,3 +186,43 @@ def load_data_test():
     print(f'Average time for loading one dict: {np.mean(np.array(times))}')
 
     return full_interp_M1, full_interp_M2, full_energy
+
+# %%
+
+
+# fileList = glob.glob('/data2T/mariotti_data_2/interp_from_root/MC_channel_last_pruned/*.pkl')
+# random.seed(42)
+# random.shuffle(fileList)
+# # %%
+#
+# befbef = time.time()
+# times = []
+# tot_items = 0
+# full_energy = np.zeros(tot_items)
+# # full_interp_M1 = np.zeros((tot_items, 67, 68, 2))
+# # full_interp_M2 = np.zeros((tot_items, 67, 68, 2))
+#
+# old = 0
+# print(f'number of files: {len(fileList)}')
+# print('start loading...')
+# for i, file in enumerate(fileList[2250:]):
+#     if i % 5 == 0:
+#         print('Loading training data: ' + str(int(i * 10000 / len(fileList[:1500])) / 100) + '%')
+#     bef = time.time()
+#     with open(file, 'rb') as f:
+#         data = pickle.load(f)
+#         num_items = len(data['energy'])
+#         tot_items += num_items
+#         # full_energy[old:old + num_items] = data['energy']
+#         # full_interp_M1[old:old + num_items, :, :, :] = data['M1_interp']
+#         # full_interp_M2[old:old + num_items, :, :, :] = data['M2_interp']
+#         old = old + num_items
+#     now = time.time()
+#     times.append(now - bef)
+# nownow = time.time()
+#
+# print('Number of items: ' + str(len(full_energy)))
+# print(f'Time for loading all the files: {nownow-befbef}')
+# print(f'Average time for loading one dict: {np.mean(np.array(times))}')
+#
+# print(tot_items)
