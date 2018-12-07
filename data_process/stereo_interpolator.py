@@ -125,8 +125,8 @@ def stereo_interp_from_root(filenames):
         print('Empty file: ' + filenameM2)
         return None
 
-    df1, extras1, phe1, time1 = read_from_root(filenameM1, want_extra=True, pruning=True)
-    df2, extras2, phe2, time2 = read_from_root(filenameM2, want_extra=True, pruning=True)
+    df1, extras1, phe1, time1 = read_from_root(filenameM1, want_extra=True, pruning=False)
+    df2, extras2, phe2, time2 = read_from_root(filenameM2, want_extra=True, pruning=False)
 
     interpolator = InterpolateMagic(15)
     num_events = df1.shape[0]
@@ -153,7 +153,7 @@ def stereo_interp_from_root(filenames):
               'pos_interp1': pos_interp1, 'pos_interp2': pos_interp2,
               'M1_interp': m1_interp, 'M2_interp': m2_interp}
 
-    with open('/data2T/mariotti_data_2/interp_from_root/MC_channel_last_pruned/result_' + filenameM1[-26:-7] + '.pkl',
+    with open('/data2T/mariotti_data_2/interp_from_root/MC_channel_last_full/result_' + filenameM1[-26:-7] + '.pkl',
               'wb') as f:
         pickle.dump(result, f, protocol=4)
     print(f'Saved {filenameM1[-26:-7]}')
