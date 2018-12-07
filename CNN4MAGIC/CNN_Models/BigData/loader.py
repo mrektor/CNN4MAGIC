@@ -187,6 +187,7 @@ def load_data_test(pruned=False):
 
     return full_interp_M1, full_interp_M2, full_energy
 
+
 # %%
 
 
@@ -226,3 +227,102 @@ def load_data_test(pruned=False):
 # print(f'Average time for loading one dict: {np.mean(np.array(times))}')
 #
 # print(tot_items)
+# %%
+from tqdm import tqdm
+
+
+def load_data_append(which='train', fileListFolder='/data2T/mariotti_data_2/interp_from_root/MC_channel_last/'):
+    fileList = glob.glob(fileListFolder + '*.pkl')
+
+    random.seed(42)
+    random.shuffle(fileList)
+
+    befbef = time.time()
+    times = []
+
+    full_energy = []
+    full_interp_M1 = []
+    full_interp_M2 = []
+
+    if which == 'train':
+        toLoad = fileList[:1500]
+
+    if which == 'val':
+        toLoad = fileList[:1500]
+
+    if which == 'test':
+        toLoad = fileList[:1500]
+
+    print(f'number of files: {len(fileList)}')
+    print('start loading...')
+    for i, file in enumerate(tqdm(toLoad)):
+        # if i % 5 == 0:
+        #     print('Loading training data: ' + str(int(i * 10000 / len(fileList[:1500])) / 100) + '%')
+        bef = time.time()
+        with open(file, 'rb') as f:
+            data = pickle.load(f)
+            full_energy.append(data['energy'].reshape((data['energy'].shape[0], 1)))  # Add one axis for ease of vstack
+            full_interp_M1.append(data['M1_interp'])
+            full_interp_M2.append(data['M2_interp'])
+        now = time.time()
+        times.append(now - bef)
+    nownow = time.time()
+
+    full_energy = np.vstack(full_energy).flatten()
+    full_interp_M1 = np.vstack(full_interp_M1)
+    full_interp_M2 = np.vstack(full_interp_M2)
+
+    print('Number of items: ' + str(len(full_energy)))
+    print(f'Time for loading all the files: {nownow-befbef}')
+    print(f'Average time for loading one dict: {np.mean(np.array(times))}')
+
+    return full_interp_M1, full_interp_M2, full_energy
+
+
+full_interp_M1, full_interp_M2, full_energy = load_data_append('train')
+# %%
+fileList = glob.glob('/data2T/mariotti_data_2/interp_from_root/MC_channel_last/*.pkl')
+
+random.seed(42)
+random.shuffle(fileList)
+
+befbef = time.time()
+times = []
+
+full_energy = []
+full_interp_M1 = []
+full_interp_M2 = []
+
+print(f'number of files: {len(fileList)}')
+print('start loading...')
+for i, file in enumerate(tqdm(fileList[:100])):
+    # if i % 5 == 0:
+    #     print('Loading training data: ' + str(int(i * 10000 / len(fileList[:1500])) / 100) + '%')
+    bef = time.time()
+    with open(file, 'rb') as f:
+        data = pickle.load(f)
+        full_energy.append(data['energy'].reshape((data['energy'].shape[0], 1)))  # Add one axis for ease of vstack
+        full_interp_M1.append(data['M1_interp'])
+        full_interp_M2.append(data['M2_interp'])
+    now = time.time()
+    times.append(now - bef)
+nownow = time.time()
+
+full_energy = np.vstack(full_energy).flatten()
+full_interp_M1 = np.vstack(full_interp_M1)
+full_interp_M2 = np.vstack(full_interp_M2)
+
+print('Number of items: ' + str(len(full_energy)))
+print(f'Time for loading all the files: {nownow-befbef}')
+print(f'Average time for loading one dict: {np.mean(np.array(times))}')
+
+# %%
+tot = []
+for el in full_interp_M1_np:
+    tot.append(el)
+
+tot = np.vstack(tot)
+
+print(tot.shape)
+# %%
+print(tot.flatten()[:5])
