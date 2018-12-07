@@ -231,8 +231,12 @@ def load_data_test(pruned=False):
 from tqdm import tqdm
 
 
-def load_data_append(which='train', fileListFolder='/data2T/mariotti_data_2/interp_from_root/MC_channel_last/'):
-    fileList = glob.glob(fileListFolder + '*.pkl')
+def load_data_append(which='train', fileListFolder='/data2T/mariotti_data_2/interp_from_root/MC_channel_last'):
+    fileList = glob.glob(fileListFolder + '/*.pkl')
+
+    if len(fileList) == 0:
+        print('The directory does not contain any file to load')
+        raise ValueError
 
     random.seed(42)
     random.shuffle(fileList)
@@ -248,16 +252,15 @@ def load_data_append(which='train', fileListFolder='/data2T/mariotti_data_2/inte
         toLoad = fileList[:1500]
 
     if which == 'val':
-        toLoad = fileList[:1500]
+        toLoad = fileList[1500:2250]
 
     if which == 'test':
-        toLoad = fileList[:1500]
+        toLoad = fileList[2250:]
 
     print(f'number of files: {len(fileList)}')
     print('start loading...')
     for i, file in enumerate(tqdm(toLoad)):
-        # if i % 5 == 0:
-        #     print('Loading training data: ' + str(int(i * 10000 / len(fileList[:1500])) / 100) + '%')
+
         bef = time.time()
         with open(file, 'rb') as f:
             data = pickle.load(f)
@@ -279,4 +282,6 @@ def load_data_append(which='train', fileListFolder='/data2T/mariotti_data_2/inte
     return full_interp_M1, full_interp_M2, full_energy
 
 
-full_interp_M1, full_interp_M2, full_energy = load_data_append('train')
+# %%
+full_interp_M1, full_interp_M2, full_energy = load_data_append('train',
+                                                               '/data2T/mariotti_data_2/interp_from_root/MC_channel_last')
