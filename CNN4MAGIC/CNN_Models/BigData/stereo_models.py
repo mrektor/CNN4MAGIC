@@ -199,27 +199,30 @@ def stem_mobilenetV2(input):
 
     # out = MaxPooling2D((2, 2))(out)
 
-    out = Conv2D(32, kernel_size=(3, 3), strides=(1, 1))(out)
+    out = Conv2D(128, kernel_size=(3, 3), strides=(1, 1))(out)
     out = BatchNormalization()(out)
     out = cbam_block(out)
     out = ReLU()(out)
 
+    out = Conv2D(64, kernel_size=(1, 1))(out)
+    out = BatchNormalization()(out)
+
     out1 = MaxPooling2D((2, 2))(out)
 
-    out = bottleneck_block(out1, squeeze=32)
+    out = bottleneck_block(out1, squeeze=64)
 
     for _ in range(6):
-        out = bottleneck_block(out, expand=24 * 5, squeeze=32, stride=(1, 1))
+        out = bottleneck_block(out, expand=24 * 5, squeeze=64, stride=(1, 1))
 
     out = MaxPooling2D((2, 2))(out)
 
-    for _ in range(7):
-        out = bottleneck_block(out, expand=32 * 5, squeeze=32, stride=(1, 1))
+    for _ in range(10):
+        out = bottleneck_block(out, expand=32 * 5, squeeze=64, stride=(1, 1))
 
     out = MaxPooling2D((2, 2))(out)
 
-    for _ in range(8):
-        out = bottleneck_block(out, expand=64 * 5, squeeze=32, stride=(1, 1))
+    for _ in range(6):
+        out = bottleneck_block(out, expand=64 * 5, squeeze=64, stride=(1, 1))
 
     # out = MaxPooling2D((2, 2))(out)
     #
