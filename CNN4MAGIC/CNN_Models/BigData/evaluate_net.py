@@ -4,7 +4,7 @@ from keras.models import load_model
 from CNN4MAGIC.CNN_Models.BigData.loader import load_data_test
 from CNN4MAGIC.CNN_Models.BigData.utils import plot_hist2D, plot_gaussian_error
 
-net_name = 'mobileCBAM-fullyCNN-SingleStem'
+net_name = 'mobileCBAM-fullyCNN-SingleStem-long-wide'
 
 path = '/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints/' + net_name + '.hdf5'
 model = load_model(path)

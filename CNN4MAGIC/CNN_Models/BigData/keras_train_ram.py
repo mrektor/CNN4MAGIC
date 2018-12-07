@@ -1,5 +1,6 @@
 import pickle
 
+import keras
 import numpy as np
 from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau, TerminateOnNaN
 
@@ -22,16 +23,22 @@ energy_val = np.log10(energy_val)
 num_filt = 136
 # energy_regressor = magic_inception(num_filt, num_classes=1, dropout=0, do_res=False)
 # energy_regressor.compile(optimizer='adam', loss='mse')
+
 energy_regressor = magic_mobile_singleStem()
+net_name = 'mobileCBAM-fullyCNN-SingleStem-long-wide'
+
 energy_regressor.compile(optimizer='adam', loss='mse')
 
 energy_regressor.summary()
 
 # %%
 
-net_name = 'mobileCBAM-fullyCNN-SingleStem-long-wide'
+
 early_stop = EarlyStopping(patience=8, min_delta=0.0001)
 nan_stop = TerminateOnNaN()
+ten_dir = '/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/tensorboard_dir' + net_name
+tensorboard = keras.callbacks.TensorBoard(log_dir=ten_dir, histogram_freq=1,
+                                          write_graph=True, write_images=True)
 check = ModelCheckpoint('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints/' + net_name + '.hdf5',
                         period=3,
                         save_best_only=True)
@@ -43,7 +50,7 @@ result = energy_regressor.fit({'m1': m1_tr, 'm2': m2_tr}, energy_tr,
                               epochs=100,
                               verbose=1,
                               validation_data=({'m1': m1_val, 'm2': m2_val}, energy_val),
-                              callbacks=[early_stop, nan_stop, reduce_lr, check])
+                              callbacks=[early_stop, nan_stop, reduce_lr, check, tensorboard])
 
 # %% Save and plot stuff
 
