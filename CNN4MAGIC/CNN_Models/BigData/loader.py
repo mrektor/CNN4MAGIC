@@ -275,7 +275,6 @@ def load_data_append(which='train', fileListFolder='/data2T/mariotti_data_2/inte
             data = pickle.load(f)
             if prune:
                 # Conditions
-                print(data.keys())
                 impact = data['impact'] < 80000
                 intensity_ok = data['extras1']['intensity'] > 100
                 leak_ok = data['extras1']['leakage2_pixel'] < 0.2

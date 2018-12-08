@@ -11,9 +11,8 @@ from CNN4MAGIC.CNN_Models.BigData.utils import plot_hist2D, plot_gaussian_error
 
 # %%
 # LOAD DATA
-load_path = '/data2T/mariotti_data_2/interp_from_root/MC_channel_last_pruned'
-m1_tr, m2_tr, energy_tr = load_data_append('train', load_path)
-m1_val, m2_val, energy_val = load_data_append('val', load_path)
+m1_tr, m2_tr, energy_tr = load_data_append('train', prune=True)
+m1_val, m2_val, energy_val = load_data_append('val', prune=True)
 
 energy_tr = np.log10(energy_tr)
 energy_val = np.log10(energy_val)
@@ -57,7 +56,7 @@ reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.4,
 # callbacks.append(tensorboard)
 
 result = energy_regressor.fit({'m1': m1_tr, 'm2': m2_tr}, energy_tr,
-                              batch_size=32,
+                              batch_size=128,
                               epochs=50,
                               verbose=1,
                               validation_data=({'m1': m1_val, 'm2': m2_val}, energy_val),
@@ -70,7 +69,7 @@ gc.collect()
 
 # %% Save and plot stuff
 
-m1_te, m2_te, energy_te = load_data_append('test', load_path)
+m1_te, m2_te, energy_te = load_data_append('test', prune=True)
 y_test = np.log10(energy_te)
 
 print('Making Predictions...')
@@ -91,7 +90,7 @@ del m1_te, m2_te
 gc.collect()
 
 print('Saving History')
-with open('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/hystories' + net_name + '_history.pkl', 'wb') as f:
+with open('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/hystories/' + net_name + '_history.pkl', 'wb') as f:
     pickle.dump(result, f, protocol=4)
 
 print('All done, everything went fine.')
