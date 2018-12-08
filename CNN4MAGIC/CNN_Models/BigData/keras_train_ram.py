@@ -6,12 +6,11 @@ from keras.callbacks import ModelCheckpoint, EarlyStopping, TerminateOnNaN, Redu
 from keras.optimizers import Adam
 
 from CNN4MAGIC.CNN_Models.BigData.loader import load_data_append
-from CNN4MAGIC.CNN_Models.BigData.stereo_models import magic_mobile_singleStem
+from CNN4MAGIC.CNN_Models.BigData.stereo_models import single_DenseNet
 from CNN4MAGIC.CNN_Models.BigData.utils import plot_hist2D, plot_gaussian_error
 
 # %%
 # LOAD DATA
-
 load_path = '/data2T/mariotti_data_2/interp_from_root/MC_channel_last_pruned'
 m1_tr, m2_tr, energy_tr = load_data_append('train', load_path)
 m1_val, m2_val, energy_val = load_data_append('val', load_path)
@@ -27,8 +26,8 @@ num_filt = 136
 # energy_regressor = magic_inception(num_filt, num_classes=1, dropout=0, do_res=False)
 # energy_regressor.compile(optimizer='adam', loss='mse')
 
-energy_regressor = magic_mobile_singleStem()
-net_name = 'magic-mobile-single-45'
+energy_regressor = single_DenseNet()
+net_name = 'single-SE-DenseNet-vanilla'
 
 opt = Adam(lr=0.3)
 energy_regressor.compile(optimizer=opt, loss='mse')

@@ -2,6 +2,8 @@ import keras
 from keras.layers import *
 from keras.models import Model
 
+from CNN4MAGIC.CNN_Models.BigData.se_DenseNet import SEDenseNet
+
 
 # %%
 def cbam_block(cbam_feature, ratio=8):
@@ -366,6 +368,18 @@ def magic_inception(num_filters_first_conv, dropout, num_classes,
 
     return cnn
 
+
+def single_DenseNet():
+    m1 = Input(shape=(67, 68, 2), name='m1')
+    m2 = Input(shape=(67, 68, 2), name='m2')
+    input_img = concatenate([m1, m2])
+    dense_out = SEDenseNet(input_tensor=input_img, include_top=False)
+
+    x = dense_out.layers[-1].output
+    x = Dense(1, name='energy')(x)
+    model1 = Model(inputs=[m1, m2], output=x)
+    return model1
+
 # %%
 # input_shape = (67, 68, 2)
 #
@@ -373,4 +387,7 @@ def magic_inception(num_filters_first_conv, dropout, num_classes,
 # model = magic_inception(num_filt, num_classes=1, dropout=0, do_res=False)
 # model.compile(optimizer='adam', loss='mse')
 #
+# model.summary()
+
+# model = single_DenseNet()
 # model.summary()
