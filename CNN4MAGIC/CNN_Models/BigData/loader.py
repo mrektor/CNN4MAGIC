@@ -231,7 +231,8 @@ def load_data_test(pruned=False):
 from tqdm import tqdm
 
 
-def load_data_append(which='train', fileListFolder='/data2T/mariotti_data_2/interp_from_root/MC_channel_last'):
+def load_data_append(which='train', fileListFolder='/data2T/mariotti_data_2/interp_from_root/MC_channel_last_full',
+                     prune=False):
     fileList = glob.glob(fileListFolder + '/*.pkl')
 
     if len(fileList) == 0:
@@ -261,6 +262,10 @@ def load_data_append(which='train', fileListFolder='/data2T/mariotti_data_2/inte
         toLoad = fileList[2250:]
         print('Loading TEST data')
 
+    if which == 'debug':
+        toLoad = fileList[:2]
+        print('Loading DEBUG data')
+
     print(f'number of files: {len(toLoad)}')
     print('start loading...')
     for i, file in enumerate(tqdm(toLoad)):
@@ -268,9 +273,25 @@ def load_data_append(which='train', fileListFolder='/data2T/mariotti_data_2/inte
         bef = time.time()
         with open(file, 'rb') as f:
             data = pickle.load(f)
-            full_energy.append(data['energy'].reshape((data['energy'].shape[0], 1)))  # Add one axis for ease of vstack
-            full_interp_M1.append(data['M1_interp'])
-            full_interp_M2.append(data['M2_interp'])
+            if prune:
+                # Conditions
+                print(data.keys())
+                impact = data['impact'] < 80000
+                intensity_ok = data['extras1']['intensity'] > 100
+                leak_ok = data['extras1']['leakage2_pixel'] < 0.2
+                condition = np.logical_and(impact, intensity_ok)
+                condition = np.logical_and(condition, leak_ok)
+
+                # Pruning
+                full_energy.append(data['energy'][condition].reshape(
+                    (data['energy'][condition].shape[0], 1)))  # Add one axis for ease of vstack
+                full_interp_M1.append(data['M1_interp'][condition])
+                full_interp_M2.append(data['M2_interp'][condition])
+            else:
+                full_energy.append(
+                    data['energy'].reshape((data['energy'].shape[0], 1)))  # Add one axis for ease of vstack
+                full_interp_M1.append(data['M1_interp'])
+                full_interp_M2.append(data['M2_interp'])
         now = time.time()
         times.append(now - bef)
     nownow = time.time()
@@ -284,6 +305,3 @@ def load_data_append(which='train', fileListFolder='/data2T/mariotti_data_2/inte
     print(f'Average time for loading one dict: {np.mean(np.array(times))}')
 
     return full_interp_M1, full_interp_M2, full_energy
-
-
-# %%
