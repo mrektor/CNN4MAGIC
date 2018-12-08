@@ -28,7 +28,7 @@ num_filt = 136
 energy_regressor = single_DenseNet()
 net_name = 'single-SE-DenseNet-vanilla'
 
-opt = Adam(lr=0.3)
+opt = Adam(lr=0.05)
 energy_regressor.compile(optimizer=opt, loss='mse')
 
 energy_regressor.summary()
@@ -56,7 +56,7 @@ reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.4,
 # callbacks.append(tensorboard)
 
 result = energy_regressor.fit({'m1': m1_tr, 'm2': m2_tr}, energy_tr,
-                              batch_size=128,
+                              batch_size=64,
                               epochs=50,
                               verbose=1,
                               validation_data=({'m1': m1_val, 'm2': m2_val}, energy_val),

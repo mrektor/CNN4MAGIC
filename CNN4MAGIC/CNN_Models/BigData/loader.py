@@ -1,3 +1,4 @@
+import gc
 import glob
 import pickle
 import random
@@ -254,12 +255,12 @@ def load_data_append(which='train', fileListFolder='/data2T/mariotti_data_2/inte
         print('Loading TRAIN data')
 
     if which == 'val':
-        toLoad = fileList[1500:2250]
+        toLoad = fileList[1500:2000]
         print('Loading VALIDATION data')
 
 
     if which == 'test':
-        toLoad = fileList[2250:]
+        toLoad = fileList[2000:]
         print('Loading TEST data')
 
     if which == 'debug':
@@ -297,10 +298,16 @@ def load_data_append(which='train', fileListFolder='/data2T/mariotti_data_2/inte
 
     full_energy = np.vstack(full_energy).flatten()
     full_interp_M1 = np.vstack(full_interp_M1)
+    gc.collect()
+
     full_interp_M2 = np.vstack(full_interp_M2)
 
     print('Number of items: ' + str(len(full_energy)))
     print(f'Time for loading all the files: {nownow-befbef}')
     print(f'Average time for loading one dict: {np.mean(np.array(times))}')
+    print('cleaning memory...')
+    gc.collect()
+    print('cleaned.')
+
 
     return full_interp_M1, full_interp_M2, full_energy
