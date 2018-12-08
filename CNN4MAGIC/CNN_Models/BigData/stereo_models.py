@@ -261,13 +261,14 @@ def magic_mobile_singleStem():
 
     last_out = stem_mobilenetV2(input_img)
 
-    # out = Dense(64)(last_out)
-    # out = BatchNormalization()(out)
-    # out = ReLU()(out)
-    # out = Dense(10)(out)
-    # out = BatchNormalization()(out)
-    # out = ReLU()(out)
-    very_out = Dense(1)(last_out)
+    out = Dense(32)(last_out)
+    out = BatchNormalization()(out)
+    out = ReLU()(out)
+    out = Dropout(0.3)(out)
+    out = Dense(10)(out)
+    out = BatchNormalization()(out)
+    out = ReLU()(out)
+    very_out = Dense(1)(out)
 
     energy_regressor = Model([m1, m2], outputs=very_out)
     return energy_regressor
