@@ -250,14 +250,18 @@ def load_data_append(which='train', fileListFolder='/data2T/mariotti_data_2/inte
 
     if which == 'train':
         toLoad = fileList[:1500]
+        print('Loading TRAIN data')
 
     if which == 'val':
         toLoad = fileList[1500:2250]
+        print('Loading VALIDATION data')
+
 
     if which == 'test':
         toLoad = fileList[2250:]
+        print('Loading TEST data')
 
-    print(f'number of files: {len(fileList)}')
+    print(f'number of files: {len(toLoad)}')
     print('start loading...')
     for i, file in enumerate(tqdm(toLoad)):
 
@@ -283,5 +287,3 @@ def load_data_append(which='train', fileListFolder='/data2T/mariotti_data_2/inte
 
 
 # %%
-full_interp_M1, full_interp_M2, full_energy = load_data_append('train',
-                                                               '/data2T/mariotti_data_2/interp_from_root/MC_channel_last')

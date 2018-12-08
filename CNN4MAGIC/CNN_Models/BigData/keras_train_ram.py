@@ -1,17 +1,19 @@
 import pickle
 
-import keras
 import numpy as np
-from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau, TerminateOnNaN
+from keras.callbacks import ModelCheckpoint, EarlyStopping, TerminateOnNaN, ReduceLROnPlateau
 
-from CNN4MAGIC.CNN_Models.BigData.loader import load_data_test, load_data_val, load_data_train
-from CNN4MAGIC.CNN_Models.BigData.stereo_models import magic_mobile_singleStem
+from CNN4MAGIC.CNN_Models.BigData.loader import load_data_test, load_data_append
+from CNN4MAGIC.CNN_Models.BigData.stereo_models import magic_inception
 from CNN4MAGIC.CNN_Models.BigData.utils import plot_hist2D, plot_gaussian_error
 
 # %%
 # LOAD DATA
-m1_tr, m2_tr, energy_tr = load_data_train(pruned=True)
-m1_val, m2_val, energy_val = load_data_val(pruned=True)
+# m1_tr, m2_tr, energy_tr = load_data_train(pruned=True)
+# m1_val, m2_val, energy_val = load_data_val(pruned=True)
+
+m1_tr, m2_tr, energy_tr = load_data_append('train', '/data2T/mariotti_data_2/interp_from_root/MC_channel_last_pruned')
+m1_val, m2_val, energy_val = load_data_append('val', '/data2T/mariotti_data_2/interp_from_root/MC_channel_last_pruned')
 
 energy_tr = np.log10(energy_tr)
 energy_val = np.log10(energy_val)
@@ -21,36 +23,44 @@ energy_val = np.log10(energy_val)
 # energy_regressor = magic_mobile()
 
 num_filt = 136
-# energy_regressor = magic_inception(num_filt, num_classes=1, dropout=0, do_res=False)
+energy_regressor = magic_inception(num_filt, num_classes=1, dropout=0, do_res=False)
 # energy_regressor.compile(optimizer='adam', loss='mse')
 
-energy_regressor = magic_mobile_singleStem()
-net_name = 'mobileCBAM-fullyCNN-SingleStem-long-wide'
+# energy_regressor = magic_mobile_singleStem()
+net_name = 'magic-inception-prunedData'
 
 energy_regressor.compile(optimizer='adam', loss='mse')
 
 energy_regressor.summary()
 
 # %%
+# M = 5  # number of snapshots
+# nb_epoch = T = 120  # number of epochs
+# alpha_zero = 0.15  # initial learning rate
+# model_prefix = 'Model_'
 
+# callbacks = SnapshotCallbackBuilder(T, M, alpha_zero).get_callbacks(model_prefix=net_name)
 
-early_stop = EarlyStopping(patience=8, min_delta=0.0001)
+early_stop = EarlyStopping(patience=5, min_delta=0.0001)
 nan_stop = TerminateOnNaN()
 ten_dir = '/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/tensorboard_dir' + net_name
-tensorboard = keras.callbacks.TensorBoard(log_dir=ten_dir, histogram_freq=1,
-                                          write_graph=True, write_images=True)
+# tensorboard = keras.callbacks.TensorBoard(log_dir=ten_dir, histogram_freq=1,
+#                                           write_graph=False, write_images=False)
 check = ModelCheckpoint('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints/' + net_name + '.hdf5',
-                        period=3,
+                        period=5,
                         save_best_only=True)
 reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.4,
-                              patience=4, min_lr=0.000005)
+                              patience=2, min_lr=0.000005)
 # [:,:,:,1].reshape((134997, 67, 68, 1))
+
+# callbacks.append(tensorboard)
+
 result = energy_regressor.fit({'m1': m1_tr, 'm2': m2_tr}, energy_tr,
                               batch_size=512,
-                              epochs=100,
+                              epochs=50,
                               verbose=1,
                               validation_data=({'m1': m1_val, 'm2': m2_val}, energy_val),
-                              callbacks=[early_stop, nan_stop, reduce_lr, check, tensorboard])
+                              callbacks=[early_stop, nan_stop, check, reduce_lr])
 
 # %% Save and plot stuff
 

@@ -316,8 +316,8 @@ def inception_module(input, dropout, num_filters, do_res=False):
 
 def magic_inception(num_filters_first_conv, dropout, num_classes,
                     do_res=False):  # num filters conv = 270 ist goot
-    m1 = Input(shape=(67, 68, 1), name='m1')
-    m2 = Input(shape=(67, 68, 1), name='m2')
+    m1 = Input(shape=(67, 68, 2), name='m1')
+    m2 = Input(shape=(67, 68, 2), name='m2')
     input_img = concatenate([m1, m2])
 
     first_step = Conv2D(filters=int(num_filters_first_conv), kernel_size=(5, 5), strides=(2, 2))(input_img)
@@ -351,7 +351,7 @@ def magic_inception(num_filters_first_conv, dropout, num_classes,
     # last = Dropout(0.8)(last)
     last = Dense(num_filters_first_conv)(last)
     last = LeakyReLU()(last)
-    last = Dropout(0.3)(last)
+    # last = Dropout(0.3)(last)
     last = Dense(int(num_filters_first_conv / 3))(last)
     last = LeakyReLU()(last)
     # last = Dropout(0.5)(last)
