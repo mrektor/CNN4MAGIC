@@ -47,7 +47,7 @@ ten_dir = '/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/tensorboard_dir' + n
 # tensorboard = keras.callbacks.TensorBoard(log_dir=ten_dir, histogram_freq=1,
 #                                           write_graph=False, write_images=False)
 check = ModelCheckpoint('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints/' + net_name + '.hdf5',
-                        period=5,
+                        period=1,
                         save_best_only=True)
 reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.4,
                               patience=2, min_lr=0.000005)

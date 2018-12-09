@@ -380,7 +380,7 @@ class LRFinder(Callback):
 
         warnings.simplefilter("default")
 
-    def plot_schedule(self, clip_beginning=None, clip_endding=None):
+    def plot_schedule(self, clip_beginning=None, clip_endding=None, net_name=''):
         """
         Plots the schedule from the callback itself.
         # Arguments:
@@ -419,6 +419,9 @@ class LRFinder(Callback):
         plt.title('Learning rate vs Loss')
         plt.xlabel('learning rate')
         plt.ylabel('loss')
+        plt.savefig('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/learning_rates_pics/' + net_name + '_lr_loss.png')
+        plt.savefig('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/learning_rates_pics/' + net_name + '_lr_loss.eps')
+
         plt.show()
 
     @classmethod

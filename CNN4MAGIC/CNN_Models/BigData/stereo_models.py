@@ -373,10 +373,10 @@ def single_DenseNet():
     m1 = Input(shape=(67, 68, 2), name='m1')
     m2 = Input(shape=(67, 68, 2), name='m2')
     input_img = concatenate([m1, m2])
-    dense_out = SEDenseNet(input_tensor=input_img, include_top=False)
+    dense_out = SEDenseNet(input_tensor=input_img, include_top=False, depth=25, nb_dense_block=3)
 
     x = dense_out.layers[-1].output
-    x = Dense(1, name='energy')(x)
+    x = Dense(1, name='energy', kernel_regularizer='l2')(x)
     model1 = Model(inputs=[m1, m2], output=x)
     return model1
 
@@ -389,5 +389,5 @@ def single_DenseNet():
 #
 # model.summary()
 
-# model = single_DenseNet()
-# model.summary()
+model = single_DenseNet()
+model.summary()
