@@ -3,8 +3,9 @@ import pickle
 
 import numpy as np
 from keras.callbacks import ModelCheckpoint, EarlyStopping, TerminateOnNaN, ReduceLROnPlateau
-from keras.optimizers import Adam
+from keras.optimizers import SGD
 
+from CNN4MAGIC.CNN_Models.BigData.cyclical_lr import CyclicLR
 from CNN4MAGIC.CNN_Models.BigData.loader import load_data_append
 from CNN4MAGIC.CNN_Models.BigData.stereo_models import single_DenseNet
 from CNN4MAGIC.CNN_Models.BigData.utils import plot_hist2D, plot_gaussian_error
@@ -26,9 +27,9 @@ num_filt = 136
 # energy_regressor.compile(optimizer='adam', loss='mse')
 
 energy_regressor = single_DenseNet()
-net_name = 'single-SE-DenseNet-vanilla'
+net_name = 'single-SE-DenseNet-25-3-CLR'
 
-opt = Adam(lr=0.05)
+opt = SGD(lr=0.4)
 energy_regressor.compile(optimizer=opt, loss='mse')
 
 energy_regressor.summary()
@@ -55,12 +56,15 @@ reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.4,
 
 # callbacks.append(tensorboard)
 
+clr = CyclicLR(base_lr=0.00003, max_lr=0.35,
+               step_size=900., mode='triangular')
+
 result = energy_regressor.fit({'m1': m1_tr, 'm2': m2_tr}, energy_tr,
                               batch_size=64,
                               epochs=50,
                               verbose=1,
                               validation_data=({'m1': m1_val, 'm2': m2_val}, energy_val),
-                              callbacks=[early_stop, nan_stop, check, reduce_lr])
+                              callbacks=[early_stop, nan_stop, check, clr])
 
 # %% Free memory
 print('Freeing memory from training and validation data')

@@ -424,6 +424,15 @@ class LRFinder(Callback):
 
         plt.show()
 
+        plt.semilogy(lrs, losses)
+        plt.title('Learning rate vs Loss (LOG)')
+        plt.xlabel('learning rate')
+        plt.ylabel('loss on LOG')
+        plt.savefig('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/learning_rates_pics/' + net_name + '_lr_loss.png')
+        plt.savefig('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/learning_rates_pics/' + net_name + '_lr_loss.eps')
+
+        plt.show()
+
     @classmethod
     def restore_schedule_from_dir(cls, directory, clip_beginning=None, clip_endding=None):
         """
