@@ -27,7 +27,7 @@ energy_val = np.log10(energy_val)
 # energy_regressor.compile(optimizer='adam', loss='mse')
 
 energy_regressor = single_DenseNet()
-net_name = 'single-SE-DenseNet-25-3-Dropout-CLR'
+net_name = 'single-CBAM-DenseNet-25-3-CLR'
 opt = SGD(lr=0.4)
 energy_regressor.compile(optimizer=opt, loss='mse')
 
@@ -56,8 +56,8 @@ check = ModelCheckpoint('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkp
 
 # callbacks.append(tensorboard)
 
-clr = CyclicLR(base_lr=0.00003, max_lr=0.45,
-               step_size=1300., mode='triangular')
+clr = CyclicLR(base_lr=0.00003, max_lr=0.4,
+               step_size=677., mode='triangular')
 
 result = energy_regressor.fit({'m1': m1_tr, 'm2': m2_tr}, energy_tr,
                               batch_size=64,

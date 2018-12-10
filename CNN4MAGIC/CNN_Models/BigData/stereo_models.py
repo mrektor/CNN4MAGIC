@@ -2,6 +2,7 @@ import keras
 from keras.layers import *
 from keras.models import Model
 
+from CNN4MAGIC.CNN_Models.BigData.cbam_DenseNet import CBAMDenseNet
 from CNN4MAGIC.CNN_Models.BigData.se_DenseNet import SEDenseNet
 
 
@@ -377,6 +378,18 @@ def single_DenseNet():
 
     x = dense_out.layers[-1].output
     x = Dense(1, name='energy')(x)
+    model1 = Model(inputs=[m1, m2], output=x)
+    return model1
+
+
+def single_CBAM_DenseNet():
+    m1 = Input(shape=(67, 68, 2), name='m1')
+    m2 = Input(shape=(67, 68, 2), name='m2')
+    input_img = concatenate([m1, m2])
+    dense_out = CBAMDenseNet(input_tensor=input_img, include_top=False, depth=25, nb_dense_block=3, dropout_rate=0)
+
+    x = dense_out.layers[-1].output
+    x = Dense(1, name='energy', kernel_regularizer='l2')(x)
     model1 = Model(inputs=[m1, m2], output=x)
     return model1
 

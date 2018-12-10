@@ -2,18 +2,19 @@ from __future__ import print_function
 
 import os
 
-import numpy as np
 from keras.callbacks import ModelCheckpoint
 from keras.optimizers import SGD
 
 from CNN4MAGIC.CNN_Models.BigData.clr import LRFinder
 from CNN4MAGIC.CNN_Models.BigData.loader import load_data_append
-from CNN4MAGIC.CNN_Models.BigData.stereo_models import single_DenseNet
+from CNN4MAGIC.CNN_Models.BigData.stereo_models import *
 
 if not os.path.exists('weights/'):
     os.makedirs('weights/')
 
-weights_file = 'weights/mobilenet_v2_schedule.h5'
+net_name = 'single-CBAM-DenseNet-25-3'
+
+weights_file = 'weights/' + net_name + '.h5'
 model_checkpoint = ModelCheckpoint(weights_file, save_best_only=True,
                                    save_weights_only=True)
 
@@ -53,8 +54,7 @@ LRFinder.plot_schedule_from_file('weights/', clip_beginning=10, clip_endding=5)
 
 # For training, the auxilary branch must be used to correctly train NASNet
 
-net_name = 'single-SE-DenseNet-25-3'
-model = single_DenseNet()
+model = single_CBAM_DenseNet()
 model.summary()
 
 optimizer = SGD(lr=0.1, momentum=0.9, nesterov=True)
