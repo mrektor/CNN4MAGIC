@@ -248,8 +248,8 @@ def compute_bin_gaussian_error(y_true, y_pred, net_name, num_bins=10, plot=True,
         idx_bin = np.logical_and(y_true > bins[i], y_true < bins[i + 1])
         y_bin_true_lin = np.power(10, y_true[idx_bin])
         y_bin_pred_lin = np.power(10, y_pred[idx_bin].flatten())
-        error = np.divide((y_bin_true_lin - y_bin_pred_lin), y_bin_true_lin)
-        error = error[:, np.newaxis]  # Add a new axis just for interface with Gaussian Mixture
+        error_pure = np.divide((y_bin_true_lin - y_bin_pred_lin), y_bin_true_lin)
+        error = error_pure[:, np.newaxis]  # Add a new axis just for interface with Gaussian Mixture
 
         gaussian.fit(error)
         mu = gaussian.means_
@@ -257,6 +257,8 @@ def compute_bin_gaussian_error(y_true, y_pred, net_name, num_bins=10, plot=True,
         bins_mu[i] = mu
         bins_sigma[i] = sigma
         bins_median_value[i] = np.sqrt([bins[i] * bins[i + 1]])
+        np.savetxt('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/errors/' + net_name + 'error_bin_' + str(
+            bins_median_value[i]) + '.gz', error_pure)
         if plot:
             plt.subplot(n_row, n_col, i + 1)
             plt.hist(error.flatten(), bins=80, density=True)

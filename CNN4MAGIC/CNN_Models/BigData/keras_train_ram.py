@@ -2,7 +2,7 @@ import gc
 import pickle
 
 import numpy as np
-from keras.callbacks import ModelCheckpoint, EarlyStopping, TerminateOnNaN, ReduceLROnPlateau
+from keras.callbacks import ModelCheckpoint
 from keras.optimizers import SGD
 
 from CNN4MAGIC.CNN_Models.BigData.cyclical_lr import CyclicLR
@@ -22,17 +22,17 @@ energy_val = np.log10(energy_val)
 # m1 = Input(shape=(67, 68, 2), name='m1')
 # energy_regressor = magic_mobile()
 
-num_filt = 136
+# num_filt = 136
 # energy_regressor = magic_inception(num_filt, num_classes=1, dropout=0, do_res=False)
 # energy_regressor.compile(optimizer='adam', loss='mse')
 
 energy_regressor = single_DenseNet()
-net_name = 'single-SE-DenseNet-25-3-CLR'
-
+net_name = 'single-SE-DenseNet-25-3-Dropout-CLR'
 opt = SGD(lr=0.4)
 energy_regressor.compile(optimizer=opt, loss='mse')
 
 energy_regressor.summary()
+gc.collect()
 
 # %%
 # M = 5  # number of snapshots
@@ -42,29 +42,29 @@ energy_regressor.summary()
 
 # callbacks = SnapshotCallbackBuilder(T, M, alpha_zero).get_callbacks(model_prefix=net_name)
 
-early_stop = EarlyStopping(patience=5, min_delta=0.0001)
-nan_stop = TerminateOnNaN()
+# early_stop = EarlyStopping(patience=5, min_delta=0.0001)
+# nan_stop = TerminateOnNaN()
 ten_dir = '/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/tensorboard_dir' + net_name
 # tensorboard = keras.callbacks.TensorBoard(log_dir=ten_dir, histogram_freq=1,
 #                                           write_graph=False, write_images=False)
 check = ModelCheckpoint('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints/' + net_name + '.hdf5',
                         period=1,
                         save_best_only=True)
-reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.4,
-                              patience=2, min_lr=0.000005)
+# reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.4,
+#                               patience=2, min_lr=0.000005)
 # [:,:,:,1].reshape((134997, 67, 68, 1))
 
 # callbacks.append(tensorboard)
 
-clr = CyclicLR(base_lr=0.00003, max_lr=0.35,
-               step_size=900., mode='triangular')
+clr = CyclicLR(base_lr=0.00003, max_lr=0.45,
+               step_size=1300., mode='triangular')
 
 result = energy_regressor.fit({'m1': m1_tr, 'm2': m2_tr}, energy_tr,
                               batch_size=64,
                               epochs=50,
                               verbose=1,
                               validation_data=({'m1': m1_val, 'm2': m2_val}, energy_val),
-                              callbacks=[early_stop, nan_stop, check, clr])
+                              callbacks=[clr, check])
 
 # %% Free memory
 print('Freeing memory from training and validation data')
