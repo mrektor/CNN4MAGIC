@@ -12,7 +12,7 @@ from CNN4MAGIC.CNN_Models.BigData.stereo_models import *
 if not os.path.exists('weights/'):
     os.makedirs('weights/')
 
-net_name = 'single-CBAM-DenseNet-25-3'
+net_name = 'single-SE-DenseNet-big-121'
 
 weights_file = 'weights/' + net_name + '.h5'
 model_checkpoint = ModelCheckpoint(weights_file, save_best_only=True,
@@ -54,7 +54,7 @@ LRFinder.plot_schedule_from_file('weights/', clip_beginning=10, clip_endding=5)
 
 # For training, the auxilary branch must be used to correctly train NASNet
 
-model = single_CBAM_DenseNet()
+model = single_big_SE_Densenet()
 model.summary()
 
 optimizer = SGD(lr=0.1, momentum=0.9, nesterov=True)

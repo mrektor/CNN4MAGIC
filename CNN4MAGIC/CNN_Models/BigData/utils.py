@@ -231,6 +231,7 @@ def compute_bin_gaussian_error(y_true, y_pred, net_name, num_bins=10, plot=True,
     :param num_bin: Number of bins
     :return: bins_mu, bins_sigma, bins_mean_value
     '''
+
     gaussian = GaussianMixture(n_components=1)
     bins = np.linspace(1, max(y_true), num_bins)
 
@@ -248,7 +249,7 @@ def compute_bin_gaussian_error(y_true, y_pred, net_name, num_bins=10, plot=True,
         idx_bin = np.logical_and(y_true > bins[i], y_true < bins[i + 1])
         y_bin_true_lin = np.power(10, y_true[idx_bin])
         y_bin_pred_lin = np.power(10, y_pred[idx_bin].flatten())
-        error_pure = np.divide((y_bin_true_lin - y_bin_pred_lin), y_bin_true_lin)
+        error_pure = np.divide((y_bin_pred_lin - y_bin_true_lin), y_bin_true_lin)
         error = error_pure[:, np.newaxis]  # Add a new axis just for interface with Gaussian Mixture
 
         gaussian.fit(error)
@@ -261,7 +262,8 @@ def compute_bin_gaussian_error(y_true, y_pred, net_name, num_bins=10, plot=True,
             bins_median_value[i]) + '.gz', error_pure)
         if plot:
             plt.subplot(n_row, n_col, i + 1)
-            plt.hist(error.flatten(), bins=80, density=True)
+            # plt.hist(error.flatten(), bins=50, density=False)
+            sns.distplot(error_pure, kde=True, rug=True, bins=50)
             mu = mu.flatten()
             sigma = sigma.flatten()
             x = np.linspace(mu - 3 * sigma, mu + 3 * sigma, 100)
@@ -273,12 +275,40 @@ def compute_bin_gaussian_error(y_true, y_pred, net_name, num_bins=10, plot=True,
         plt.tight_layout()
         plt.savefig(fig_folder + net_name + '_GaussianErrorDist.png')
         plt.savefig(fig_folder + net_name + '_GaussianErrorDist.eps')
+        plt.show()
 
     bins_median_value_lin = np.power(10, bins_median_value)  # Bins back to linear
     return bins_mu, bins_sigma, bins_median_value_lin
 
 
 def plot_gaussian_error(y_true, y_pred, net_name, fig_folder, num_bins=10, **kwargs):
+    ######## PAPER DATA
+    cutting_edge_magic_bins = [[47, 75],
+                               [75, 119],
+                               [119, 189],
+                               [189, 299],
+                               [299, 475],
+                               [475, 753],
+                               [753, 1194],
+                               [1194, 1892],
+                               [1892, 2999],
+                               [2999, 4754],
+                               [4754, 7535],
+                               [7535, 11943],
+                               [11943, 18929]]
+    cutting_edge_magic_bins_median = []
+    for bins in cutting_edge_magic_bins:
+        median = np.sqrt(bins[0] * bins[1])
+        cutting_edge_magic_bins_median.append(median)
+    cutting_edge_magic_bins_median = np.array(cutting_edge_magic_bins_median)
+
+    cutting_edge_magic_bias = np.array(
+        [24.6, 7.1, -0.1, -1.5, -2.2, -2.1, -1.4, -1.8, -2.3, -1.7, -2.6, -2.1, -6.7]) * 0.01
+    cutting_edge_magic_sigma = np.array(
+        [21.8, 19.8, 18.0, 16.8, 15.5, 14.8, 15.4, 16.1, 18.1, 19.6, 21.9, 22.7, 20.7]) * 0.01
+    cutting_edge_magic_RMS = np.array([22.5, 20.9, 21.3, 20.49, 20.20, 20.21, 21.3, 21.3, 23.2, 25.1, 26.5, 26.8, 24.4])
+    ########
+
     bins_mu, bins_sigma, bins_median_value = compute_bin_gaussian_error(y_true, y_pred, net_name, num_bins,
                                                                         fig_folder=fig_folder, **kwargs)
     fig_width = 9
@@ -286,8 +316,9 @@ def plot_gaussian_error(y_true, y_pred, net_name, fig_folder, num_bins=10, **kwa
     plt.subplot(1, 2, 1)
     plt.semilogx(bins_median_value, bins_mu, '-*g')
     # plt.semilogx([min(bins_median_value), max(bins_median_value)], [np.mean(bins_mu), np.mean(bins_mu)], 'r--')
+    plt.semilogx(cutting_edge_magic_bins_median, cutting_edge_magic_bias, 'r-o')
     plt.grid(which='both')
-    plt.legend(['Estimated $\mu$'])
+    plt.legend(['Estimated $\mu$', 'Cutting Edge Technology'])
     plt.xlabel('Bin mean value')
     plt.ylabel('$\mu$ of linear prediction error')
     plt.title('$\mu$ distribution for each bin')
@@ -295,16 +326,18 @@ def plot_gaussian_error(y_true, y_pred, net_name, fig_folder, num_bins=10, **kwa
 
     plt.subplot(1, 2, 2)
     # plt.figure()
-    plt.semilogx(bins_median_value, bins_sigma, '-o')
+    plt.semilogx(bins_median_value, bins_sigma, '-*')
+    plt.semilogx(cutting_edge_magic_bins_median, cutting_edge_magic_sigma, '--*')
     # plt.semilogx([min(bins_median_value), max(bins_median_value)], [np.mean(bins_sigma), np.mean(bins_sigma)], 'r--')
     plt.grid(which='both')
     plt.ylabel('$\sigma$ of linear prediction error')
     plt.xlabel('Bin median value')
     plt.title('$\sigma$ distribution for each bin')
-    plt.legend(['Estimated $\sigma$'])
+    plt.legend(['Estimated $\sigma$', 'Cutting Edge Technology'])
     plt.tight_layout()
     plt.savefig(fig_folder + net_name + '.png')
     plt.savefig(fig_folder + net_name + '.eps')
+    plt.show()
     plt.close()
 
 
@@ -319,6 +352,7 @@ def plot_hist2D(y_true, y_pred, net_name, fig_folder, num_bins=10):
     plt.legend(['Ideal Line'])
     plt.savefig(fig_folder + net_name + '.png')
     plt.savefig(fig_folder + net_name + '.eps')
+    plt.show()
     plt.close()
 
 

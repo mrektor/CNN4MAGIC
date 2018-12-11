@@ -3,7 +3,7 @@ from keras.layers import *
 from keras.models import Model
 
 from CNN4MAGIC.CNN_Models.BigData.cbam_DenseNet import CBAMDenseNet
-from CNN4MAGIC.CNN_Models.BigData.se_DenseNet import SEDenseNet
+from CNN4MAGIC.CNN_Models.BigData.se_DenseNet import SEDenseNet, SEDenseNetImageNet121
 
 
 # %%
@@ -181,7 +181,7 @@ def energy_stereo_time_v1():
     return energy_regressor
 
 
-#%%
+# %%
 def bottleneck_block(x, expand=64, squeeze=16, stride=(1, 1)):
     m = Conv2D(expand, (1, 1))(x)
     m = BatchNormalization()(m)
@@ -266,7 +266,6 @@ def magic_mobile_singleStem():
 
     last_out = stem_mobilenetV2(input_img)
     last_out = Dropout(0.3)(last_out)
-
 
     out = Dense(32)(last_out)
     out = BatchNormalization()(out)
@@ -393,6 +392,19 @@ def single_CBAM_DenseNet():
     model1 = Model(inputs=[m1, m2], output=x)
     return model1
 
+
+def single_big_SE_Densenet():
+    m1 = Input(shape=(67, 68, 2), name='m1')
+    m2 = Input(shape=(67, 68, 2), name='m2')
+    input_img = concatenate([m1, m2])
+    dense_out = SEDenseNetImageNet121(input_tensor=input_img, include_top=False)
+    x = dense_out.layers[-1].output
+    x = Dense(124, name='dense_last', kernel_regularizer='l2', activity_regularizer='l2')(x)
+    x = Dense(1, name='energy', kernel_regularizer='l2')(x)
+    model1 = Model(inputs=[m1, m2], output=x)
+    return model1
+
+
 # %%
 # input_shape = (67, 68, 2)
 #
@@ -402,5 +414,5 @@ def single_CBAM_DenseNet():
 #
 # model.summary()
 
-# model = single_DenseNet()
+# model = single_big_SE_Densenet()
 # model.summary()

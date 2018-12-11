@@ -1,14 +1,15 @@
 import gc
+import os
 import pickle
 
-import numpy as np
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, TensorBoard
+from keras.models import load_model
 from keras.optimizers import SGD
 
 from CNN4MAGIC.CNN_Models.BigData.clr import OneCycleLR
 from CNN4MAGIC.CNN_Models.BigData.cyclical_lr import CyclicLR
 from CNN4MAGIC.CNN_Models.BigData.loader import load_data_append
-from CNN4MAGIC.CNN_Models.BigData.stereo_models import single_CBAM_DenseNet
+from CNN4MAGIC.CNN_Models.BigData.stereo_models import *
 from CNN4MAGIC.CNN_Models.BigData.utils import plot_hist2D, plot_gaussian_error
 
 # %%
@@ -20,16 +21,16 @@ energy_tr = np.log10(energy_tr)
 energy_val = np.log10(energy_val)
 # %%
 # LOAD and COMPILE model
-# m1 = Input(shape=(67, 68, 2), name='m1')
-# energy_regressor = magic_mobile()
+net_name = 'single-SE-DenseNet-long-121-OneCLR'
+path = '/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints/' + net_name + '.hdf5'
 
-# num_filt = 136
-# energy_regressor = magic_inception(num_filt, num_classes=1, dropout=0, do_res=False)
-# energy_regressor.compile(optimizer='adam', loss='mse')
+if os.path.exists(path):
+    print('Loading model ' + net_name + '...')
+    energy_regressor = load_model(path)
+else:
+    energy_regressor = single_big_SE_Densenet()
 
-energy_regressor = single_CBAM_DenseNet()
-net_name = 'single-CBAM-DenseNet-25-3-OneCLR'
-opt = SGD(lr=0.4)
+opt = SGD(lr=0.08)
 energy_regressor.compile(optimizer=opt, loss='mse')
 
 energy_regressor.summary()
@@ -59,11 +60,11 @@ reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.4,
 
 clr = CyclicLR(base_lr=0.00003, max_lr=0.4,
                step_size=1000, mode='triangular')
-clr_1 = OneCycleLR(batch_size=64, max_lr=0.4, num_samples=130794, num_epochs=40)
+clr_1 = OneCycleLR(batch_size=64, max_lr=5E-4, num_samples=130794, num_epochs=20)
 
 result = energy_regressor.fit({'m1': m1_tr, 'm2': m2_tr}, energy_tr,
                               batch_size=64,
-                              epochs=10,
+                              epochs=20,
                               verbose=1,
                               validation_data=({'m1': m1_val, 'm2': m2_val}, energy_val),
                               callbacks=[clr_1, check])
@@ -86,7 +87,7 @@ print('Plotting stuff...')
 plot_hist2D(y_test, y_pred, fig_folder='/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/pics/', net_name=net_name,
             num_bins=100)
 
-plot_gaussian_error(y_test, y_pred, net_name=net_name + '_10bin', num_bins=10,
+plot_gaussian_error(y_test, y_pred, net_name=net_name + '_13bin', num_bins=13,
                     fig_folder='/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/pics/')
 
 # %%
