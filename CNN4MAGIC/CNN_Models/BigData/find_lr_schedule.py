@@ -12,7 +12,7 @@ from CNN4MAGIC.CNN_Models.BigData.stereo_models import *
 if not os.path.exists('weights/'):
     os.makedirs('weights/')
 
-net_name = 'single-SE-DenseNet-big-121'
+net_name = 'single-SE-DenseNet-10-4-Gold'
 
 weights_file = 'weights/' + net_name + '.h5'
 model_checkpoint = ModelCheckpoint(weights_file, save_best_only=True,
@@ -34,7 +34,7 @@ num_samples = m1_tr.shape[0]
 # Exponential lr finder
 # USE THIS FOR A LARGE RANGE SEARCH
 # Uncomment the validation_data flag to reduce speed but get a better idea of the learning rate
-lr_finder = LRFinder(num_samples, batch_size, minimum_lr=1e-5, maximum_lr=10,
+lr_finder = LRFinder(num_samples, batch_size, minimum_lr=1e-4, maximum_lr=20,
                      lr_scale='exp',
                      # validation_data=({'m1': m1_val, 'm2': m2_val}, energy_val),  # use the validation data for losses
                      validation_sample_rate=5,
@@ -54,7 +54,7 @@ LRFinder.plot_schedule_from_file('weights/', clip_beginning=10, clip_endding=5)
 
 # For training, the auxilary branch must be used to correctly train NASNet
 
-model = single_big_SE_Densenet()
+model = single_DenseNet()
 model.summary()
 
 optimizer = SGD(lr=0.1, momentum=0.9, nesterov=True)

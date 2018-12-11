@@ -1,9 +1,8 @@
 import gc
-import os
 import pickle
 
+import matplotlib.pyplot as plt
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, TensorBoard
-from keras.models import load_model
 from keras.optimizers import SGD
 
 from CNN4MAGIC.CNN_Models.BigData.clr import OneCycleLR
@@ -21,15 +20,17 @@ energy_tr = np.log10(energy_tr)
 energy_val = np.log10(energy_val)
 # %%
 # LOAD and COMPILE model
-net_name = 'single-SE-DenseNet-long-121-OneCLR'
+net_name = 'single-SE-DenseNet-piccina-Gold'
 path = '/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints/' + net_name + '.hdf5'
 
-if os.path.exists(path):
-    print('Loading model ' + net_name + '...')
-    energy_regressor = load_model(path)
-else:
-    energy_regressor = single_big_SE_Densenet()
+# if os.path.exists(path):
+#     print('Loading model ' + net_name + '...')
+#     energy_regressor = load_model(path)
+# else:
+#     energy_regressor = single_big_SE_Densenet()
 
+energy_regressor = single_DenseNet()
+EPOCHS = 50
 opt = SGD(lr=0.08)
 energy_regressor.compile(optimizer=opt, loss='mse')
 
@@ -58,13 +59,13 @@ reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.4,
 
 # callbacks.append(tensorboard)
 
-clr = CyclicLR(base_lr=0.00003, max_lr=0.4,
+clr = CyclicLR(base_lr=0.00003, max_lr=0.01,
                step_size=1000, mode='triangular')
-clr_1 = OneCycleLR(batch_size=64, max_lr=5E-4, num_samples=130794, num_epochs=20)
+clr_1 = OneCycleLR(batch_size=64, max_lr=0.01, num_samples=25161, num_epochs=EPOCHS)
 
 result = energy_regressor.fit({'m1': m1_tr, 'm2': m2_tr}, energy_tr,
                               batch_size=64,
-                              epochs=20,
+                              epochs=EPOCHS,
                               verbose=1,
                               validation_data=({'m1': m1_val, 'm2': m2_val}, energy_val),
                               callbacks=[clr_1, check])
@@ -89,6 +90,18 @@ plot_hist2D(y_test, y_pred, fig_folder='/data/mariotti_data/CNN4MAGIC/CNN_Models
 
 plot_gaussian_error(y_test, y_pred, net_name=net_name + '_13bin', num_bins=13,
                     fig_folder='/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/pics/')
+
+# summarize history for loss
+plt.plot(result.history['loss'])
+plt.plot(result.history['val_loss'])
+plt.title('model loss')
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'])
+plt.savefig('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/hystories/' + net_name + '_history.png')
+plt.savefig('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/hystories/' + net_name + '_history.eps')
+
+plt.show()
 
 # %%
 # Free memory

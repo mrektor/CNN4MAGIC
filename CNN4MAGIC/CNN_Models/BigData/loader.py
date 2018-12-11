@@ -260,7 +260,7 @@ def load_data_append(which='train', fileListFolder='/data2T/mariotti_data_2/inte
 
 
     if which == 'test':
-        toLoad = fileList[2000:]
+        toLoad = fileList[1900:]
         print('Loading TEST data')
 
     if which == 'debug':
@@ -276,12 +276,14 @@ def load_data_append(which='train', fileListFolder='/data2T/mariotti_data_2/inte
             data = pickle.load(f)
             if prune:
                 # Conditions
-                impact = data['impact'] < 80000
+                impact1 = data['complete_simulation_parameters_M1']['impact'] < 11000
+                impact2 = data['complete_simulation_parameters_M2']['impact'] < 11000
                 intensity_ok_1 = data['extras1']['intensity'] > 100
-                leak_ok_1 = data['extras1']['leakage2_pixel'] < 0.2
+                leak_ok_1 = data['extras1']['leakage1_pixel'] < 0.2
                 intensity_ok_2 = data['extras2']['intensity'] > 100
-                leak_ok_2 = data['extras2']['leakage2_pixel'] < 0.2
-                condition = np.logical_and(impact, intensity_ok_1)
+                leak_ok_2 = data['extras2']['leakage1_pixel'] < 0.2
+                condition = np.logical_and(impact1, impact2)
+                condition = np.logical_and(condition, intensity_ok_1)
                 condition = np.logical_and(condition, leak_ok_1)
                 condition = np.logical_and(condition, intensity_ok_2)
                 condition = np.logical_and(condition, leak_ok_2)

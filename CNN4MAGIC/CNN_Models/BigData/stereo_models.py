@@ -373,10 +373,11 @@ def single_DenseNet():
     m1 = Input(shape=(67, 68, 2), name='m1')
     m2 = Input(shape=(67, 68, 2), name='m2')
     input_img = concatenate([m1, m2])
-    dense_out = SEDenseNet(input_tensor=input_img, include_top=False, depth=25, nb_dense_block=3, dropout_rate=0.4)
+    dense_out = SEDenseNet(input_tensor=input_img, include_top=False, depth=10, nb_dense_block=4, dropout_rate=0)
 
     x = dense_out.layers[-1].output
-    x = Dense(1, name='energy')(x)
+    # x = Dense(32, kernel_regularizer='l1')(x)
+    x = Dense(1, name='energy', kernel_regularizer='l2')(x)
     model1 = Model(inputs=[m1, m2], output=x)
     return model1
 
@@ -385,7 +386,7 @@ def single_CBAM_DenseNet():
     m1 = Input(shape=(67, 68, 2), name='m1')
     m2 = Input(shape=(67, 68, 2), name='m2')
     input_img = concatenate([m1, m2])
-    dense_out = CBAMDenseNet(input_tensor=input_img, include_top=False, depth=25, nb_dense_block=3, dropout_rate=0)
+    dense_out = CBAMDenseNet(input_tensor=input_img, include_top=False, depth=20, nb_dense_block=2, dropout_rate=0)
 
     x = dense_out.layers[-1].output
     x = Dense(1, name='energy', kernel_regularizer='l2')(x)
@@ -399,20 +400,11 @@ def single_big_SE_Densenet():
     input_img = concatenate([m1, m2])
     dense_out = SEDenseNetImageNet121(input_tensor=input_img, include_top=False)
     x = dense_out.layers[-1].output
-    x = Dense(124, name='dense_last', kernel_regularizer='l2', activity_regularizer='l2')(x)
+    x = Dense(124, name='dense_last', kernel_regularizer='l1', activity_regularizer='l2')(x)
     x = Dense(1, name='energy', kernel_regularizer='l2')(x)
     model1 = Model(inputs=[m1, m2], output=x)
     return model1
 
-
-# %%
-# input_shape = (67, 68, 2)
 #
-# num_filt = 136
-# model = magic_inception(num_filt, num_classes=1, dropout=0, do_res=False)
-# model.compile(optimizer='adam', loss='mse')
-#
-# model.summary()
-
-# model = single_big_SE_Densenet()
+# model = single_DenseNet()
 # model.summary()
