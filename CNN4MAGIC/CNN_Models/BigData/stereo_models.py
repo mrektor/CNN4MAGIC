@@ -369,7 +369,7 @@ def magic_inception(num_filters_first_conv, dropout, num_classes,
     return cnn
 
 
-def single_DenseNet():
+def single_DenseNet_piccina():
     m1 = Input(shape=(67, 68, 2), name='m1')
     m2 = Input(shape=(67, 68, 2), name='m2')
     input_img = concatenate([m1, m2])
@@ -377,6 +377,19 @@ def single_DenseNet():
 
     x = dense_out.layers[-1].output
     # x = Dense(32, kernel_regularizer='l1')(x)
+    x = Dense(1, name='energy', kernel_regularizer='l2')(x)
+    model1 = Model(inputs=[m1, m2], output=x)
+    return model1
+
+
+def single_DenseNet_10_5():
+    m1 = Input(shape=(67, 68, 2), name='m1')
+    m2 = Input(shape=(67, 68, 2), name='m2')
+    input_img = concatenate([m1, m2])
+    dense_out = SEDenseNet(input_tensor=input_img, include_top=False, depth=10, nb_dense_block=5, dropout_rate=0)
+
+    x = dense_out.layers[-1].output
+    x = Dense(32, kernel_regularizer='l1', activity_regularizer='l2')(x)
     x = Dense(1, name='energy', kernel_regularizer='l2')(x)
     model1 = Model(inputs=[m1, m2], output=x)
     return model1

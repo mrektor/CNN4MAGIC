@@ -427,8 +427,8 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
 
     # Initial convolution
     if subsample_initial_block:
-        initial_kernel = (6, 6)  # CAMBIATO, ERA 7x7
-        initial_strides = (1, 1)
+        initial_kernel = (7, 7)  # CAMBIATO, ERA 7x7
+        initial_strides = (2, 2)
     else:
         initial_kernel = (3, 3)
         initial_strides = (1, 1)

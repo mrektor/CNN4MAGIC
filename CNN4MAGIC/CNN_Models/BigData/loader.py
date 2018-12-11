@@ -255,12 +255,12 @@ def load_data_append(which='train', fileListFolder='/data2T/mariotti_data_2/inte
         print('Loading TRAIN data')
 
     if which == 'val':
-        toLoad = fileList[1500:1900]
+        toLoad = fileList[1500:2000]
         print('Loading VALIDATION data')
 
 
     if which == 'test':
-        toLoad = fileList[1900:]
+        toLoad = fileList[2000:]
         print('Loading TEST data')
 
     if which == 'debug':
