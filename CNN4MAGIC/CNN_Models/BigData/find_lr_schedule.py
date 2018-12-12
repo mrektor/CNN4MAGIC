@@ -12,7 +12,7 @@ from CNN4MAGIC.CNN_Models.BigData.stereo_models import *
 if not os.path.exists('weights/'):
     os.makedirs('weights/')
 
-net_name = 'single-SE-DenseNet-10-5-Gold'
+net_name = 'single-SE-DenseNet-10-5-Gold-adjusted'
 
 weights_file = 'weights/' + net_name + '.h5'
 model_checkpoint = ModelCheckpoint(weights_file, save_best_only=True,
@@ -24,10 +24,10 @@ data_augmentation = False
 
 # The data, shuffled and split between train and test sets:
 m1_tr, m2_tr, energy_tr = load_data_append('train', prune=True)
-m1_val, m2_val, energy_val = load_data_append('val', prune=True)
+# m1_val, m2_val, energy_val = load_data_append('val', prune=True)
 
 energy_tr = np.log10(energy_tr)
-energy_val = np.log10(energy_val)
+# energy_val = np.log10(energy_val)
 # Learning rate finder callback setup
 num_samples = m1_tr.shape[0]
 
