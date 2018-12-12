@@ -20,7 +20,7 @@ energy_tr = np.log10(energy_tr)
 energy_val = np.log10(energy_val)
 # %%
 # LOAD and COMPILE model
-net_name = 'single-SE-DenseNet-10-5-Gold'
+net_name = 'single-SE-DenseNet-25-3-Dense-Gold'
 path = '/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints/' + net_name + '.hdf5'
 
 # if os.path.exists(path):
@@ -29,8 +29,8 @@ path = '/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints/' + net_nam
 # else:
 #     energy_regressor = single_big_SE_Densenet()
 
-energy_regressor = single_DenseNet_10_5()
-EPOCHS = 100
+energy_regressor = single_DenseNet_25_3()
+EPOCHS = 20
 opt = SGD(lr=0.08)
 energy_regressor.compile(optimizer=opt, loss='mse')
 

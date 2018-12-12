@@ -398,6 +398,22 @@ def single_DenseNet_10_5():
     return model1
 
 
+def single_DenseNet_25_3():
+    m1 = Input(shape=(67, 68, 2), name='m1')
+    m2 = Input(shape=(67, 68, 2), name='m2')
+    input_img = concatenate([m1, m2])
+    dense_out = SEDenseNet(input_tensor=input_img, include_top=False, depth=25, nb_dense_block=3, dropout_rate=0)
+
+    x = dense_out.layers[-1].output
+    x = BatchNormalization()(x)
+    x = Dense(32)(x)
+    x = BatchNormalization()(x)
+    x = LeakyReLU()(x)
+    x = Dense(1, name='energy')(x)
+    model1 = Model(inputs=[m1, m2], output=x)
+    return model1
+
+
 def single_CBAM_DenseNet():
     m1 = Input(shape=(67, 68, 2), name='m1')
     m2 = Input(shape=(67, 68, 2), name='m2')
