@@ -4,7 +4,7 @@ from keras.models import load_model
 from CNN4MAGIC.CNN_Models.BigData.loader import load_data_append
 from CNN4MAGIC.CNN_Models.BigData.utils import plot_hist2D, plot_gaussian_error
 
-net_name = 'single-SE-DenseNet-25-3-Dense-Gold'
+net_name = 'single-SE-DenseNet-25-3-Dense-elu-Gold-finetune-MAPE'
 
 path = '/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints/' + net_name + '.hdf5'
 print('Loading model ' + net_name + '...')

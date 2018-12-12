@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, TensorBoard
 from keras.losses import mean_absolute_percentage_error
 from keras.models import load_model
-from keras.optimizers import SGD
+from keras.optimizers import Adam
 
 from CNN4MAGIC.CNN_Models.BigData.clr import OneCycleLR
 from CNN4MAGIC.CNN_Models.BigData.cyclical_lr import CyclicLR
@@ -23,18 +23,20 @@ energy_tr = np.log10(energy_tr)
 energy_val = np.log10(energy_val)
 # %%
 # LOAD and COMPILE model
-net_name = 'single-SE-DenseNet-25-3-Dense-elu-MAPE-Gold'
-path = '/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints/' + net_name + '.hdf5'
+net_name = 'single-SE-DenseNet-25-3-Dense-elu-Gold-finetune-MAPE'
+
+net_name_to_load = 'single-SE-DenseNet-25-3-Dense-elu-Gold'
+path = '/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints/' + net_name_to_load + '.hdf5'
 
 if os.path.exists(path):
-    print('Loading model ' + net_name + '...')
+    print('Loading model ' + net_name_to_load + '...')
     energy_regressor = load_model(path)
-else:
-    energy_regressor = single_big_SE_Densenet()
+# else:
+# energy_regressor = single_big_SE_Densenet()
 
-energy_regressor = single_DenseNet_25_3()
-EPOCHS = 20
-opt = SGD(lr=0.08)
+# energy_regressor = single_DenseNet_25_3()
+EPOCHS = 10
+opt = Adam(lr=0.0005)
 energy_regressor.compile(optimizer=opt, loss=mean_absolute_percentage_error)
 
 energy_regressor.summary()
@@ -56,7 +58,7 @@ tensorboard = TensorBoard(log_dir=ten_dir, histogram_freq=1,
 check = ModelCheckpoint('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints/' + net_name + '.hdf5',
                         period=1,
                         save_best_only=True)
-reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.4,
+reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,
                               patience=1, min_lr=0.000005)
 # [:,:,:,1].reshape((134997, 67, 68, 1))
 
@@ -71,7 +73,7 @@ result = energy_regressor.fit({'m1': m1_tr, 'm2': m2_tr}, energy_tr,
                               epochs=EPOCHS,
                               verbose=1,
                               validation_data=({'m1': m1_val, 'm2': m2_val}, energy_val),
-                              callbacks=[clr_1, check])
+                              callbacks=[reduce_lr, check])
 
 # %% Free memory
 print('Freeing memory from training and validation data')
