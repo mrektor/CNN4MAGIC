@@ -250,7 +250,8 @@ def compute_bin_gaussian_error(y_true, y_pred, net_name, num_bins=10, plot=True,
         y_bin_true_lin = np.power(10, y_true[idx_bin])
         y_bin_pred_lin = np.power(10, y_pred[idx_bin].flatten())
         error_pure = np.divide((y_bin_pred_lin - y_bin_true_lin), y_bin_true_lin)
-        error = error_pure[:, np.newaxis]  # Add a new axis just for interface with Gaussian Mixture
+        error_subset = np.percentile(error_pure, 90, axis=0)
+        error = error_subset[:, np.newaxis]  # Add a new axis just for interface with Gaussian Mixture
 
         gaussian.fit(error)
         mu = gaussian.means_

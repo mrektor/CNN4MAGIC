@@ -3,6 +3,7 @@ from __future__ import print_function
 import os
 
 from keras.callbacks import ModelCheckpoint
+from keras.losses import mean_absolute_percentage_error
 from keras.optimizers import SGD
 
 from CNN4MAGIC.CNN_Models.BigData.clr import LRFinder
@@ -13,6 +14,7 @@ if not os.path.exists('weights/'):
     os.makedirs('weights/')
 
 net_name = 'single-SE-DenseNet-10-5-Gold-adjusted'
+
 
 weights_file = 'weights/' + net_name + '.h5'
 model_checkpoint = ModelCheckpoint(weights_file, save_best_only=True,
@@ -54,11 +56,11 @@ LRFinder.plot_schedule_from_file('weights/', clip_beginning=10, clip_endding=5)
 
 # For training, the auxilary branch must be used to correctly train NASNet
 
-model = single_DenseNet_10_5()
+model = single_DenseNet_25_3()
 model.summary()
 
 optimizer = SGD(lr=0.1, momentum=0.9, nesterov=True)
-model.compile(loss='mse', optimizer=optimizer)
+model.compile(loss=mean_absolute_percentage_error, optimizer=optimizer)
 
 # model.load_weights(weights_file)
 
@@ -67,7 +69,7 @@ if not data_augmentation:
     model.fit({'m1': m1_tr, 'm2': m2_tr}, energy_tr,
               batch_size=batch_size,
               epochs=nb_epoch,
-              validation_data=({'m1': m1_val, 'm2': m2_val}, energy_val),
+              # validation_data=({'m1': m1_val, 'm2': m2_val}, energy_val),
               shuffle=True,
               verbose=1,
               callbacks=[lr_finder, model_checkpoint])

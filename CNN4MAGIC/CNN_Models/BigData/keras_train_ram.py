@@ -1,8 +1,11 @@
 import gc
+import os
 import pickle
 
 import matplotlib.pyplot as plt
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, TensorBoard
+from keras.losses import mean_absolute_percentage_error
+from keras.models import load_model
 from keras.optimizers import SGD
 
 from CNN4MAGIC.CNN_Models.BigData.clr import OneCycleLR
@@ -20,19 +23,19 @@ energy_tr = np.log10(energy_tr)
 energy_val = np.log10(energy_val)
 # %%
 # LOAD and COMPILE model
-net_name = 'single-SE-DenseNet-25-3-Dense-Gold'
+net_name = 'single-SE-DenseNet-25-3-Dense-elu-MAPE-Gold'
 path = '/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints/' + net_name + '.hdf5'
 
-# if os.path.exists(path):
-#     print('Loading model ' + net_name + '...')
-#     energy_regressor = load_model(path)
-# else:
-#     energy_regressor = single_big_SE_Densenet()
+if os.path.exists(path):
+    print('Loading model ' + net_name + '...')
+    energy_regressor = load_model(path)
+else:
+    energy_regressor = single_big_SE_Densenet()
 
 energy_regressor = single_DenseNet_25_3()
 EPOCHS = 20
 opt = SGD(lr=0.08)
-energy_regressor.compile(optimizer=opt, loss='mse')
+energy_regressor.compile(optimizer=opt, loss=mean_absolute_percentage_error)
 
 energy_regressor.summary()
 gc.collect()
@@ -61,7 +64,7 @@ reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.4,
 
 clr = CyclicLR(base_lr=0.00003, max_lr=0.006,
                step_size=1000, mode='triangular')
-clr_1 = OneCycleLR(batch_size=64, max_lr=0.1, num_samples=25161, num_epochs=EPOCHS)
+clr_1 = OneCycleLR(batch_size=64, max_lr=0.00063, num_samples=25161, num_epochs=EPOCHS)
 
 result = energy_regressor.fit({'m1': m1_tr, 'm2': m2_tr}, energy_tr,
                               batch_size=64,

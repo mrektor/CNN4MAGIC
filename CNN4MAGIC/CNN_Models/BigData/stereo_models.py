@@ -408,7 +408,7 @@ def single_DenseNet_25_3():
     x = BatchNormalization()(x)
     x = Dense(32)(x)
     x = BatchNormalization()(x)
-    x = LeakyReLU()(x)
+    x = ELU()(x)
     x = Dense(1, name='energy')(x)
     model1 = Model(inputs=[m1, m2], output=x)
     return model1

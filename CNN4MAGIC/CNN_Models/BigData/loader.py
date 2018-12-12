@@ -276,13 +276,19 @@ def load_data_append(which='train', fileListFolder='/data2T/mariotti_data_2/inte
             data = pickle.load(f)
             if prune:
                 # Conditions
+                # energy_level_max = data['complete_simulation_parameters_M1']['energy'] < 1200000
+                # energy_level_min = data['complete_simulation_parameters_M1']['energy'] > 0
+
                 impact1 = data['complete_simulation_parameters_M1']['impact'] < 11000
                 impact2 = data['complete_simulation_parameters_M2']['impact'] < 11000
                 intensity_ok_1 = data['extras1']['intensity'] > 100
                 leak_ok_1 = data['extras1']['leakage1_pixel'] < 0.2
                 intensity_ok_2 = data['extras2']['intensity'] > 100
                 leak_ok_2 = data['extras2']['leakage1_pixel'] < 0.2
-                condition = np.logical_and(impact1, impact2)
+
+                # condition = np.logical_and(energy_level_max, energy_level_min)
+                condition = np.logical_and(impact2, impact1)
+                # condition = np.logical_and(condition, impact2)
                 condition = np.logical_and(condition, intensity_ok_1)
                 condition = np.logical_and(condition, leak_ok_1)
                 condition = np.logical_and(condition, intensity_ok_2)
