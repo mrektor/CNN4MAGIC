@@ -341,7 +341,6 @@ def plot_gaussian_error(y_true, y_pred, net_name, fig_folder, num_bins=10, **kwa
     plt.savefig(fig_folder + net_name + '.png')
     plt.savefig(fig_folder + net_name + '.eps')
     plt.show()
-    plt.close()
 
 
 def plot_hist2D(y_true, y_pred, net_name, fig_folder, num_bins=10):

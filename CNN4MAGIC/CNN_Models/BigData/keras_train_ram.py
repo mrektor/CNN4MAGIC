@@ -34,7 +34,7 @@ else:
     energy_regressor = single_DenseNet_25_3_doubleDense()
 
 # energy_regressor = single_DenseNet_25_3()
-EPOCHS = 40
+EPOCHS = 30
 opt = SGD(lr=0.0005)
 energy_regressor.compile(optimizer=opt, loss='mse')
 
