@@ -375,9 +375,14 @@ def single_DenseNet_piccina():
     input_img = concatenate([m1, m2])
     dense_out = SEDenseNet(input_tensor=input_img, include_top=False, depth=10, nb_dense_block=4, dropout_rate=0)
 
+
     x = dense_out.layers[-1].output
-    # x = Dense(32, kernel_regularizer='l1')(x)
-    x = Dense(1, name='energy', kernel_regularizer='l2')(x)
+    x = BatchNormalization()(x)
+    x = Dense(32)(x)
+    x = BatchNormalization()(x)
+    x = LeakyReLU()(x)
+    x = Dense(1, name='energy')(x)
+
     model1 = Model(inputs=[m1, m2], output=x)
     return model1
 
