@@ -223,7 +223,7 @@ def plot_stuff(model, x_test, y_test, net_name):
         plt.savefig('error_distribution_' + net_name + '.jpg')
 
 
-def compute_bin_gaussian_error(y_true, y_pred, net_name, num_bins=10, plot=True, fig_folder=''):
+def compute_bin_gaussian_error(y_true, y_pred, net_name, num_bins=10, plot=True, save_error=False, fig_folder=''):
     '''
     Helper function that compute the gaussian fit statistics for a nuber of bins
     :param y_pred: Predicted y (Log Scale)
@@ -260,7 +260,8 @@ def compute_bin_gaussian_error(y_true, y_pred, net_name, num_bins=10, plot=True,
         bins_mu[i] = mu
         bins_sigma[i] = sigma
         bins_median_value[i] = np.sqrt([bins[i] * bins[i + 1]])
-        np.savetxt('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/errors/' + net_name + 'error_bin_' + str(
+        if save_error:
+            np.savetxt('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/errors/' + net_name + 'error_bin_' + str(
             bins_median_value[i]) + '.gz', error_pure)
         if plot:
             plt.subplot(n_row, n_col, i + 1)

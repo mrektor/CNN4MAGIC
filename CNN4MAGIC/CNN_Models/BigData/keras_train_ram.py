@@ -22,16 +22,16 @@ energy_tr = np.log10(energy_tr)
 energy_val = np.log10(energy_val)
 # %%
 # LOAD and COMPILE model
-net_name = 'single_SE-DenseNet_piccina_bn_relu-Gold'
+net_name = 'single_DenseNet_25_3_doubleDense'
 
-net_name_to_load = 'single_SE-DenseNet_piccina_bn_relu-Gold'
+net_name_to_load = 'single_DenseNet_25_3_doubleDense'
 path = '/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints/' + net_name_to_load + '.hdf5'
 
 if os.path.exists(path):
     print('Loading model ' + net_name_to_load + '...')
     energy_regressor = load_model(path)
 else:
-    energy_regressor = single_DenseNet_piccina_bn_relu()
+    energy_regressor = single_DenseNet_25_3_doubleDense()
 
 # energy_regressor = single_DenseNet_25_3()
 EPOCHS = 40
