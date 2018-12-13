@@ -15,16 +15,16 @@ from CNN4MAGIC.CNN_Models.BigData.utils import plot_hist2D, plot_gaussian_error
 
 # %%
 # LOAD DATA
-m1_tr, m2_tr, energy_tr = load_data_append('train', prune=True)
-m1_val, m2_val, energy_val = load_data_append('val', prune=True)
+m1_tr, m2_tr, energy_tr = load_data_append('train', prune=True, impact=False)
+m1_val, m2_val, energy_val = load_data_append('val', prune=True, impact=False)
 
 energy_tr = np.log10(energy_tr)
 energy_val = np.log10(energy_val)
 # %%
 # LOAD and COMPILE model
-net_name = 'single_DenseNet_25_3_doubleDense'
+net_name = 'single_DenseNet_25_3_doubleDense-noImpact'
 
-net_name_to_load = 'single_DenseNet_25_3_doubleDense'
+net_name_to_load = 'single_DenseNet_25_3_doubleDense-noImpact'
 path = '/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints/' + net_name_to_load + '.hdf5'
 
 if os.path.exists(path):
@@ -34,7 +34,7 @@ else:
     energy_regressor = single_DenseNet_25_3_doubleDense()
 
 # energy_regressor = single_DenseNet_25_3()
-EPOCHS = 30
+EPOCHS = 40
 opt = SGD(lr=0.0005)
 energy_regressor.compile(optimizer=opt, loss='mse')
 
@@ -81,7 +81,7 @@ gc.collect()
 
 # %% Save and plot stuff
 
-m1_te, m2_te, energy_te = load_data_append('test', prune=True)
+m1_te, m2_te, energy_te = load_data_append('test', prune=True, impact=False)
 y_test = np.log10(energy_te)
 
 print('Making Predictions...')
