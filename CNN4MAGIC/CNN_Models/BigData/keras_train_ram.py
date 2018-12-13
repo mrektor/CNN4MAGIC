@@ -22,7 +22,7 @@ energy_tr = np.log10(energy_tr)
 energy_val = np.log10(energy_val)
 # %%
 # LOAD and COMPILE model
-net_name = 'single-SE-DenseNet-piccina-Dense-Gold'
+net_name = 'single-SE-DenseNet-piccina-Dense-l2-Gold'
 
 net_name_to_load = 'single-SE-DenseNet-piccina-Dense-Gold'
 path = '/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints/' + net_name_to_load + '.hdf5'

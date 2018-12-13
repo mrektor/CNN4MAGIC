@@ -380,8 +380,8 @@ def single_DenseNet_piccina():
     x = BatchNormalization()(x)
     x = Dense(32)(x)
     x = BatchNormalization()(x)
-    x = LeakyReLU()(x)
-    x = Dense(1, name='energy')(x)
+    x = ReLU()(x)
+    x = Dense(1, name='energy', kernel_regularizer='l2')(x)
 
     model1 = Model(inputs=[m1, m2], output=x)
     return model1
