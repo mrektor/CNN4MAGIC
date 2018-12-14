@@ -262,7 +262,7 @@ def compute_bin_gaussian_error(y_true, y_pred, net_name, num_bins=10, plot=True,
         bins_median_value[i] = np.sqrt([bins[i] * bins[i + 1]])
         if save_error:
             np.savetxt('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/errors/' + net_name + 'error_bin_' + str(
-            bins_median_value[i]) + '.gz', error_pure)
+                bins_median_value[i]) + '.gz', error_pure)
         if plot:
             plt.subplot(n_row, n_col, i + 1)
             # plt.hist(error.flatten(), bins=50, density=False)
@@ -352,6 +352,8 @@ def plot_hist2D(y_true, y_pred, net_name, fig_folder, num_bins=10):
     plt.colorbar()
     plt.title('Regression Performances ' + net_name)
     plt.legend(['Ideal Line'])
+    plt.xlim(1.2, 4.5)
+    plt.ylim(1.2, 4.5)
     plt.savefig(fig_folder + net_name + '.png')
     plt.savefig(fig_folder + net_name + '.eps')
     plt.show()
