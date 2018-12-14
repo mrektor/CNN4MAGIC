@@ -233,7 +233,7 @@ from tqdm import tqdm
 
 
 def load_data_append(which='train', fileListFolder='/data2T/mariotti_data_2/interp_from_root/MC_channel_last_full',
-                     prune=False, impact=False):
+                     prune=False, impact=False, leak=False):
     fileList = glob.glob(fileListFolder + '/*.pkl')
 
     if len(fileList) == 0:
@@ -283,18 +283,24 @@ def load_data_append(which='train', fileListFolder='/data2T/mariotti_data_2/inte
                     impact2 = data['complete_simulation_parameters_M2']['impact'] < 11000
                     imp_condition = np.logical_and(impact2, impact1)
                 intensity_ok_1 = data['extras1']['intensity'] > 100
-                leak_ok_1 = data['extras1']['leakage1_pixel'] < 0.2
                 intensity_ok_2 = data['extras2']['intensity'] > 100
-                leak_ok_2 = data['extras2']['leakage1_pixel'] < 0.2
+                if leak:
+                    leak_ok_2 = data['extras2']['leakage1_pixel'] < 0.2
+                    leak_ok_1 = data['extras1']['leakage1_pixel'] < 0.2
+                    lk_condition = np.logical_and(leak_ok_2, leak_ok_1)
+
 
                 # condition = np.logical_and(energy_level_max, energy_level_min)
                 # condition = np.logical_and(condition, impact2)
-                condition = np.logical_and(leak_ok_1, intensity_ok_1)
-                condition = np.logical_and(condition, intensity_ok_2)
+                condition = np.logical_and(intensity_ok_2, intensity_ok_1)
+                condition = np.logical_and(condition, leak_ok_1)
                 condition = np.logical_and(condition, leak_ok_2)
 
                 if impact:
                     condition = np.logical_and(condition, imp_condition)
+
+                if leak:
+                    condition = np.logical_and(condition, lk_condition)
 
 
                 # Pruning
