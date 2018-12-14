@@ -13,7 +13,7 @@ from CNN4MAGIC.CNN_Models.BigData.stereo_models import *
 if not os.path.exists('weights/'):
     os.makedirs('weights/')
 
-net_name = 'single-SE-DenseNet-10-5-Gold-adjusted'
+net_name = 'single_DenseNet_25_3_doubleDense-noImpact'
 
 
 weights_file = 'weights/' + net_name + '.h5'
@@ -25,7 +25,7 @@ nb_epoch = 1  # Only finding lr
 data_augmentation = False
 
 # The data, shuffled and split between train and test sets:
-m1_tr, m2_tr, energy_tr = load_data_append('train', prune=True)
+m1_tr, m2_tr, energy_tr = load_data_append('train', prune=True, impact=False)
 # m1_val, m2_val, energy_val = load_data_append('val', prune=True)
 
 energy_tr = np.log10(energy_tr)
@@ -56,7 +56,7 @@ LRFinder.plot_schedule_from_file('weights/', clip_beginning=10, clip_endding=5)
 
 # For training, the auxilary branch must be used to correctly train NASNet
 
-model = single_DenseNet_25_3()
+model = single_DenseNet_25_3_doubleDense()
 model.summary()
 
 optimizer = SGD(lr=0.1, momentum=0.9, nesterov=True)

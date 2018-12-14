@@ -65,7 +65,7 @@ reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,
 
 clr = CyclicLR(base_lr=0.00003, max_lr=0.006,
                step_size=1000, mode='triangular')
-clr_1 = OneCycleLR(batch_size=64, max_lr=0.4, num_samples=25161, num_epochs=EPOCHS)
+clr_1 = OneCycleLR(batch_size=64, max_lr=0.005, num_samples=130814, num_epochs=EPOCHS)
 
 result = energy_regressor.fit({'m1': m1_tr, 'm2': m2_tr}, energy_tr,
                               batch_size=64,
