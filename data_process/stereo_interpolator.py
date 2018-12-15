@@ -2,6 +2,7 @@ import glob
 import multiprocessing
 import os
 import pickle
+import time
 
 import numpy as np
 import pandas as pd
@@ -79,9 +80,11 @@ def read_from_root(filename, want_extra=False, pruning=False):
     df['event_id'] = ids
     df = df[df['stereo_evt_number'] > 0]  # Select the events that triggered in both telescopes
 
+    print('reading phe and time..')
     df2 = tree.pandas.df(PIXEL_COLUMNS.keys())  # The dataframe containing the pixel data
     df2.rename(columns=PIXEL_COLUMNS, inplace=True)
 
+    print('clean messy values')
     # Clean messy values
     df2['photon_time'].loc[df2['photon_time'] < 0] = 30
     df2['photon_time'].loc[df2['photon_time'] > 60] = 30
@@ -90,6 +93,7 @@ def read_from_root(filename, want_extra=False, pruning=False):
     event_idx = df['event_id'].values
 
     time = df2['photon_time'].loc[event_idx].unstack(level=-1)
+
     phe = df2['phe'].loc[event_idx].unstack(level=-1)
 
     # Compute hillas parameters, leakage and other hand-crafted features
@@ -105,6 +109,52 @@ def read_from_root(filename, want_extra=False, pruning=False):
             return df[condition.values], extras[condition.values], phe[condition.values], time[condition.values]
 
         return df, extras, phe, time
+
+    return df, phe, time
+
+
+def read_from_root_realdata(filename, want_extra=False, pruning=False):
+    ARRAY_COLUMNS = {
+        'MRawEvtHeader.fStereoEvtNumber': 'stereo_evt_number'
+    }
+
+    PIXEL_COLUMNS = {
+        'MArrivalTime.fData': 'photon_time',
+        'MCerPhotEvt.fPixels.fPhot': 'phe',
+    }
+
+    # print('opening root file')
+    f = uproot.open(filename)
+
+    tree = f['Events']
+    ids = np.arange(tree.numentries)
+    # print('defining df...')
+    df = tree.pandas.df(ARRAY_COLUMNS.keys())
+    df.rename(columns=ARRAY_COLUMNS, inplace=True)
+
+    df['event_id'] = ids
+    df = df[df['stereo_evt_number'] > 0]  # Select the events that triggered in both telescopes
+
+    # print('reading phe and time..')
+    df2 = tree.pandas.df(PIXEL_COLUMNS.keys())  # The dataframe containing the pixel data
+    df2.rename(columns=PIXEL_COLUMNS, inplace=True)
+
+    # print('clean messy values')
+    # Clean messy values
+    df2['photon_time'].loc[df2['photon_time'] < 0] = 30
+    df2['photon_time'].loc[df2['photon_time'] > 60] = 30
+
+    # EVENT START FROM 1
+    # event_idx = df['event_id'].values
+
+    # print('unstack time...')
+    # time = df2['photon_time'].loc[event_idx].unstack(level=-1)
+    time = df2['photon_time'].unstack(level=-1)
+
+    # print('unstack phe...')
+    # phe = df2['phe'].loc[event_idx].unstack(level=-1)
+    phe = df2['phe'].unstack(level=-1)
+    # print('done.')
 
     return df, phe, time
 
@@ -162,6 +212,46 @@ def stereo_interp_from_root(filenames):
     print(f'Saved {filenameM1[-26:-7]}')
 
     # return result
+
+
+def stereo_interp_from_root_realdata(filenames):
+    filenameM1 = filenames[0]
+    filenameM2 = filenames[1]
+
+    if filenameM1[-26:-7] != filenameM2[-26:-7]:
+        print('Ostia! filename are different: ', filenameM1, filenameM2)
+        return None  # Escape
+
+    if os.stat(filenameM1).st_size == 0:
+        print('Empty file: ' + filenameM1)
+        return None
+
+    if os.stat(filenameM2).st_size == 0:
+        print('Empty file: ' + filenameM2)
+        return None
+    bef = time.time()
+    df1, phe1, time1 = read_from_root_realdata(filenameM1)
+    df2, phe2, time2 = read_from_root_realdata(filenameM2)
+    bef2 = time.time()
+    interpolator = InterpolateMagic(15)
+    num_events = df1.shape[0]
+    m1_interp = np.zeros((num_events, 67, 68, 2))
+    m2_interp = np.zeros((num_events, 67, 68, 2))
+
+    for idx in range(len(phe1)):
+        m1_interp[idx, :, :, 0] = interpolator.interpolate(time1.iloc[idx, :1039].values, remove_last=False, plot=False)
+        m1_interp[idx, :, :, 1] = interpolator.interpolate(phe1.iloc[idx, :1039].values, remove_last=False, plot=False)
+
+        m2_interp[idx, :, :, 0] = interpolator.interpolate(time2.iloc[idx, :1039].values, remove_last=False, plot=False)
+        m2_interp[idx, :, :, 1] = interpolator.interpolate(phe2.iloc[idx, :1039].values, remove_last=False, plot=False)
+
+    result = {'M1_interp': m1_interp, 'M2_interp': m2_interp}
+
+    with open('/data2T/mariotti_data_2/interp_from_root/SS433/result_' + filenameM1[-42:-6] + '.pkl',
+              'wb') as f:
+        pickle.dump(result, f, protocol=4)
+    print(f'Saved {filenameM1[-42:-6]}')
+    print(f'Time needed: Reading: {bef2 - bef} seconds; Interpolation: {time.time() - bef2} seconds.')
 
 
 def stereo_interp_from_txt(filenames):
@@ -226,15 +316,15 @@ def stereo_interp_from_txt(filenames):
 # %%
 # Load all the filenames
 
-fileM1 = glob.glob('/data/mariotti_data/download_magic/MC/GA_M1_*.root')
-fileM2 = glob.glob('/data/mariotti_data/download_magic/MC/GA_M2_*.root')
+fileM1 = glob.glob('/data/mariotti_data/download_magic/SS433/20180912_M1_*.root')
+fileM2 = glob.glob('/data/mariotti_data/download_magic/SS433/20180912_M1_*.root')
 
 
 def get_pair_match(a, b):
     result = []
     for i in a:
         for j in b:
-            if i[-26:-7] == j[-26:-7]:
+            if i[-42:-6] == j[-42:-6]:
                 result.append((i, j))
     return result
 
@@ -244,8 +334,8 @@ mFull = get_pair_match(fileM1, fileM2)
 # %%
 # Start the parallel computing
 print('start multiprocessing')
-pool = multiprocessing.Pool(processes=18)
-pool.map(stereo_interp_from_root, mFull)
+pool = multiprocessing.Pool(processes=15)
+pool.map(stereo_interp_from_root_realdata, mFull)
 pool.close()
 pool.join()
 print('All done, everything is fine')
