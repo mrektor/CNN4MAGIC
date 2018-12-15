@@ -44,7 +44,7 @@ def load_gammas(which='train', fileListFolder='/data2T/mariotti_data_2/interp_fr
         print('Loading VALIDATION data')
 
     if which == 'test':
-        toLoad = fileList[1200:]
+        toLoad = fileList[1700:]
         print('Loading TEST data')
 
     if which == 'debug':
@@ -190,8 +190,9 @@ def load_hadrons(which='train', fileListFolder='/data2T/mariotti_data_2/interp_f
 
 def load_separation_data(which='train'):
     full_interp_M1_h, full_interp_M2_h, hadron_labels_h = load_hadrons(which)
+    gc.collect()
     full_interp_M1_g, full_interp_M2_g, gamma_labels_g = load_gammas(which)
-
+    gc.collect()
     full_M1 = np.vstack((full_interp_M1_g, full_interp_M1_h))
     del full_interp_M1_g, full_interp_M1_h
     gc.collect()
@@ -214,6 +215,10 @@ def plot_confusion_matrix(y_pred, y_test, classes,
     This function prints and plots the confusion matrix.
     Normalization can be applied by setting `normalize=True`.
     """
+
+    y_pred[y_pred < 0.5] = 0
+    y_pred[y_pred >= 0.5] = 1
+
     cm = confusion_matrix(y_test, y_pred)
     if normalize:
         cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]

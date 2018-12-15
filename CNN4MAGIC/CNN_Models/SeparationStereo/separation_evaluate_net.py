@@ -12,9 +12,11 @@ m1_te, m2_te, y_true = load_separation_data('test')
 print('Making Predictions...')
 y_pred = model.predict({'m1': m1_te, 'm2': m2_te})
 
-print('Plotting confusion matrix...')
-plot_confusion_matrix(y_pred, y_true, 2, net_name=net_name)
 print('Plotting gammaness...')
+
 plot_gammaness(y_true, y_true, net_name=net_name)
+print('Plotting confusion matrix...')
+
+plot_confusion_matrix(y_pred, y_true, ['Hadrons', 'Gammas'], net_name=net_name)
 
 print('All done')
