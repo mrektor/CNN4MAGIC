@@ -12,6 +12,7 @@ import seaborn as sns
 import tensorflow as tf
 from matplotlib.colors import PowerNorm
 from scipy.stats import norm
+from sklearn.metrics import confusion_matrix
 from sklearn.mixture import GaussianMixture
 from tqdm import tqdm
 
@@ -203,7 +204,7 @@ def load_separation_data(which='train'):
 
 # %%
 
-def plot_confusion_matrix(cm, classes,
+def plot_confusion_matrix(y_pred, y_test, classes,
                           normalize=False,
                           title='Confusion matrix',
                           cmap=plt.cm.Blues):
@@ -211,6 +212,7 @@ def plot_confusion_matrix(cm, classes,
     This function prints and plots the confusion matrix.
     Normalization can be applied by setting `normalize=True`.
     """
+    cm = confusion_matrix(y_test, y_pred)
     if normalize:
         cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
         print("Normalized confusion matrix")
@@ -236,6 +238,7 @@ def plot_confusion_matrix(cm, classes,
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
     plt.tight_layout()
+    plt.savefig('')  # TODO
 
 
 def std_error_log(y_true, y_pred):

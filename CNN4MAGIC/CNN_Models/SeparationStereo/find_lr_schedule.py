@@ -56,7 +56,7 @@ model = single_DenseNet_25_3_doubleDense()
 model.summary()
 
 optimizer = SGD(lr=0.1, momentum=0.9, nesterov=True)
-model.compile(loss=binary_crossentropy, optimizer=optimizer)
+model.compile(loss=binary_crossentropy, optimizer=optimizer, metrics=['accuracy'])
 
 # model.load_weights(weights_file)
 

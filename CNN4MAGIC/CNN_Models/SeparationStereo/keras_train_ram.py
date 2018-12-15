@@ -4,14 +4,15 @@ import pickle
 
 import matplotlib.pyplot as plt
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, TensorBoard
+from keras.losses import binary_crossentropy
 from keras.models import load_model
 from keras.optimizers import SGD
 
 from CNN4MAGIC.CNN_Models.BigData.clr import OneCycleLR
 from CNN4MAGIC.CNN_Models.BigData.cyclical_lr import CyclicLR
-from CNN4MAGIC.CNN_Models.BigData.utils import plot_hist2D, plot_gaussian_error
+from CNN4MAGIC.CNN_Models.BigData.utils import plot_gaussian_error
 from CNN4MAGIC.CNN_Models.SeparationStereo.stereo_separation_models import single_DenseNet_25_3_doubleDense
-from CNN4MAGIC.CNN_Models.SeparationStereo.utils import load_separation_data
+from CNN4MAGIC.CNN_Models.SeparationStereo.utils import load_separation_data, plot_confusion_matrix
 
 # %%
 # LOAD DATA
@@ -34,7 +35,7 @@ else:
 # energy_regressor = single_DenseNet_25_3()
 EPOCHS = 40
 opt = SGD(lr=0.0005)
-energy_regressor.compile(optimizer=opt, loss='mse')
+energy_regressor.compile(optimizer=opt, loss=binary_crossentropy)
 
 energy_regressor.summary()
 gc.collect()
@@ -63,32 +64,30 @@ reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,
 
 clr = CyclicLR(base_lr=0.00003, max_lr=0.006,
                step_size=1000, mode='triangular')
-clr_1 = OneCycleLR(batch_size=64, max_lr=0.005, num_samples=130814, num_epochs=EPOCHS)
+clr_1 = OneCycleLR(batch_size=64, max_lr=0.05, num_samples=130814, num_epochs=EPOCHS)
 
-result = energy_regressor.fit({'m1': m1_tr, 'm2': m2_tr}, energy_tr,
+result = energy_regressor.fit({'m1': m1_tr, 'm2': m2_tr}, label_tr,
                               batch_size=64,
                               epochs=EPOCHS,
                               verbose=1,
-                              validation_data=({'m1': m1_val, 'm2': m2_val}, energy_val),
+                              validation_data=({'m1': m1_val, 'm2': m2_val}, label_val),
                               callbacks=[clr_1, check])
 
 # %% Free memory
 print('Freeing memory from training and validation data')
-del m1_tr, m2_tr, energy_tr, m1_val, m2_val, energy_val
+del m1_tr, m2_tr, label_tr, m1_val, m2_val, label_val
 gc.collect()
 
 # %% Save and plot stuff
 
-m1_te, m2_te, energy_te = load_data_append('test', prune=True, impact=False)
-y_test = np.log10(energy_te)
+m1_te, m2_te, energy_te = load_separation_data('test')
 
 print('Making Predictions...')
 y_pred = energy_regressor.predict({'m1': m1_te, 'm2': m2_te})
 
 # %%
 print('Plotting stuff...')
-plot_hist2D(y_test, y_pred, fig_folder='/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/pics/', net_name=net_name,
-            num_bins=100)
+plot_confusion_matrix()
 
 plot_gaussian_error(y_test, y_pred, net_name=net_name + '_13bin', num_bins=13,
                     fig_folder='/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/pics/')
