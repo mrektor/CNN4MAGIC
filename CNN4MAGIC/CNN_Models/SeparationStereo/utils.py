@@ -257,13 +257,13 @@ def plot_confusion_matrix(y_pred, y_test, classes,
     plt.show()
 
 
-def plot_gammaness(y_pred, y_true, net_name=''):
+def plot_gammaness(y_pred, y_true, net_name='', bins=85):
     hadrons = y_pred[y_true == 1]
     gammas = y_pred[y_true == 0]
     # sns.set()
     plt.figure()
-    sns.distplot(hadrons, kde=True, bins=85)
-    sns.distplot(gammas, kde=True, bins=85)
+    sns.distplot(hadrons, kde=True, bins=bins)
+    sns.distplot(gammas, kde=True, bins=bins)
     plt.legend(['Hadrons', 'Gammas'])
     plt.title(net_name)
     plt.xlabel('Gammaness')
