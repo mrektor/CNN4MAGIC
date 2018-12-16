@@ -75,3 +75,17 @@ def NASNet():
     x = Dense(1, name='gammaness', activation='sigmoid')(x)
     model1 = Model(inputs=[m1, m2], output=x)
     return model1
+
+
+def DenseNet121():
+    m1 = Input(shape=(67, 68, 2), name='m1')
+    m2 = Input(shape=(67, 68, 2), name='m2')
+    input_img = concatenate([m1, m2])
+
+    model = keras.applications.densenet.DenseNet121(include_top=False, weights=None, input_tensor=input_img,
+                                                    pooling='max')
+
+    x = model.layers[-1].output
+    x = Dense(1, name='gammaness', activation='sigmoid')(x)
+    model1 = Model(inputs=[m1, m2], output=x)
+    return model1

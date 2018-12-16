@@ -442,7 +442,7 @@ def bin_data(data, num_bins, bins=None):
 def plot_misclassified_hadrons(m1_te, m2_te, y_pred_h, num_events=10, net_name='',
                                fig_folder='/data/mariotti_data/CNN4MAGIC/CNN_Models/SeparationStereo/pics/'):
     misclassified_hadrons_mask = y_pred_h > 0.5
-
+    misclassified_probability = y_pred_h[y_pred_h > 0.5]
     misclassified_hadrons_M1 = m1_te[misclassified_hadrons_mask.flatten()]
     misclassified_hadrons_M2 = m2_te[misclassified_hadrons_mask.flatten()]
 
@@ -453,18 +453,18 @@ def plot_misclassified_hadrons(m1_te, m2_te, y_pred_h, num_events=10, net_name='
 
     indexes = [i for i in range(misclassified_hadrons_M1.shape[0])]
     random.shuffle(indexes)
-    for i in indexes[:num_events]:
-        axes[i, 0].imshow(misclassified_hadrons_M1[i, :, :, 0])  # TIME
+    for i, idx in enumerate(indexes[:num_events]):
+        axes[i, 0].imshow(misclassified_hadrons_M1[idx, :, :, 0])  # TIME
         axes[i, 0].set_title('M1 Time')
-        axes[i, 0].set_ylabel('Gammaness: ' + y_pred_h[i])
+        axes[i, 0].set_ylabel('Gammaness: ' + str(misclassified_probability[idx]))
 
-        axes[i, 1].imshow(misclassified_hadrons_M1[i, :, :, 1])  # PHE
+        axes[i, 1].imshow(misclassified_hadrons_M1[idx, :, :, 1])  # PHE
         axes[i, 1].set_title('M1 PHE')
 
-        axes[i, 2].imshow(misclassified_hadrons_M2[i, :, :, 0])  # TIME
+        axes[i, 2].imshow(misclassified_hadrons_M2[idx, :, :, 0])  # TIME
         axes[i, 2].set_title('M2 Time')
 
-        axes[i, 3].imshow(misclassified_hadrons_M2[i, :, :, 1])  # PHE
+        axes[i, 3].imshow(misclassified_hadrons_M2[idx, :, :, 1])  # PHE
         axes[i, 3].set_title('M2 PHE')
 
     plt.tight_layout()
@@ -476,6 +476,7 @@ def plot_misclassified_hadrons(m1_te, m2_te, y_pred_h, num_events=10, net_name='
 def plot_misclassified_gammas(m1_te, m2_te, y_pred_g, num_events=10, net_name='',
                               fig_folder='/data/mariotti_data/CNN4MAGIC/CNN_Models/SeparationStereo/pics/'):
     misclassified_gammas_mask = y_pred_g < 0.5
+    misclassified_probability = y_pred_g[y_pred_g > 0.5]
 
     misclassified_gammas_M1 = m1_te[misclassified_gammas_mask.flatten()]
     misclassified_gammas_M2 = m2_te[misclassified_gammas_mask.flatten()]
@@ -488,17 +489,17 @@ def plot_misclassified_gammas(m1_te, m2_te, y_pred_g, num_events=10, net_name=''
     print(misclassified_gammas_M1.shape[0])
     indexes = [i for i in range(misclassified_gammas_M1.shape[0])]
     random.shuffle(indexes)
-    for i in indexes[:num_events]:
-        axes[i, 0].imshow(misclassified_gammas_M1[i, :, :, 0])  # TIME
+    for i, idx in enumerate(indexes[:num_events]):
+        axes[i, 0].imshow(misclassified_gammas_M1[idx, :, :, 0])  # TIME
         axes[i, 0].set_title('M1 Time')
-        axes[i, 0].set_ylabel('Gammaness: ' + y_pred_g[i])
-        axes[i, 1].imshow(misclassified_gammas_M1[i, :, :, 1])  # PHE
+        axes[i, 0].set_ylabel('Gammaness: ' + str(misclassified_probability[idx]))
+        axes[i, 1].imshow(misclassified_gammas_M1[idx, :, :, 1])  # PHE
         axes[i, 1].set_title('M1 PHE')
 
-        axes[i, 2].imshow(misclassified_gammas_M2[i, :, :, 0])  # TIME
+        axes[i, 2].imshow(misclassified_gammas_M2[idx, :, :, 0])  # TIME
         axes[i, 2].set_title('M2 Time')
 
-        axes[i, 3].imshow(misclassified_gammas_M2[i, :, :, 1])  # PHE
+        axes[i, 3].imshow(misclassified_gammas_M2[idx, :, :, 1])  # PHE
         axes[i, 3].set_title('M2 PHE')
 
     plt.tight_layout()
