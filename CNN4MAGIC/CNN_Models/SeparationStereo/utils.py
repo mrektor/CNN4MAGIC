@@ -162,7 +162,6 @@ def load_hadrons(which='train', fileListFolder='/data2T/mariotti_data_2/interp_f
     print('start loading Hadrons...')
     for i, file in enumerate(tqdm(toLoad)):
         bef = time.time()
-        print(file)
         try:
             with open(file, 'rb') as f:
                 # print(f'opening {file}')
