@@ -36,15 +36,15 @@ def load_gammas(which='train', fileListFolder='/data2T/mariotti_data_2/interp_fr
     full_interp_M2 = []
 
     if which == 'train':
-        toLoad = fileList[:800]
+        toLoad = fileList[:750]
         print('Loading TRAIN data')
 
     if which == 'val':
-        toLoad = fileList[800:1200]
+        toLoad = fileList[800:1000]
         print('Loading VALIDATION data')
 
     if which == 'test':
-        toLoad = fileList[1700:]
+        toLoad = fileList[-750:]
         print('Loading TEST data')
 
     if which == 'debug':
@@ -142,31 +142,36 @@ def load_hadrons(which='train', fileListFolder='/data2T/mariotti_data_2/interp_f
     full_interp_M2 = []
 
     if which == 'train':
-        toLoad = fileList[:5]
+        toLoad = fileList[:9]
         print('Loading TRAIN data')
 
     if which == 'val':
-        toLoad = fileList[5:7]
+        toLoad = fileList[9:12]
         print('Loading VALIDATION data')
 
     if which == 'test':
-        toLoad = fileList[7:]
+        toLoad = fileList[12:22]
         print('Loading TEST data')
 
     if which == 'debug':
-        toLoad = fileList[:2]
+        toLoad = fileList[-2:]
         print('Loading DEBUG data')
 
+    empty_files = 0
     print(f'number of files: {len(toLoad)}')
     print('start loading Hadrons...')
     for i, file in enumerate(tqdm(toLoad)):
         bef = time.time()
-        with open(file, 'rb') as f:
-            # print(f'opening {file}')
-            data = pickle.load(f)
+        print(file)
+        try:
+            with open(file, 'rb') as f:
+                # print(f'opening {file}')
+                data = pickle.load(f)
 
-            full_interp_M1.append(data['M1_interp'])
-            full_interp_M2.append(data['M2_interp'])
+                full_interp_M1.append(data['M1_interp'])
+                full_interp_M2.append(data['M2_interp'])
+        except EOFError:
+            empty_files += 1
 
         now = time.time()
         times.append(now - bef)
@@ -180,6 +185,7 @@ def load_hadrons(which='train', fileListFolder='/data2T/mariotti_data_2/interp_f
     hadron_labels = np.zeros((full_interp_M1.shape[0], 1))
 
     print('Number of items: ' + str(hadron_labels.shape[0]))
+    print('Number of empty files: ' + str(empty_files))
     print(f'Time for loading all the files: {nownow-befbef}')
     print(f'Average time for loading one dict: {np.mean(np.array(times))}')
     print('cleaning memory...')
@@ -202,6 +208,7 @@ def load_separation_data(which='train'):
     full_labels = np.vstack((gamma_labels_g, hadron_labels_h))
 
     return full_M1, full_M2, full_labels
+
 
 # %%
 
@@ -253,16 +260,16 @@ def plot_confusion_matrix(y_pred, y_test, classes,
 def plot_gammaness(y_pred, y_true, net_name=''):
     hadrons = y_pred[y_true == 1]
     gammas = y_pred[y_true == 0]
-    sns.set()
-    sns.distplot(hadrons, kde=True, bins=50)
-    sns.distplot(gammas, kde=True, bins=50)
+    # sns.set()
+    plt.figure()
+    sns.distplot(hadrons, kde=True, bins=85)
+    sns.distplot(gammas, kde=True, bins=85)
     plt.legend(['Hadrons', 'Gammas'])
     plt.title(net_name)
     plt.xlabel('Gammaness')
     plt.savefig('/data/mariotti_data/CNN4MAGIC/CNN_Models/SeparationStereo/pics/gammaness_' + net_name + '.png')
     plt.savefig('/data/mariotti_data/CNN4MAGIC/CNN_Models/SeparationStereo/pics/gammaness_' + net_name + '.eps')
     plt.show()
-
 
 
 def std_error_log(y_true, y_pred):
@@ -430,3 +437,65 @@ def bin_data(data, num_bins, bins=None):
             mask = np.logical_and(data >= bins[i], data <= bins[i + 1])
             binned_values[mask] = bin
     return binned_values, bins
+
+
+def plot_misclassified_hadrons(m1_te, m2_te, y_pred_h, num_events=10, net_name='',
+                               fig_folder='/data/mariotti_data/CNN4MAGIC/CNN_Models/SeparationStereo/pics/'):
+    misclassified_hadrons_mask = y_pred_h > 0.5
+
+    misclassified_hadrons_M1 = m1_te[misclassified_hadrons_mask.flatten()]
+    misclassified_hadrons_M2 = m2_te[misclassified_hadrons_mask.flatten()]
+
+    print(f'there are {misclassified_hadrons_M1.shape[0]} misclassified hadrons')
+    if num_events > misclassified_hadrons_M1.shape[0]:
+        num_events = misclassified_hadrons_M1.shape[0]
+    fig, axes = plt.subplots(num_events, 4, figsize=(15, num_events * 3))
+
+    for i in range(num_events):
+        axes[i, 0].imshow(misclassified_hadrons_M1[i, :, :, 0])  # TIME
+        axes[i, 0].set_title('M1 Time')
+        axes[i, 1].imshow(misclassified_hadrons_M1[i, :, :, 1])  # PHE
+        axes[i, 1].set_title('M1 PHE')
+
+        axes[i, 2].imshow(misclassified_hadrons_M2[i, :, :, 0])  # TIME
+        axes[i, 2].set_title('M2 Time')
+
+        axes[i, 3].imshow(misclassified_hadrons_M2[i, :, :, 1])  # PHE
+        axes[i, 3].set_title('M2 PHE')
+
+    plt.tight_layout()
+    plt.savefig(fig_folder + net_name + 'MisclassifiedHadrons.png')
+    plt.savefig(fig_folder + net_name + 'MisclassifiedHadrons.pdf')
+    plt.show()
+
+
+def plot_misclassified_gammas(m1_te, m2_te, y_pred_g, num_events=10, net_name='',
+                              fig_folder='/data/mariotti_data/CNN4MAGIC/CNN_Models/SeparationStereo/pics/'):
+    misclassified_gammas_mask = y_pred_g < 0.5
+
+    misclassified_gammas_M1 = m1_te[misclassified_gammas_mask.flatten()]
+    misclassified_gammas_M2 = m2_te[misclassified_gammas_mask.flatten()]
+
+    print(f'there are {misclassified_gammas_M1.shape[0]} misclassified hadrons')
+    if num_events > misclassified_gammas_M1.shape[0]:
+        num_events = misclassified_gammas_M1.shape[0]
+
+    fig, axes = plt.subplots(num_events, 4, figsize=(15, num_events * 3))
+    print(misclassified_gammas_M1.shape[0])
+
+    for i in range(num_events):
+        axes[i, 0].imshow(misclassified_gammas_M1[i, :, :, 0])  # TIME
+        axes[i, 0].set_title('M1 Time')
+        axes[i, 1].imshow(misclassified_gammas_M1[i, :, :, 1])  # PHE
+        axes[i, 1].set_title('M1 PHE')
+
+        axes[i, 2].imshow(misclassified_gammas_M2[i, :, :, 0])  # TIME
+        axes[i, 2].set_title('M2 Time')
+
+        axes[i, 3].imshow(misclassified_gammas_M2[i, :, :, 1])  # PHE
+        axes[i, 3].set_title('M2 PHE')
+
+    plt.tight_layout()
+    plt.savefig(fig_folder + net_name + 'MisclassifiedGammas.png')
+    plt.savefig(fig_folder + net_name + 'MisclassifiedGammas.pdf')
+    plt.show()

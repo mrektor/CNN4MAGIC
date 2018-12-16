@@ -8,7 +8,7 @@ from keras.optimizers import SGD
 
 from CNN4MAGIC.CNN_Models.BigData.clr import OneCycleLR
 from CNN4MAGIC.CNN_Models.BigData.cyclical_lr import CyclicLR
-from CNN4MAGIC.CNN_Models.SeparationStereo.stereo_separation_models import single_DenseNet_25_3_doubleDense
+from CNN4MAGIC.CNN_Models.SeparationStereo.stereo_separation_models import single_DenseNet_piccina
 from CNN4MAGIC.CNN_Models.SeparationStereo.utils import load_separation_data, plot_confusion_matrix
 
 # %%
@@ -18,7 +18,7 @@ m1_val, m2_val, label_val = load_separation_data('val')
 
 # %%
 # LOAD and COMPILE model
-net_name = 'single_DenseNet_25_3_doubleDense'
+net_name = 'single_DenseNet_piccina'
 #
 # net_name_to_load = 'single_DenseNet_25_3_doubleDense-noImpact'
 # path = '/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints/' + net_name_to_load + '.hdf5'
@@ -27,7 +27,7 @@ net_name = 'single_DenseNet_25_3_doubleDense'
 #     print('Loading model ' + net_name_to_load + '...')
 #     energy_regressor = load_model(path)
 # else:
-classifier_stereo = single_DenseNet_25_3_doubleDense()
+classifier_stereo = single_DenseNet_piccina()
 
 # energy_regressor = single_DenseNet_25_3()
 EPOCHS = 40
