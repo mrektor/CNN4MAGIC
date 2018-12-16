@@ -317,7 +317,7 @@ def stereo_interp_from_txt(filenames):
 # Load all the filenames
 
 fileM1 = glob.glob('/data/mariotti_data/download_magic/SS433/20180912_M1_*.root')
-fileM2 = glob.glob('/data/mariotti_data/download_magic/SS433/20180912_M1_*.root')
+fileM2 = glob.glob('/data/mariotti_data/download_magic/SS433/20180912_M2_*.root')
 
 
 def get_pair_match(a, b):
