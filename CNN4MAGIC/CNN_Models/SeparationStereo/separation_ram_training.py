@@ -2,13 +2,13 @@ import gc
 import pickle
 
 import matplotlib.pyplot as plt
-from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, TensorBoard
+from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, TensorBoard, EarlyStopping
 from keras.losses import binary_crossentropy
 from keras.optimizers import SGD
 
 from CNN4MAGIC.CNN_Models.BigData.clr import OneCycleLR
 from CNN4MAGIC.CNN_Models.BigData.cyclical_lr import CyclicLR
-from CNN4MAGIC.CNN_Models.SeparationStereo.stereo_separation_models import single_DenseNet_piccina
+from CNN4MAGIC.CNN_Models.SeparationStereo.stereo_separation_models import *
 from CNN4MAGIC.CNN_Models.SeparationStereo.utils import load_separation_data, plot_confusion_matrix
 
 # %%
@@ -18,7 +18,7 @@ m1_val, m2_val, label_val = load_separation_data('val')
 
 # %%
 # LOAD and COMPILE model
-net_name = 'single_DenseNet_piccina'
+net_name = 'NASNet'
 #
 # net_name_to_load = 'single_DenseNet_25_3_doubleDense-noImpact'
 # path = '/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints/' + net_name_to_load + '.hdf5'
@@ -27,7 +27,7 @@ net_name = 'single_DenseNet_piccina'
 #     print('Loading model ' + net_name_to_load + '...')
 #     energy_regressor = load_model(path)
 # else:
-classifier_stereo = single_DenseNet_piccina()
+classifier_stereo = NASNet()
 
 # energy_regressor = single_DenseNet_25_3()
 EPOCHS = 40
@@ -55,20 +55,22 @@ check = ModelCheckpoint('/data/mariotti_data/CNN4MAGIC/CNN_Models/SeparationSter
                         save_best_only=True)
 reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,
                               patience=1, min_lr=0.000005)
+
+stop = EarlyStopping(patience=2)
 # [:,:,:,1].reshape((134997, 67, 68, 1))
 
 # callbacks.append(tensorboard)
 
 clr = CyclicLR(base_lr=0.00003, max_lr=0.006,
                step_size=1000, mode='triangular')
-clr_1 = OneCycleLR(batch_size=128, max_lr=0.1, num_samples=173069, num_epochs=EPOCHS)
+clr_1 = OneCycleLR(batch_size=128, max_lr=0.008, num_samples=173069, num_epochs=EPOCHS)
 
 result = classifier_stereo.fit({'m1': m1_tr, 'm2': m2_tr}, label_tr,
-                               batch_size=64,
+                               batch_size=128,
                                epochs=EPOCHS,
                                verbose=1,
                                validation_data=({'m1': m1_val, 'm2': m2_val}, label_val),
-                               callbacks=[clr_1, check])
+                               callbacks=[clr_1, check, stop])
 
 # %% Free memory
 print('Freeing memory from training and validation data')

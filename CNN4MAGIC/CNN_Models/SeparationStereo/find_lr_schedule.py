@@ -13,13 +13,13 @@ from CNN4MAGIC.CNN_Models.SeparationStereo.utils import load_separation_data
 if not os.path.exists('weights/'):
     os.makedirs('weights/')
 
-net_name = 'single_DenseNet_25_3_doubleDense'
+net_name = 'NASNet'
 
 weights_file = 'weights/' + net_name + '.h5'
 model_checkpoint = ModelCheckpoint(weights_file, save_best_only=True,
                                    save_weights_only=True)
 
-batch_size = 64
+batch_size = 128
 nb_epoch = 1  # Only finding lr
 data_augmentation = False
 
@@ -52,7 +52,7 @@ LRFinder.plot_schedule_from_file('weights/', clip_beginning=10, clip_endding=5)
 
 # For training, the auxilary branch must be used to correctly train NASNet
 
-model = single_DenseNet_25_3_doubleDense()
+model = NASNet()
 model.summary()
 
 optimizer = SGD(lr=0.1, momentum=0.9, nesterov=True)

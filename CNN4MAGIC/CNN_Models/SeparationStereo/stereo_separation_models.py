@@ -1,3 +1,4 @@
+import keras
 from keras.layers import *
 from keras.models import Model
 
@@ -32,5 +33,45 @@ def single_DenseNet_piccina():
     x = dense_out.layers[-1].output
     x = Dense(1, name='gammaness', activation='sigmoid')(x)
 
+    model1 = Model(inputs=[m1, m2], output=x)
+    return model1
+
+
+def VGG16():
+    m1 = Input(shape=(67, 68, 2), name='m1')
+    m2 = Input(shape=(67, 68, 2), name='m2')
+    input_img = concatenate([m1, m2])
+    model = keras.applications.vgg16.VGG16(include_top=False, weights=None, input_tensor=input_img, pooling='max')
+    x = model.layers[-1].output
+    x = Dense(1, name='gammaness', activation='sigmoid')(x)
+    model1 = Model(inputs=[m1, m2], output=x)
+
+    return model1
+
+
+def MobileNetV2():
+    m1 = Input(shape=(67, 68, 2), name='m1')
+    m2 = Input(shape=(67, 68, 2), name='m2')
+    input_img = concatenate([m1, m2])
+
+    model = keras.applications.mobilenet_v2.MobileNetV2(alpha=1.0, depth_multiplier=1, include_top=False,
+                                                        weights=None, input_tensor=input_img, pooling='max')
+
+    x = model.layers[-1].output
+    x = Dense(1, name='gammaness', activation='sigmoid')(x)
+    model1 = Model(inputs=[m1, m2], output=x)
+    return model1
+
+
+def NASNet():
+    m1 = Input(shape=(67, 68, 2), name='m1')
+    m2 = Input(shape=(67, 68, 2), name='m2')
+    input_img = concatenate([m1, m2])
+
+    model = keras.applications.nasnet.NASNetMobile(include_top=False, weights=None, input_tensor=input_img,
+                                                   pooling='max')
+
+    x = model.layers[-1].output
+    x = Dense(1, name='gammaness', activation='sigmoid')(x)
     model1 = Model(inputs=[m1, m2], output=x)
     return model1

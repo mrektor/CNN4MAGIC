@@ -261,8 +261,9 @@ def plot_gammaness(y_pred, y_true, net_name='', bins=85):
     gammas = y_pred[y_true == 0]
     # sns.set()
     plt.figure()
-    sns.distplot(hadrons, kde=True, bins=bins)
-    sns.distplot(gammas, kde=True, bins=bins)
+    plt.hist(hadrons, bins=bins)
+    plt.hist(gammas, bins=bins)
+    plt.xlim([0, 1])
     plt.legend(['Hadrons', 'Gammas'])
     plt.title(net_name)
     plt.xlabel('Gammaness')
@@ -450,9 +451,13 @@ def plot_misclassified_hadrons(m1_te, m2_te, y_pred_h, num_events=10, net_name='
         num_events = misclassified_hadrons_M1.shape[0]
     fig, axes = plt.subplots(num_events, 4, figsize=(15, num_events * 3))
 
-    for i in range(num_events):
+    indexes = [i for i in range(misclassified_hadrons_M1.shape[0])]
+    random.shuffle(indexes)
+    for i in indexes[:num_events]:
         axes[i, 0].imshow(misclassified_hadrons_M1[i, :, :, 0])  # TIME
         axes[i, 0].set_title('M1 Time')
+        axes[i, 0].set_ylabel('Gammaness: ' + y_pred_h[i])
+
         axes[i, 1].imshow(misclassified_hadrons_M1[i, :, :, 1])  # PHE
         axes[i, 1].set_title('M1 PHE')
 
@@ -481,10 +486,12 @@ def plot_misclassified_gammas(m1_te, m2_te, y_pred_g, num_events=10, net_name=''
 
     fig, axes = plt.subplots(num_events, 4, figsize=(15, num_events * 3))
     print(misclassified_gammas_M1.shape[0])
-
-    for i in range(num_events):
+    indexes = [i for i in range(misclassified_gammas_M1.shape[0])]
+    random.shuffle(indexes)
+    for i in indexes[:num_events]:
         axes[i, 0].imshow(misclassified_gammas_M1[i, :, :, 0])  # TIME
         axes[i, 0].set_title('M1 Time')
+        axes[i, 0].set_ylabel('Gammaness: ' + y_pred_g[i])
         axes[i, 1].imshow(misclassified_gammas_M1[i, :, :, 1])  # PHE
         axes[i, 1].set_title('M1 PHE')
 
