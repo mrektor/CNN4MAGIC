@@ -261,8 +261,8 @@ def plot_gammaness(y_pred, y_true, net_name='', bins=85):
     gammas = y_pred[y_true == 0]
     # sns.set()
     plt.figure()
-    plt.hist(hadrons, bins=bins)
-    plt.hist(gammas, bins=bins)
+    plt.hist(hadrons, bins=bins, log=True)
+    plt.hist(gammas, bins=bins, log=True)
     plt.xlim([0, 1])
     plt.legend(['Hadrons', 'Gammas'])
     plt.title(net_name)

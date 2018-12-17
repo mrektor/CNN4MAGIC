@@ -2,7 +2,7 @@ from keras.models import load_model
 
 from CNN4MAGIC.CNN_Models.SeparationStereo.utils import *
 
-net_name = 'NASNet'
+net_name = 'MobileNetV2'
 
 # Load the model
 path = '/data/mariotti_data/CNN4MAGIC/CNN_Models/SeparationStereo/checkpoints/' + net_name + '.hdf5'
