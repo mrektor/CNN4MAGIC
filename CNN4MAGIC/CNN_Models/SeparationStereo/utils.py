@@ -257,12 +257,12 @@ def plot_confusion_matrix(y_pred, y_test, classes,
 
 
 def plot_gammaness(y_pred, y_true, net_name='', bins=85):
-    hadrons = y_pred[y_true == 1]
-    gammas = y_pred[y_true == 0]
+    hadrons = y_pred[y_true == 0]
+    gammas = y_pred[y_true == 1]
     # sns.set()
     plt.figure()
-    plt.hist(hadrons, bins=bins, log=True)
-    plt.hist(gammas, bins=bins, log=True)
+    plt.hist(hadrons, bins=bins, log=True, histtype='step')
+    plt.hist(gammas, bins=bins, log=True, histtype='step')
     plt.xlim([0, 1])
     plt.legend(['Hadrons', 'Gammas'])
     plt.title(net_name)
@@ -476,7 +476,7 @@ def plot_misclassified_hadrons(m1_te, m2_te, y_pred_h, num_events=10, net_name='
 def plot_misclassified_gammas(m1_te, m2_te, y_pred_g, num_events=10, net_name='',
                               fig_folder='/data/mariotti_data/CNN4MAGIC/CNN_Models/SeparationStereo/pics/'):
     misclassified_gammas_mask = y_pred_g < 0.5
-    misclassified_probability = y_pred_g[y_pred_g > 0.5]
+    misclassified_probability = y_pred_g[y_pred_g < 0.5]
 
     misclassified_gammas_M1 = m1_te[misclassified_gammas_mask.flatten()]
     misclassified_gammas_M2 = m2_te[misclassified_gammas_mask.flatten()]

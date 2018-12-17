@@ -2,7 +2,6 @@ from __future__ import print_function
 
 import os
 
-from keras.callbacks import ModelCheckpoint
 from keras.losses import binary_crossentropy
 from keras.optimizers import SGD
 
@@ -13,11 +12,11 @@ from CNN4MAGIC.CNN_Models.SeparationStereo.utils import load_separation_data
 if not os.path.exists('weights/'):
     os.makedirs('weights/')
 
-net_name = 'NASNet'
+net_name = 'DenseNet121'
 
-weights_file = 'weights/' + net_name + '.h5'
-model_checkpoint = ModelCheckpoint(weights_file, save_best_only=True,
-                                   save_weights_only=True)
+# weights_file = 'weights/' + net_name + '.h5'
+# model_checkpoint = ModelCheckpoint(weights_file, save_best_only=True,
+#                                    save_weights_only=True)
 
 batch_size = 128
 nb_epoch = 1  # Only finding lr
@@ -48,11 +47,11 @@ lr_finder = LRFinder(num_samples, batch_size, minimum_lr=1e-4, maximum_lr=20,
 #                      save_dir='weights/', verbose=True)
 
 # plot the previous values if present
-LRFinder.plot_schedule_from_file('weights/', clip_beginning=10, clip_endding=5)
+# LRFinder.plot_schedule_from_file('weights/', clip_beginning=10, clip_endding=5)
 
 # For training, the auxilary branch must be used to correctly train NASNet
 
-model = NASNet()
+model = DenseNet121()
 model.summary()
 
 optimizer = SGD(lr=0.1, momentum=0.9, nesterov=True)
@@ -67,6 +66,6 @@ if not data_augmentation:
               epochs=nb_epoch,
               shuffle=True,
               verbose=1,
-              callbacks=[lr_finder, model_checkpoint])
+              callbacks=[lr_finder])
 
 lr_finder.plot_schedule(clip_beginning=10, clip_endding=5, net_name=net_name)
