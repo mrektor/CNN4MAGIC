@@ -506,3 +506,75 @@ def plot_misclassified_gammas(m1_te, m2_te, y_pred_g, num_events=10, net_name=''
     plt.savefig(fig_folder + net_name + 'MisclassifiedGammas.png')
     plt.savefig(fig_folder + net_name + 'MisclassifiedGammas.pdf')
     plt.show()
+
+
+def plot_classification_merit_metrics(y_pred, y_true, net_name='',
+                                      fig_folder='/data/mariotti_data/CNN4MAGIC/CNN_Models/SeparationStereo/pics'):
+    tot_gammas = np.sum(y_true)
+    tot_hadrons = y_true.shape[0] - tot_gammas
+
+    gammaness = np.linspace(0, 1, 1000)
+    epsilon_gamma = []
+    epsilon_hadron = []
+    Q_abelardo = []
+    Q_ruben = []
+    significance = []
+    num_hadr_gammaness = []
+    num_gamma_gammaness = []
+
+    for threshold in gammaness:
+        hadr_tmp = np.zeros(y_pred.shape[0])
+        gamma_tmp = np.zeros(y_pred.shape[0])
+        hadr_tmp[y_pred.flatten() < threshold] = 1
+        gamma_tmp[y_pred.flatten() >= threshold] = 1
+        num_hadr = np.sum(hadr_tmp)
+        num_gammas = np.sum(gamma_tmp)
+        num_hadr_gammaness.append(num_hadr)
+        num_gamma_gammaness.append(num_gammas)
+
+        # Efficiency
+        epsilon_gamma.append(num_gammas / tot_gammas)
+        epsilon_hadron.append(num_hadr / tot_hadrons)
+
+        # Q
+        Q_abelardo.append((num_gammas / tot_gammas) / np.sqrt(num_hadr / tot_hadrons))
+        Q_ruben.append(num_gammas / np.sqrt(num_hadr))
+
+        # S
+        significance.append((num_gammas - num_hadr) / np.sqrt(num_hadr))
+
+    # %%
+    # import seaborn as sns
+    # sns.set()
+    fig_folder = ''
+    plt.plot(gammaness, epsilon_hadron)
+    plt.plot(gammaness, epsilon_gamma)
+    plt.title('Efficiency')
+    plt.xlabel('Gammaness')
+    plt.ylabel('$\epsilon$')
+    plt.legend(['$\epsilon_{h}$', '$\epsilon_{\gamma}$'])
+    plt.grid()
+    plt.savefig(fig_folder + '/' + net_name + '_efficiency.png')
+    plt.savefig(fig_folder + '/' + net_name + '_efficiency.eps')
+    plt.show()
+
+    # %%
+    plt.plot(gammaness, significance)
+    plt.title('Significance')
+    plt.ylabel('$S$')
+    plt.xlabel('Gammaness')
+    plt.grid()
+    plt.savefig(fig_folder + '/' + net_name + '_significance.png')
+    plt.savefig(fig_folder + '/' + net_name + '_significance.eps')
+    plt.show()
+
+    # %%
+    plt.plot(gammaness, Q_abelardo)
+    plt.title('Quality Factor')
+    plt.ylabel('$Q$')
+    plt.xlabel('Gammaness')
+    plt.legend(['$\dfrac{\epsilon_{\gamma}}{\sqrt{\epsilon_{h}}}$'])
+    plt.grid()
+    plt.savefig(fig_folder + '/' + net_name + '_Q.png')
+    plt.savefig(fig_folder + '/' + net_name + '_Q.eps')
+    plt.show()

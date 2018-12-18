@@ -18,7 +18,7 @@ m1_val, m2_val, label_val = load_separation_data('val')
 
 # %%
 # LOAD and COMPILE model
-net_name = 'NASNet'
+net_name = 'DenseNet121'
 #
 # net_name_to_load = 'single_DenseNet_25_3_doubleDense-noImpact'
 # path = '/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints/' + net_name_to_load + '.hdf5'
@@ -27,7 +27,7 @@ net_name = 'NASNet'
 #     print('Loading model ' + net_name_to_load + '...')
 #     energy_regressor = load_model(path)
 # else:
-classifier_stereo = NASNet()
+classifier_stereo = DenseNet121()
 
 # energy_regressor = single_DenseNet_25_3()
 EPOCHS = 40
@@ -66,7 +66,7 @@ clr = CyclicLR(base_lr=0.00003, max_lr=0.006,
 clr_1 = OneCycleLR(batch_size=128, max_lr=0.008, num_samples=173069, num_epochs=EPOCHS)
 
 result = classifier_stereo.fit({'m1': m1_tr, 'm2': m2_tr}, label_tr,
-                               batch_size=128,
+                               batch_size=64,
                                epochs=EPOCHS,
                                verbose=1,
                                validation_data=({'m1': m1_val, 'm2': m2_val}, label_val),

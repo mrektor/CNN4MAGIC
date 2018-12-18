@@ -18,12 +18,12 @@ net_name = 'DenseNet121'
 # model_checkpoint = ModelCheckpoint(weights_file, save_best_only=True,
 #                                    save_weights_only=True)
 
-batch_size = 128
+batch_size = 32
 nb_epoch = 1  # Only finding lr
 data_augmentation = False
 
 # The data, shuffled and split between train and test sets:
-m1_tr, m2_tr, label_tr = load_separation_data('train')
+m1_tr, m2_tr, label_tr = load_separation_data('debug')
 # m1_val, m2_val, energy_val = load_data_append('val', prune=True)
 
 num_samples = m1_tr.shape[0]
@@ -51,7 +51,7 @@ lr_finder = LRFinder(num_samples, batch_size, minimum_lr=1e-4, maximum_lr=20,
 
 # For training, the auxilary branch must be used to correctly train NASNet
 
-model = DenseNet121()
+model = MobileNetV2()
 model.summary()
 
 optimizer = SGD(lr=0.1, momentum=0.9, nesterov=True)
