@@ -18,7 +18,7 @@ m1_val, m2_val, label_val = load_separation_data('val')
 
 # %%
 # LOAD and COMPILE model
-net_name = 'DenseNet121'
+net_name = 'MobileNetV2_slim'
 #
 # net_name_to_load = 'single_DenseNet_25_3_doubleDense-noImpact'
 # path = '/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints/' + net_name_to_load + '.hdf5'
@@ -27,7 +27,7 @@ net_name = 'DenseNet121'
 #     print('Loading model ' + net_name_to_load + '...')
 #     energy_regressor = load_model(path)
 # else:
-classifier_stereo = DenseNet121()
+classifier_stereo = MobileNetV2_slim()
 
 # energy_regressor = single_DenseNet_25_3()
 EPOCHS = 40
@@ -63,7 +63,7 @@ stop = EarlyStopping(patience=2)
 
 clr = CyclicLR(base_lr=0.00003, max_lr=0.006,
                step_size=1000, mode='triangular')
-clr_1 = OneCycleLR(batch_size=128, max_lr=0.008, num_samples=173069, num_epochs=EPOCHS)
+clr_1 = OneCycleLR(batch_size=128, max_lr=0.01, num_samples=173069, num_epochs=EPOCHS)
 
 result = classifier_stereo.fit({'m1': m1_tr, 'm2': m2_tr}, label_tr,
                                batch_size=64,

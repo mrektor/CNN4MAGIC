@@ -442,7 +442,7 @@ def bin_data(data, num_bins, bins=None):
 def plot_misclassified_hadrons(m1_te, m2_te, y_pred_h, num_events=10, net_name='',
                                fig_folder='/data/mariotti_data/CNN4MAGIC/CNN_Models/SeparationStereo/pics/'):
     misclassified_hadrons_mask = y_pred_h > 0.5
-    misclassified_probability = y_pred_h[y_pred_h > 0.5]
+    misclassified_probability = y_pred_h[misclassified_hadrons_mask.flatten()]
     misclassified_hadrons_M1 = m1_te[misclassified_hadrons_mask.flatten()]
     misclassified_hadrons_M2 = m2_te[misclassified_hadrons_mask.flatten()]
 
@@ -467,6 +467,7 @@ def plot_misclassified_hadrons(m1_te, m2_te, y_pred_h, num_events=10, net_name='
         axes[i, 3].imshow(misclassified_hadrons_M2[idx, :, :, 1])  # PHE
         axes[i, 3].set_title('M2 PHE')
 
+    fig.suptitle('Hadrons misclassified as Gammas')
     plt.tight_layout()
     plt.savefig(fig_folder + net_name + 'MisclassifiedHadrons.png')
     plt.savefig(fig_folder + net_name + 'MisclassifiedHadrons.pdf')
@@ -476,7 +477,7 @@ def plot_misclassified_hadrons(m1_te, m2_te, y_pred_h, num_events=10, net_name='
 def plot_misclassified_gammas(m1_te, m2_te, y_pred_g, num_events=10, net_name='',
                               fig_folder='/data/mariotti_data/CNN4MAGIC/CNN_Models/SeparationStereo/pics/'):
     misclassified_gammas_mask = y_pred_g < 0.5
-    misclassified_probability = y_pred_g[y_pred_g < 0.5]
+    misclassified_probability = y_pred_g[misclassified_gammas_mask.flatten()]
 
     misclassified_gammas_M1 = m1_te[misclassified_gammas_mask.flatten()]
     misclassified_gammas_M2 = m2_te[misclassified_gammas_mask.flatten()]
@@ -502,6 +503,7 @@ def plot_misclassified_gammas(m1_te, m2_te, y_pred_g, num_events=10, net_name=''
         axes[i, 3].imshow(misclassified_gammas_M2[idx, :, :, 1])  # PHE
         axes[i, 3].set_title('M2 PHE')
 
+    fig.suptitle('Gammas misclassified as Hadrons')
     plt.tight_layout()
     plt.savefig(fig_folder + net_name + 'MisclassifiedGammas.png')
     plt.savefig(fig_folder + net_name + 'MisclassifiedGammas.pdf')
@@ -509,7 +511,8 @@ def plot_misclassified_gammas(m1_te, m2_te, y_pred_g, num_events=10, net_name=''
 
 
 def plot_classification_merit_metrics(y_pred, y_true, net_name='',
-                                      fig_folder='/data/mariotti_data/CNN4MAGIC/CNN_Models/SeparationStereo/pics'):
+                                      fig_folder='/data/mariotti_data/CNN4MAGIC/CNN_Models/SeparationStereo/pics',
+                                      save=True):
     tot_gammas = np.sum(y_true)
     tot_hadrons = y_true.shape[0] - tot_gammas
 
@@ -546,7 +549,6 @@ def plot_classification_merit_metrics(y_pred, y_true, net_name='',
     # %%
     # import seaborn as sns
     # sns.set()
-    fig_folder = ''
     plt.plot(gammaness, epsilon_hadron)
     plt.plot(gammaness, epsilon_gamma)
     plt.title('Efficiency')
@@ -554,8 +556,9 @@ def plot_classification_merit_metrics(y_pred, y_true, net_name='',
     plt.ylabel('$\epsilon$')
     plt.legend(['$\epsilon_{h}$', '$\epsilon_{\gamma}$'])
     plt.grid()
-    plt.savefig(fig_folder + '/' + net_name + '_efficiency.png')
-    plt.savefig(fig_folder + '/' + net_name + '_efficiency.eps')
+    if save:
+        plt.savefig(fig_folder + '/' + net_name + '_efficiency.png')
+        plt.savefig(fig_folder + '/' + net_name + '_efficiency.eps')
     plt.show()
 
     # %%
@@ -564,8 +567,9 @@ def plot_classification_merit_metrics(y_pred, y_true, net_name='',
     plt.ylabel('$S$')
     plt.xlabel('Gammaness')
     plt.grid()
-    plt.savefig(fig_folder + '/' + net_name + '_significance.png')
-    plt.savefig(fig_folder + '/' + net_name + '_significance.eps')
+    if save:
+        plt.savefig(fig_folder + '/' + net_name + '_significance.png')
+        plt.savefig(fig_folder + '/' + net_name + '_significance.eps')
     plt.show()
 
     # %%
@@ -575,6 +579,7 @@ def plot_classification_merit_metrics(y_pred, y_true, net_name='',
     plt.xlabel('Gammaness')
     plt.legend(['$\dfrac{\epsilon_{\gamma}}{\sqrt{\epsilon_{h}}}$'])
     plt.grid()
-    plt.savefig(fig_folder + '/' + net_name + '_Q.png')
-    plt.savefig(fig_folder + '/' + net_name + '_Q.eps')
+    if save:
+        plt.savefig(fig_folder + '/' + net_name + '_Q.png')
+        plt.savefig(fig_folder + '/' + net_name + '_Q.eps')
     plt.show()

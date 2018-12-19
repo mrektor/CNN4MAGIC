@@ -2,7 +2,7 @@ from keras.models import load_model
 
 from CNN4MAGIC.CNN_Models.SeparationStereo.utils import *
 
-net_name = 'MobileNetV2'
+net_name = 'MobileNetV2_slim'
 
 # Load the model
 path = '/data/mariotti_data/CNN4MAGIC/CNN_Models/SeparationStereo/checkpoints/' + net_name + '.hdf5'
@@ -66,5 +66,10 @@ plot_gammaness(y_pred, y_true, net_name=net_name)
 #%%
 print('Plotting confusion matrix...')
 plot_confusion_matrix(y_pred, y_true, ['Hadrons', 'Gammas'], net_name=net_name)
+
+print('Plotting Merit Figures...')
+plot_classification_merit_metrics(y_pred, y_true, net_name=net_name, save=False)
+
+plot_classification_merit_metrics(y_pred, y_true, net_name=net_name)
 
 print('All done')
