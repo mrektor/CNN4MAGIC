@@ -2,7 +2,7 @@ import time
 
 import pandas as pd
 
-from CNN_Models.EnergyRegressor.models import *
+from CNN4MAGIC.CNN_Models.EnergyRegressor.models import *
 from utils import *
 
 # %

@@ -3,7 +3,7 @@ import time
 import pandas as pd
 from keras.losses import *
 
-from CNN_Models.EnergyRegressor.magic_inception import magic_inception
+from CNN4MAGIC.CNN_Models.EnergyRegressor.magic_inception import magic_inception
 from utils import *
 
 train = True

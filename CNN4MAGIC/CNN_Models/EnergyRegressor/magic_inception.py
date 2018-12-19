@@ -172,8 +172,8 @@ def magic_inception(input_shape, num_filters_first_conv, dropout, num_classes,
     return cnn
 
 # %%
-# input_shape = (67, 68, 1)
-# num_filt = 136
-# dropout = 0.4
-# model = magic_inception(input_shape, num_filt, dropout, 10)
-# model.summary()
+input_shape = (67, 68, 1)
+num_filt = 136
+dropout = 0.4
+model = magic_inception(input_shape, num_filt, dropout, 10)
+model.summary()

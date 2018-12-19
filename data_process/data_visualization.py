@@ -16,8 +16,8 @@ print('loading...')
 # with open('pickle_data/gamma_energy_numpy_test.pkl', 'rb') as f:
 #     x_test = pickle.load(f)
 #
-# with open('pickle_data/hadron_numpy_train.pkl', 'rb') as f:
-#     hadron = pickle.load(f)
+with open('pickle_data/hadron_numpy_train.pkl', 'rb') as f:
+    hadron = pickle.load(f)
 
 with open('/data2T/mariotti_data_2/interp_from_root/MC/result_a05to35_8_821325_Y_.pkl', 'rb') as f:
     y_test = pickle.load(f)
@@ -109,4 +109,4 @@ for i in range(5):
     plt.title('Hadron')
     plt.colorbar()
     plt.savefig('hadron_example' + str(i) + '.png')
-
+    plt.show()
