@@ -129,6 +129,13 @@ with open('/data2T/mariotti_data_2/npy_dump/MC_list_labels_energy_position.pkl',
     pkl.dump((event_idx_list, labels, energy_labels, position_labels), f)
 
 # %% Merge the dicts and the list
+# with open('/data2T/mariotti_data_2/npy_dump/MC_list_labels_energy_position.pkl', 'rb') as f:
+#     event_idx_list, labels, energy_labels, position_labels = pkl.load(f)
+#
+# with open('/data2T/mariotti_data_2/npy_dump/root_list_labels.pkl', 'rb') as f:
+#     root_list, root_labels = pkl.load(f)
+
+
 total_events_list = event_idx_list + root_list
 total_labels = {}
 total_labels.update(labels)
@@ -137,6 +144,21 @@ total_labels.update(root_labels)
 # %%
 with open('/data2T/mariotti_data_2/npy_dump/total_list_labels.pkl', 'wb') as f:
     pkl.dump((total_events_list, total_labels), f)
+
+# %%
+import random
+
+random.shuffle(total_events_list)
+# %%
+num_files = len(total_events_list)
+partition = {}
+partition['train'] = total_events_list[:int(num_files / 2)]
+partition['validation'] = total_events_list[int(num_files / 2):int(num_files * 3 / 2)]
+partition['test'] = total_events_list[int(num_files * 3 / 2):]
+
+# %%
+with open('/data2T/mariotti_data_2/npy_dump/train_val_test_dict_labels_list.pkl', 'wb') as f:
+    pkl.dump((partition, total_labels), f)
 
 # %% sanity_check
 # folder = '/data2T/mariotti_data_2/npy_dump/SS433'

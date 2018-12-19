@@ -2,7 +2,7 @@ import numpy as np
 from keras.utils import Sequence
 
 
-class MAGIC_Geneator(Sequence):
+class MAGIC_Generator(Sequence):
     def __init__(self, list_IDs, labels, batch_size=32, dim=(67, 68, 4), shuffle=True,
                  folder='/data2T/mariotti_data_2/npy_dump/all_npy'):
         'Initialization'
