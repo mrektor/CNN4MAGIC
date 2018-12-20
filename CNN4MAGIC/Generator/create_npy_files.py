@@ -104,8 +104,7 @@ print(len(root_list))
 with open('/data2T/mariotti_data_2/npy_dump/root_list_labels.pkl', 'wb') as f:
     pkl.dump((root_list, root_labels), f)
 
-
-# %%
+# %% Dup all MC files
 
 folder = '/data2T/mariotti_data_2/interp_from_root/MC_channel_last_full'
 file_list = glob.glob(folder + '/*.pkl')
