@@ -85,7 +85,7 @@ EPOCHS = 10
 net_name = 'MobileNetV2_slim_energy_fitgen'
 path = '/data/mariotti_data/CNN4MAGIC/CNN_Models/SeparationStereo/checkpoints/' + net_name
 check = ModelCheckpoint(filepath=path, save_best_only=True)
-clr = OneCycleLR(max_lr=0.00005,
+clr = OneCycleLR(max_lr=1e-4,
                  num_epochs=EPOCHS,
                  num_samples=len(train_gn),
                  batch_size=BATCH_SIZE)

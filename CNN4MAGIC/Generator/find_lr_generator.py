@@ -14,7 +14,7 @@ if not os.path.exists('weights/'):
     os.makedirs('weights/')
 import pickle as pkl
 
-net_name = 'MobilenetV2Slim_position'
+net_name = 'DenseNet-121-position'
 # weights_file = 'weights/' + net_name + '.h5'
 # model_checkpoint = ModelCheckpoint(weights_file, save_best_only=True,
 #                                    save_weights_only=True)
@@ -22,6 +22,7 @@ net_name = 'MobilenetV2Slim_position'
 batch_size = 64
 nb_epoch = 1  # Only finding lr
 data_augmentation = False
+
 
 # The data, shuffled and split between train and test sets:
 
@@ -106,7 +107,7 @@ train_gn = MAGIC_Generator(list_IDs=partition['train'],
 
 # %% Load Model
 print('Loading the Neural Network...')
-model = MobileNetV2_slim_position()
+model = DenseNet121_position()
 model.compile(optimizer='sgd', loss='mse')
 model.summary()
 # model.load_weights(weights_file)

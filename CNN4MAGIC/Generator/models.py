@@ -50,3 +50,15 @@ def NASNet_mobile_position():
     x = Dense(2, name='position')(x)
     model1 = Model(inputs=input_img, output=x)
     return model1
+
+
+def DenseNet121_position():
+    input_img = Input(shape=(67, 68, 4), name='m1')
+
+    model = keras.applications.densenet.DenseNet121(include_top=False, weights=None, input_tensor=input_img,
+                                                    pooling='avg')
+
+    x = model.layers[-1].output
+    x = Dense(2, name='position')(x)
+    model1 = Model(inputs=input_img, output=x)
+    return model1
