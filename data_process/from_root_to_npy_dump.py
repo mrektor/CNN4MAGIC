@@ -1,4 +1,4 @@
-import glob
+import multiprocessing
 import multiprocessing
 import os
 import pickle
@@ -7,9 +7,9 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import tqdm
 import uproot
 from scipy import interpolate
+from tqdm import tqdm
 
 
 # from ctapipe.image import tailcuts_clean, hillas_parameters, leakage, concentration
@@ -655,7 +655,7 @@ class InterpolateMagic:  # TODO make it parallel
 
     def ROOT_dump_npy(filename, event_idx_list=None, labels=None, dump_folder='/data2T/mariotti_data_2/npy_dump/'):
         with open(filename, 'rb') as f:
-            data = pkl.load(f)
+            data = pickle.load(f)
 
         m1 = data['M1_interp']
         m2 = data['M2_interp']
@@ -688,7 +688,7 @@ class InterpolateMagic:  # TODO make it parallel
     def MC_dump_npy(filename, event_idx_list=None, labels=None, energy_labels=None, position_labels=None,
                     dump_folder='/data2T/mariotti_data_2/npy_dump/'):
         with open(filename, 'rb') as f:
-            data = pkl.load(f)
+            data = pickle.load(f)
 
         corsika = data['corsika_event_number_1']
         m1 = data['M1_interp']
@@ -795,18 +795,18 @@ def read_from_root(filename, want_extra=False, pruning=False):
     phe = df2['phe'].loc[event_idx].unstack(level=-1)
 
     # Compute hillas parameters, leakage and other hand-crafted features
-    if want_extra:
-        extras = compute_stuff(phe, time, only_relevant=True)
-
-        # Filter with some criterion
-        if pruning:
-            intensity_ok = extras['intensity'] > 100
-            leak_ok = extras['leakage1_pixel'] < 0.2
-            condition = np.logical_and(intensity_ok, leak_ok)
-
-            return df[condition.values], extras[condition.values], phe[condition.values], time[condition.values]
-
-        return df, extras, phe, time
+    # if want_extra:
+    #     extras = compute_stuff(phe, time, only_relevant=True)
+    #
+    #     # Filter with some criterion
+    #     if pruning:
+    #         intensity_ok = extras['intensity'] > 100
+    #         leak_ok = extras['leakage1_pixel'] < 0.2
+    #         condition = np.logical_and(intensity_ok, leak_ok)
+    #
+    #         return df[condition.values], extras[condition.values], phe[condition.values], time[condition.values]
+    #
+    #     return df, extras, phe, time
 
     return df, phe, time
 
@@ -920,7 +920,7 @@ def stereo_interp_from_root_realdata(filenames):
     event_idx_list, labels = ROOT_dump_npy(m1=m1_interp, m2=m2_interp, filename=filenameM1[-42:-4])
     #
     with open(
-            '/ph14-data1/users/mariotti_data/complementary_computation/eventList_labels_' + filenameM1[-42:-6] + '.pkl',
+            '/ph14-data1/users/mariotti_data/complementary_computation/eventList_labels_' + filenameM1[-42:-4] + '.pkl',
             'wb') as f:
         pickle.dump((event_idx_list, labels), f, protocol=4)
     print(filenameM1[-40:-4])
@@ -1082,18 +1082,23 @@ def stereo_interp_from_root(filenames):
               'pos_interp1': pos_interp1, 'pos_interp2': pos_interp2,
               'M1_interp': m1_interp, 'M2_interp': m2_interp}
 
-    event_idx_list, labels, energy_labels, position_labels = MC_dump_npy(corsika=result['corsika_event_number_1'],
-                                                                         m1=m1_interp, m2=m2_interp,
-                                                                         energy=result['energy'],
-                                                                         posX1=result['src_X1'],
-                                                                         posY1=result['src_Y1'],
-                                                                         filename=filenameM1[-28:-5])
+    try:
+        event_idx_list, labels, energy_labels, position_labels = MC_dump_npy(corsika=result['corsika_event_number_1'],
+                                                                             m1=m1_interp, m2=m2_interp,
+                                                                             energy=result['energy'],
+                                                                             posX1=result['src_X1'],
+                                                                             posY1=result['src_Y1'],
+                                                                             filename=filenameM1[-28:-5])
 
-    with open('/ph14-data1/users/mariotti_data/complementary_computation/eventList_labels_energy_position' + filenameM1[
-                                                                                                             -28:-5] + '.pkl',
-              'wb') as f:
-        pickle.dump((event_idx_list, labels, energy_labels, position_labels), f, protocol=4)
-    print(f'Saved {filenameM1[-28:-5]}')
+        with open(
+                '/ph14-data1/users/mariotti_data/complementary_computation/eventList_labels_energy_position' + filenameM1[
+                                                                                                               -28:-5] + '.pkl',
+                'wb') as f:
+            pickle.dump((event_idx_list, labels, energy_labels, position_labels), f, protocol=4)
+
+        print(f'Saved {filenameM1[-28:-5]}')
+    except KeyError:
+        print(f'Ker error for file {filenameM1}')
 
 
 #####################################
@@ -1109,6 +1114,7 @@ def stereo_interp_from_root(filenames):
 #####################################
 #### MONTECARLOS
 # Load all the filenames
+
 
 print('Change filenames...')
 filelist = glob.glob('/ph14-data1/users/mariotti_data/raw_files/GA*')
@@ -1135,6 +1141,7 @@ def get_pair_match(a, b):
 mFull = get_pair_match(fileM1, fileM2)
 
 # %%
+print('It\'s Bum-Bum time:')
 # Start the parallel computing
 num_cpus = multiprocessing.cpu_count()
 print(f'start multiprocessing with {num_cpus} jobs')
@@ -1152,7 +1159,13 @@ print('All done, MONTACARLO Interpolation went fine')
 #####################################
 #####################################
 # %% ROOT FILES
+print('##########################')
+print('##########################')
+print('####### Intermezzo.. #####')
+print('##########################')
+print('##########################')
 
+print('Start with ROOT FILES')
 print('Change filenames...')
 filelist = glob.glob('/ph14-data1/users/mariotti_data/raw_real_data_files/2018*')
 os.system('cd /ph14-data1/users/mariotti_data/raw_real_data_files')
