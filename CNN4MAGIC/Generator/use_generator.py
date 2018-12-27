@@ -1,15 +1,16 @@
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 
 from CNN4MAGIC.CNN_Models.BigData.clr import OneCycleLR
-from CNN4MAGIC.Generator.models import *
 from CNN4MAGIC.Generator.gen_util import load_data_generators
+from CNN4MAGIC.Generator.models import *
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 
 from CNN4MAGIC.CNN_Models.BigData.clr import OneCycleLR
 from CNN4MAGIC.Generator.gen_util import load_data_generators
 from CNN4MAGIC.Generator.models import *
 
-train_gn, val_gn, position = load_data_generators(batch_size=400, want_position=True)
+BATCH_SIZE = 400
+train_gn, val_gn, position = load_data_generators(batch_size=BATCH_SIZE, want_position=True)
 
 
 # %% Load Model
