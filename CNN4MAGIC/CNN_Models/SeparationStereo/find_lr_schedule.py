@@ -18,7 +18,7 @@ net_name = 'DenseNet121'
 # model_checkpoint = ModelCheckpoint(weights_file, save_best_only=True,
 #                                    save_weights_only=True)
 
-batch_size = 32
+batch_size = 256
 nb_epoch = 1  # Only finding lr
 data_augmentation = False
 

@@ -14,14 +14,13 @@ if not os.path.exists('weights/'):
     os.makedirs('weights/')
 import pickle as pkl
 
-net_name = 'DenseNet-121-position'
+net_name = 'DenseNet-121-batch256-position'
 # weights_file = 'weights/' + net_name + '.h5'
 # model_checkpoint = ModelCheckpoint(weights_file, save_best_only=True,
 #                                    save_weights_only=True)
 
-batch_size = 64
+BATCH_SIZE = 400
 nb_epoch = 1  # Only finding lr
-data_augmentation = False
 
 
 # The data, shuffled and split between train and test sets:
@@ -77,7 +76,7 @@ num_samples = len(partition['train'])
 # Exponential lr finder
 # USE THIS FOR A LARGE RANGE SEARCH
 # Uncomment the validation_data flag to reduce speed but get a better idea of the learning rate
-lr_finder = LRFinder(num_samples, batch_size, minimum_lr=1e-6, maximum_lr=20,
+lr_finder = LRFinder(num_samples, BATCH_SIZE, minimum_lr=1e-6, maximum_lr=20,
                      lr_scale='exp',
                      # validation_data=({'m1': m1_val, 'm2': m2_val}, energy_val),  # use the validation data for losses
                      validation_sample_rate=5,
@@ -97,7 +96,6 @@ lr_finder = LRFinder(num_samples, batch_size, minimum_lr=1e-6, maximum_lr=20,
 
 # For training, the auxilary branch must be used to correctly train NASNet
 
-BATCH_SIZE = 64
 train_gn = MAGIC_Generator(list_IDs=partition['train'],
                            labels=position,
                            position=True,
