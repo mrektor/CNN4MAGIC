@@ -119,3 +119,45 @@ print(len(data['train']))
 data['test'] = clean_missing_data(data['test'], position)
 # %%
 data['validation'] = clean_missing_data(data['validation'], position)
+# %%
+
+from CNN4MAGIC.Generator.gen_util import load_data_generators
+
+tr, va, ene = load_data_generators(1, want_energy=True)
+
+# %%
+tr[0]
+# %%
+import time
+
+i = 0
+bb = 0
+bef = time.time()
+for a, b in enumerate(tr):
+    bb = b
+    i += 1
+now = time.time()
+print(i)
+print(now - bef)
+# %%
+i = 0
+bef = time.time()
+problems = []
+for a in range(57430, len(tr)):
+    try:
+        bb = tr[a]
+    except:
+        problems.append(a)
+    i += 1
+now = time.time()
+print(i)
+print(now - bef)
+
+# %%
+bef = time.time()
+for a, b in enumerate(va):
+    bb = b
+    i += 1
+now = time.time()
+print(i)
+print(now - bef)
