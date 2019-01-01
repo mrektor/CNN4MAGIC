@@ -59,6 +59,8 @@ def load_data_generators(batch_size=400, want_energy=False, want_position=False,
         print(f'Training on {train_points} data points')
         print(f'Validating on {val_points} data points')
 
+        energy = {k: np.log10(v) for k, v in energy.items()}  # Convert energies in log10
+
         # %% Define the generators
         train_gn = MAGIC_Generator(list_IDs=data['train'],
                                    labels=energy,
@@ -74,9 +76,16 @@ def load_data_generators(batch_size=400, want_energy=False, want_position=False,
                                  folder='/data2T/mariotti_data_2/MC_npy/finish_dump_MC/partial_dump_finish'
                                  )
 
-        energy = {k: np.log10(v) for k, v in energy.items()}  # Convert energies in log10
+        test_gn = MAGIC_Generator(list_IDs=data['test'],
+                                  labels=energy,
+                                  position=True,
+                                  batch_size=batch_size,
+                                  folder='/data2T/mariotti_data_2/MC_npy/finish_dump_MC/partial_dump_finish'
+                                  )
 
-        return train_gn, val_gn, energy
+        te_energy = [energy[event] for event in data['test']]
+
+        return train_gn, val_gn, test_gn, te_energy
 
     if want_labels:
         # %%
@@ -105,8 +114,14 @@ def load_data_generators(batch_size=400, want_energy=False, want_position=False,
                                  batch_size=batch_size,
                                  folder='/data2T/mariotti_data_2/MC_npy/finish_dump_MC/partial_dump_finish'
                                  )
+        test_gn = MAGIC_Generator(list_IDs=data['test'],
+                                  labels=labels,
+                                  position=True,
+                                  batch_size=batch_size,
+                                  folder='/data2T/mariotti_data_2/MC_npy/finish_dump_MC/partial_dump_finish'
+                                  )
 
-        return train_gn, val_gn, labels
+        return train_gn, val_gn, test_gn, labels
 
     if want_position:
         # %%
@@ -135,4 +150,12 @@ def load_data_generators(batch_size=400, want_energy=False, want_position=False,
                                  batch_size=batch_size,
                                  folder='/data2T/mariotti_data_2/MC_npy/finish_dump_MC/partial_dump_finish'
                                  )
-        return train_gn, val_gn, position
+
+        test_gn = MAGIC_Generator(list_IDs=data['test'],
+                                  labels=position,
+                                  position=True,
+                                  batch_size=batch_size,
+                                  folder='/data2T/mariotti_data_2/MC_npy/finish_dump_MC/partial_dump_finish'
+                                  )
+
+        return train_gn, val_gn, test_gn, position
