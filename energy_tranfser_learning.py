@@ -1,10 +1,8 @@
-print('loading libraries...')
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 from keras.layers import Dense
 from keras.models import load_model, Model
 
 from CNN4MAGIC.CNN_Models.BigData.clr import OneCycleLR
-from CNN4MAGIC.CNN_Models.BigData.utils import plot_hist2D, plot_gaussian_error
 from CNN4MAGIC.Generator.gen_util import load_data_generators
 
 BATCH_SIZE = 400
@@ -31,7 +29,7 @@ EPOCHS = 30
 net_name = 'MobileNetV2-alpha1-buonanno-energy-transfer'
 path = '/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints/' + net_name + '.hdf5'
 check = ModelCheckpoint(filepath=path, save_best_only=True)
-clr = OneCycleLR(max_lr=5e-2,
+clr = OneCycleLR(max_lr=5e-3,
                  num_epochs=EPOCHS,
                  num_samples=len(train_gn),
                  batch_size=BATCH_SIZE)
@@ -48,6 +46,11 @@ result = model.fit_generator(generator=train_gn,
                              )
 
 # %%
+import gc
+
+gc.collect()
+
+from CNN4MAGIC.CNN_Models.BigData.utils import plot_hist2D, plot_gaussian_error
 
 print('Making predictions on test set...')
 y_pred = model.predict_generator(generator=test_gn)
