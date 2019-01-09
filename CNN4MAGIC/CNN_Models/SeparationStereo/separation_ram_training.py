@@ -18,7 +18,7 @@ m1_val, m2_val, label_val = load_separation_data('val')
 
 # %%
 # LOAD and COMPILE model
-net_name = 'MobileNetV2_slim'
+net_name = 'MobileNetV2_slim_test6gen'
 #
 # net_name_to_load = 'single_DenseNet_25_3_doubleDense-noImpact'
 # path = '/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints/' + net_name_to_load + '.hdf5'

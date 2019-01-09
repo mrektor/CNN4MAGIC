@@ -64,21 +64,19 @@ def load_data_generators(batch_size=400, want_energy=False, want_position=False,
         # %% Define the generators
         train_gn = MAGIC_Generator(list_IDs=data['train'],
                                    labels=energy,
-                                   position=True,
                                    batch_size=batch_size,
                                    folder='/data2T/mariotti_data_2/MC_npy/finish_dump_MC/partial_dump_finish'
                                    )
 
         val_gn = MAGIC_Generator(list_IDs=data['validation'],
                                  labels=energy,
-                                 position=True,
                                  batch_size=batch_size,
                                  folder='/data2T/mariotti_data_2/MC_npy/finish_dump_MC/partial_dump_finish'
                                  )
 
         test_gn = MAGIC_Generator(list_IDs=data['test'],
                                   labels=energy,
-                                  position=True,
+                                  shuffle=False,
                                   batch_size=batch_size,
                                   folder='/data2T/mariotti_data_2/MC_npy/finish_dump_MC/partial_dump_finish'
                                   )
@@ -103,20 +101,18 @@ def load_data_generators(batch_size=400, want_energy=False, want_position=False,
         # %% Define the generators
         train_gn = MAGIC_Generator(list_IDs=data['train'],
                                    labels=labels,
-                                   position=True,
                                    batch_size=batch_size,
                                    folder='/data2T/mariotti_data_2/MC_npy/finish_dump_MC/partial_dump_finish'
                                    )
 
         val_gn = MAGIC_Generator(list_IDs=data['validation'],
                                  labels=labels,
-                                 position=True,
                                  batch_size=batch_size,
                                  folder='/data2T/mariotti_data_2/MC_npy/finish_dump_MC/partial_dump_finish'
                                  )
         test_gn = MAGIC_Generator(list_IDs=data['test'],
                                   labels=labels,
-                                  position=True,
+                                  shuffle=False,
                                   batch_size=batch_size,
                                   folder='/data2T/mariotti_data_2/MC_npy/finish_dump_MC/partial_dump_finish'
                                   )

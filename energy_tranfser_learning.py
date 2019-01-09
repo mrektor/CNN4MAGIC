@@ -5,7 +5,7 @@ from keras.models import load_model, Model
 from CNN4MAGIC.CNN_Models.BigData.clr import OneCycleLR
 from CNN4MAGIC.Generator.gen_util import load_data_generators
 
-BATCH_SIZE = 400
+BATCH_SIZE = 475
 train_gn, val_gn, test_gn, energy_te = load_data_generators(batch_size=BATCH_SIZE, want_energy=True)
 
 # %%
@@ -29,21 +29,21 @@ EPOCHS = 30
 net_name = 'MobileNetV2-alpha1-buonanno-energy-transfer'
 path = '/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints/' + net_name + '.hdf5'
 check = ModelCheckpoint(filepath=path, save_best_only=True)
-clr = OneCycleLR(max_lr=5e-3,
+clr = OneCycleLR(max_lr=8e-4,
                  num_epochs=EPOCHS,
                  num_samples=len(train_gn),
                  batch_size=BATCH_SIZE)
 stop = EarlyStopping(patience=2)
 
-result = model.fit_generator(generator=train_gn,
-                             validation_data=val_gn,
-                             epochs=EPOCHS,
-                             verbose=1,
-                             callbacks=[check, clr, stop],
-                             use_multiprocessing=False,
-                             workers=1,
-                             max_queue_size=30
-                             )
+result = new_model.fit_generator(generator=train_gn,
+                                 validation_data=val_gn,
+                                 epochs=EPOCHS,
+                                 verbose=1,
+                                 callbacks=[check, clr, stop],
+                                 use_multiprocessing=True,
+                                 workers=4,
+                                 max_queue_size=30
+                                 )
 
 # %%
 import gc
@@ -53,7 +53,7 @@ gc.collect()
 from CNN4MAGIC.CNN_Models.BigData.utils import plot_hist2D, plot_gaussian_error
 
 print('Making predictions on test set...')
-y_pred = model.predict_generator(generator=test_gn)
+y_pred = model.predict_generator(generator=test_gn, verbose=1, use_multiprocessing=True, workers=4)
 y_test = energy_te
 print('Plotting stuff...')
 plot_hist2D(y_test, y_pred,
