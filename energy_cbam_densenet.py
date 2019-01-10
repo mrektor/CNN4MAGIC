@@ -1,17 +1,17 @@
+import numpy as np
+import tensorflow as tf
+from keras import backend as K
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 
 from CNN4MAGIC.CNN_Models.BigData.clr import OneCycleLR
 from CNN4MAGIC.Generator.gen_util import load_data_generators
 from CNN4MAGIC.Generator.models import MobileNetV2_energy_doubleDense
-import numpy as np
-
-import tensorflow as tf
-from keras import backend as K
 
 num_cores = 24
 
 GPU=False
 CPU=True
+
 if GPU:
     num_GPU = 1
     num_CPU = 1

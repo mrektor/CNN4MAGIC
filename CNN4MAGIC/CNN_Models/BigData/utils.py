@@ -369,3 +369,29 @@ def bin_data(data, num_bins, bins=None):
             mask = np.logical_and(data >= bins[i], data <= bins[i + 1])
             binned_values[mask] = bin
     return binned_values, bins
+
+
+def plot_theta(pos_true, pos_pred, pos_in_mm=True, folder='', net_name=''):
+    if pos_in_mm:
+        pos_true = pos_true * 0.00337  # in deg
+        pos_pred = pos_pred * 0.00337  # in deg
+
+    num_events = pos_pred.shape[0]
+    theta_sq = np.sum((pos_true - pos_pred) ** 2, axis=1)
+
+    hist_theta_sq, bins = np.histogram(theta_sq, bins=num_events)
+    hist_theta_sq_normed = hist_theta_sq / float(num_events)
+    cumsum_hist = np.cumsum(hist_theta_sq_normed)
+    angular_resolution = bins[np.where(cumsum_hist > 0.68)[0][0]]
+
+    plt.figure()
+    plt.hist(theta_sq, bins=1000)
+    plt.axvline(x=angular_resolution, color='darkorange', linestyle='--')
+    plt.title(net_name + ' Direction Reconstruction')
+    plt.xlabel(r'$\theta^2$')
+    plt.ylabel('Counts')
+    plt.legend(['Angular Resolution: {:02e}'.format(angular_resolution)])
+    plt.savefig(folder + '/' + net_name + '_angular.png')
+    plt.savefig(folder + '/' + net_name + '_angular.eps')
+
+    return angular_resolution
