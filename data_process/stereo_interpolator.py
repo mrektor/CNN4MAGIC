@@ -688,7 +688,7 @@ class InterpolateMagic:  # TODO make it parallel
 
         return event_idx_list, labels
 
-    # %% Toy test
+    # % Toy test
     def MC_dump_npy(filename, event_idx_list=None, labels=None, energy_labels=None, position_labels=None,
                     dump_folder='/data2T/mariotti_data_2/new_dump/'):
         with open(filename, 'rb') as f:
@@ -753,6 +753,31 @@ class InterpolateMagic:  # TODO make it parallel
         pos_int_x = pos_int[1][0]
         pos_int_y = pos_int[0][0]
         return pos_int_x, pos_int_y
+
+
+def screma_allinea(df1, phe1, time1, df2, phe2, time2):
+    evt_n_1 = df1['stereo_evt_number'].values
+    evt_n_2 = df2['stereo_evt_number'].values
+
+    a, aidx = np.unique(evt_n_1, return_index=True)
+    b, bidx = np.unique(evt_n_2, return_index=True)
+
+    phe1_reduced = phe1.iloc[aidx]
+    time1_reduced = time1.iloc[aidx]
+
+    phe2_reduced = phe2.iloc[bidx]
+    time2_reduced = time2.iloc[bidx]
+
+    res1 = np.isin(a, b)
+    res2 = np.isin(b, a)
+
+    phe1_reduced_ok = phe1_reduced[res1]
+    time1_reduced_ok = time1_reduced[res1]
+
+    phe2_reduced_ok = phe2_reduced[res2]
+    time2_reduced_ok = time2_reduced[res2]
+
+    return phe1_reduced_ok, time1_reduced_ok, phe2_reduced_ok, time2_reduced_ok
 
 
 def read_from_root(filename, want_extra=False, pruning=False):
@@ -866,7 +891,7 @@ def read_from_root_realdata(filename, want_extra=False, pruning=False):
 
 
 def ROOT_dump_npy(m1, m2, filename, event_idx_list=None, labels=None,
-                  dump_folder='/ph14-data1/users/mariotti_data/npy_ROOT'):
+                  dump_folder='/data/magic_data/ROOT_npy_6oct2018'):
     name = filename  # [-40:-4]
 
     if event_idx_list is None:
@@ -910,6 +935,7 @@ def stereo_interp_from_root_realdata(filenames):
     bef = time.time()
     df1, phe1, time1 = read_from_root_realdata(filenameM1)
     df2, phe2, time2 = read_from_root_realdata(filenameM2)
+    phe1, time1, phe2, time2 = screma_allinea(df1, phe1, time1, df2, phe2, time2)
     bef2 = time.time()
     interpolator = InterpolateMagic(15)
     num_events = df1.shape[0]
@@ -928,11 +954,11 @@ def stereo_interp_from_root_realdata(filenames):
     event_idx_list, labels = ROOT_dump_npy(m1=m1_interp, m2=m2_interp, filename=filenameM1[-42:-4])
     #
     with open(
-            '/ph14-data1/users/mariotti_data/complementary_computation/eventList_labels_' + filenameM1[-42:-4] + '.pkl',
+            '/data/magic_data/magic_compl_comp/eventList_labels_' + filenameM1[-42:-4] + '.pkl',
             'wb') as f:
         pickle.dump((event_idx_list, labels), f, protocol=4)
     print(filenameM1[-40:-4])
-    print(f'Time needed: Reading: {bef2 - bef} seconds; Interpolation: {time.time() - bef2} seconds.')
+    print('Time needed: Reading: {bef2 - bef} seconds; Interpolation: {time.time() - bef2} seconds.'.format())
 
 
 def stereo_interp_from_txt(filenames):
@@ -994,7 +1020,7 @@ def stereo_interp_from_txt(filenames):
         pickle.dump(result, f, protocol=4)
 
 
-# %%
+# %
 
 
 ###############
@@ -1111,7 +1137,7 @@ def stereo_interp_from_root(filenames):
 
         # print(f'Saved {filenameM1[-28:-5]}')
     except KeyError:
-        print(f'Ker error for file {filenameM1}')
+        print('Ker error for file {filenameM1}'.format())
 
 
 #####################################
@@ -1138,8 +1164,9 @@ def stereo_interp_from_root(filenames):
 #
 # print('filenames changed.')
 
-fileM1 = glob.glob('/ph14-data1/users/mariotti_data/raw_files/GA_M1*')
-fileM2 = glob.glob('/ph14-data1/users/mariotti_data/raw_files/GA_M2*')
+# %%
+# fileM1 = glob.glob('/data/magic_data/raw_files/*M1*')
+# fileM2 = glob.glob('/data/magic_data/raw_files/*M2*')
 
 
 def get_pair_match(a, b):
@@ -1166,20 +1193,20 @@ def imap_unordered_bar(func, args, n_processes=2):
 
 #
 #
-mFull = get_pair_match(fileM1, fileM2)
+# mFull = get_pair_match(fileM1, fileM2)
 
 # %%
-print('It\'s Bum-Bum time:')
-# Start the parallel computing
-num_cpus = multiprocessing.cpu_count()
-print(f'start multiprocessing with {num_cpus} jobs')
-print(f'dumping {len(mFull[int(len(mFull)*0.4):])} files')
-imap_unordered_bar(stereo_interp_from_root, mFull[int(len(mFull) * 0.4):], n_processes=num_cpus)
+# print('It\'s Bum-Bum time:')
+# # Start the parallel computing
+# num_cpus = multiprocessing.cpu_count()
+# print(f'start multiprocessing with {num_cpus} jobs')
+# print(f'dumping {len(mFull[int(len(mFull)*0.4):])} files')
+# imap_unordered_bar(stereo_interp_from_root, mFull[int(len(mFull) * 0.4):], n_processes=num_cpus)
 # pool = multiprocessing.Pool(processes=num_cpus)
 # pool.map(stereo_interp_from_root, mFull)
 # pool.close()
 # pool.join()
-print('All done, MONTACARLO Interpolation went fine')
+# print('All done, MONTACARLO Interpolation went fine')
 
 #####################################
 #####################################
@@ -1205,9 +1232,8 @@ print('All done, MONTACARLO Interpolation went fine')
 # #
 # print('filenames changed.')
 
-print('Start interp ROOT')
-fileM1 = glob.glob('/ph14-data1/users/mariotti_data/raw_real_data_files/2018*')
-fileM2 = glob.glob('/ph14-data1/users/mariotti_data/raw_real_data_files/2018*')
+fileM1 = glob.glob('/data/magic_data/raw_files/*M1*')
+fileM2 = glob.glob('/data/magic_data/raw_files/*M2*')
 
 
 def get_pair_match(a, b):
@@ -1223,6 +1249,7 @@ mFull = get_pair_match(fileM1, fileM2)
 
 # %%
 # Start the parallel computing
+print('Start interp ROOT')
 num_cpus = multiprocessing.cpu_count()
 print(f'start multiprocessing ROOT files with {num_cpus} jobs')
 imap_unordered_bar(stereo_interp_from_root_realdata, mFull, n_processes=num_cpus)
