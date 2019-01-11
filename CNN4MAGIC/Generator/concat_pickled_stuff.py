@@ -1,31 +1,58 @@
 import glob
+import pickle
 
 from tqdm import tqdm
 
 # %%
-filelist = glob.glob('/data2T/mariotti_data_2/MC_npy/complementary_computation/*')
+filelist = glob.glob('/data/magic_data/magic_compl_comp/*')
 
 # %%
 print(filelist[0])
+
+# %%
+with open(filelist[0], 'rb') as f:
+    eventList, labels = pickle.load(f)
+
+# %%
+labels[eventList[10]]
+
 # %%
 import pickle
 
 eventList_total = []
-energy_total = {}
+# energy_total = {}
 labels_total = {}
-position_total = {}
+# position_total = {}
 
 for file in tqdm(filelist):
     with open(file, 'rb') as f:
-        eventList, labels, energy, position = pickle.load(f)
+        eventList, labels = pickle.load(f)
     eventList_total = eventList_total + eventList
-    energy_total.update(energy)
+    # energy_total.update(energy)
     labels_total.update(labels)
-    position_total.update(position)
+    # position_total.update(position)
 
 # %
 print(len(eventList_total))
-print(len(energy_total.keys()))
+print(len(labels_total.keys()))
+
+# %%
+with open('/data/magic_data/root_complement.pkl', 'wb') as f:
+    pickle.dump((eventList, labels_total), f)
+# %%
+filename = '/data/magic_data/MC_npy/complementary_dump_total_2.pkl'
+with open(filename, 'rb') as f:
+    _, energy, labels_MC, position = pickle.load(f)
+
+# %%
+mc_root_labels = {}
+mc_root_labels.update(labels_MC)
+mc_root_labels.update(labels_total)
+print(len(mc_root_labels))
+# %%
+with open('/data/magic_data/mc_root_labels.pkl', 'wb') as f:
+    pickle.dump(mc_root_labels, f)
+
 # %%
 num_files = len(eventList_total)
 partition = {}

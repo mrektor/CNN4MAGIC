@@ -5,7 +5,7 @@ import pickle
 import time
 from hashlib import md5
 
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import uproot
@@ -956,9 +956,9 @@ def stereo_interp_from_root_realdata(filenames):
     with open(
             '/data/magic_data/magic_compl_comp/eventList_labels_' + filenameM1[-42:-4] + '.pkl',
             'wb') as f:
-        pickle.dump((event_idx_list, labels), f, protocol=4)
+        pickle.dump((event_idx_list, labels), f, protocol=2)
     print(filenameM1[-40:-4])
-    print('Time needed: Reading: {bef2 - bef} seconds; Interpolation: {time.time() - bef2} seconds.'.format())
+    print('che fatica... ho fatto.. (un file)')
 
 
 def stereo_interp_from_txt(filenames):
@@ -1017,7 +1017,7 @@ def stereo_interp_from_txt(filenames):
     print(filenameM1[-26:-7])
     with open('/data2T/mariotti_data_2/src_pos_cam/result_' + filenameM1[-26:-7] + '.pkl',
               'wb') as f:
-        pickle.dump(result, f, protocol=4)
+        pickle.dump(result, f, protocol=2)
 
 
 # %
@@ -1133,7 +1133,7 @@ def stereo_interp_from_root(filenames):
                 '/ph14-data1/users/mariotti_data/complementary_computation/eventList_labels_energy_position' + filenameM1[
                                                                                                                -27:-5] + '.pkl',
                 'wb') as f:
-            pickle.dump((event_idx_list, labels, energy_labels, position_labels), f, protocol=4)
+            pickle.dump((event_idx_list, labels, energy_labels, position_labels), f, protocol=2)
 
         # print(f'Saved {filenameM1[-28:-5]}')
     except KeyError:
@@ -1250,8 +1250,8 @@ mFull = get_pair_match(fileM1, fileM2)
 # %%
 # Start the parallel computing
 print('Start interp ROOT')
-num_cpus = multiprocessing.cpu_count()
-print(f'start multiprocessing ROOT files with {num_cpus} jobs')
+num_cpus = 11  # multiprocessing.cpu_count()
+print('start multiprocessing ROOT files with {} jobs'.format(num_cpus))
 imap_unordered_bar(stereo_interp_from_root_realdata, mFull, n_processes=num_cpus)
 
 # pool = multiprocessing.Pool(processes=num_cpus)

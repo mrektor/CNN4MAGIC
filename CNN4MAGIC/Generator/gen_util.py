@@ -25,9 +25,19 @@ def clean_missing_data(data, labels):
 def load_data_generators(batch_size=400, want_energy=False, want_position=False, want_labels=False, want_test=False):
     # load IDs
     print('Loading labels...')
-    filename = '/data2T/mariotti_data_2/MC_npy/complementary_dump_total_2.pkl'
-    with open(filename, 'rb') as f:
-        _, energy, labels, position = pkl.load(f)
+
+    # SSH GPU
+    # filename = '/data2T/mariotti_data_2/MC_npy/complementary_dump_total_2.pkl'
+
+    # SSH 24 CPU
+    if want_labels:
+        filename = '/data/magic_data/mc_root_labels.pkl'
+        with open(filename, 'rb') as f:
+            labels = pkl.load(f)
+    else:
+        filename = '/data/magic_data/MC_npy/complementary_dump_total_2.pkl'
+        with open(filename, 'rb') as f:
+            _, energy, labels, position = pkl.load(f)
 
     eventList_total = glob.glob('/data2T/mariotti_data_2/MC_npy/finish_dump_MC/partial_dump_finish/*')
     newlist = []
@@ -70,6 +80,7 @@ def load_data_generators(batch_size=400, want_energy=False, want_position=False,
 
         val_gn = MAGIC_Generator(list_IDs=data['validation'],
                                  labels=energy,
+                                 shuffle=False,
                                  batch_size=batch_size,
                                  folder='/data2T/mariotti_data_2/MC_npy/finish_dump_MC/partial_dump_finish'
                                  )
@@ -81,9 +92,9 @@ def load_data_generators(batch_size=400, want_energy=False, want_position=False,
                                   folder='/data2T/mariotti_data_2/MC_npy/finish_dump_MC/partial_dump_finish'
                                   )
 
-        te_energy = [energy[event] for event in data['test']]
+        energy_vect = [energy[event] for event in data['test']]
 
-        return train_gn, val_gn, test_gn, te_energy
+        return train_gn, val_gn, test_gn, energy_vect
 
     if want_labels:
         # %%
@@ -108,6 +119,7 @@ def load_data_generators(batch_size=400, want_energy=False, want_position=False,
         val_gn = MAGIC_Generator(list_IDs=data['validation'],
                                  labels=labels,
                                  batch_size=batch_size,
+                                 shuffle=False,
                                  folder='/data2T/mariotti_data_2/MC_npy/finish_dump_MC/partial_dump_finish'
                                  )
         test_gn = MAGIC_Generator(list_IDs=data['test'],
@@ -117,7 +129,9 @@ def load_data_generators(batch_size=400, want_energy=False, want_position=False,
                                   folder='/data2T/mariotti_data_2/MC_npy/finish_dump_MC/partial_dump_finish'
                                   )
 
-        return train_gn, val_gn, test_gn, labels
+        labels_vect = [labels[event] for event in data['test']]
+
+        return train_gn, val_gn, test_gn, labels_vect
 
     if want_position:
         # %%
@@ -143,6 +157,7 @@ def load_data_generators(batch_size=400, want_energy=False, want_position=False,
         val_gn = MAGIC_Generator(list_IDs=data['validation'],
                                  labels=position,
                                  position=True,
+                                 shuffle=False,
                                  batch_size=batch_size,
                                  folder='/data2T/mariotti_data_2/MC_npy/finish_dump_MC/partial_dump_finish'
                                  )
@@ -150,8 +165,11 @@ def load_data_generators(batch_size=400, want_energy=False, want_position=False,
         test_gn = MAGIC_Generator(list_IDs=data['test'],
                                   labels=position,
                                   position=True,
+                                  shuffle=False,
                                   batch_size=batch_size,
                                   folder='/data2T/mariotti_data_2/MC_npy/finish_dump_MC/partial_dump_finish'
                                   )
 
-        return train_gn, val_gn, test_gn, position
+        position_vect = [position[event] for event in data['test']]
+
+        return train_gn, val_gn, test_gn, position_vect

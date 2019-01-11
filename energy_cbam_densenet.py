@@ -1,29 +1,26 @@
-import numpy as np
-import tensorflow as tf
-from keras import backend as K
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 
 from CNN4MAGIC.CNN_Models.BigData.clr import OneCycleLR
 from CNN4MAGIC.Generator.gen_util import load_data_generators
 from CNN4MAGIC.Generator.models import MobileNetV2_energy_doubleDense
 
-num_cores = 24
-
-GPU=False
-CPU=True
-
-if GPU:
-    num_GPU = 1
-    num_CPU = 1
-if CPU:
-    num_CPU = 1
-    num_GPU = 0
-
-config = tf.ConfigProto(intra_op_parallelism_threads=num_cores,\
-        inter_op_parallelism_threads=num_cores, allow_soft_placement=True,\
-        device_count = {'CPU' : num_CPU, 'GPU' : num_GPU})
-session = tf.Session(config=config)
-K.set_session(session)
+# num_cores = 24
+#
+# GPU=True
+# CPU=False
+#
+# if GPU:
+#     num_GPU = 1
+#     num_CPU = 1
+# if CPU:
+#     num_CPU = 1
+#     num_GPU = 0
+#
+# config = tf.ConfigProto(intra_op_parallelism_threads=num_cores,\
+#         inter_op_parallelism_threads=num_cores, allow_soft_placement=True,\
+#         device_count = {'CPU' : num_CPU, 'GPU' : num_GPU})
+# session = tf.Session(config=config)
+# K.set_session(session)
 
 print('Loading the Neural Network...')
 model = MobileNetV2_energy_doubleDense()
@@ -31,10 +28,6 @@ model.compile(optimizer='sgd', loss='mse')
 model.summary()
 print('Model Loaded.')
 
-#%%
-x_synt = np.random.randn(1000, 67, 68, 4)
-y_synt = np.random.randn(1000, 1)
-model.fit(x_synt, y_synt, 1)
 
 #%%
 BATCH_SIZE = 128
@@ -58,8 +51,8 @@ result = model.fit_generator(generator=train_gn,
                              epochs=EPOCHS,
                              verbose=1,
                              callbacks=[check, clr, stop],
-                             use_multiprocessing=False,
-                             workers=16
+                             use_multiprocessing=True,
+                             workers=4
                              )
 
 # %%
