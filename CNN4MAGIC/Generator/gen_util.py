@@ -22,7 +22,8 @@ def clean_missing_data(data, labels):
     return data
 
 
-def load_data_generators(batch_size=400, want_energy=False, want_position=False, want_labels=False, want_test=False):
+def load_data_generators(batch_size=400, want_energy=False, want_position=False, want_labels=False, want_test=False,
+                         folder_files='/data/magic_data/very_big_folder'):
     # load IDs
     print('Loading labels...')
 
@@ -39,10 +40,10 @@ def load_data_generators(batch_size=400, want_energy=False, want_position=False,
         with open(filename, 'rb') as f:
             _, energy, labels, position = pkl.load(f)
 
-    eventList_total = glob.glob('/data2T/mariotti_data_2/MC_npy/finish_dump_MC/partial_dump_finish/*')
+    eventList_total = glob.glob('/data/magic_data/very_big_folder/*')
     newlist = []
     for event in eventList_total:
-        newlist.append(event[66:-4])
+        newlist.append(event[33:-4])
 
     eventList_total = newlist
     random.seed(42)
@@ -75,21 +76,21 @@ def load_data_generators(batch_size=400, want_energy=False, want_position=False,
         train_gn = MAGIC_Generator(list_IDs=data['train'],
                                    labels=energy,
                                    batch_size=batch_size,
-                                   folder='/data2T/mariotti_data_2/MC_npy/finish_dump_MC/partial_dump_finish'
+                                   folder=folder_files
                                    )
 
         val_gn = MAGIC_Generator(list_IDs=data['validation'],
                                  labels=energy,
                                  shuffle=False,
                                  batch_size=batch_size,
-                                 folder='/data2T/mariotti_data_2/MC_npy/finish_dump_MC/partial_dump_finish'
+                                 folder=folder_files
                                  )
 
         test_gn = MAGIC_Generator(list_IDs=data['test'],
                                   labels=energy,
                                   shuffle=False,
                                   batch_size=batch_size,
-                                  folder='/data2T/mariotti_data_2/MC_npy/finish_dump_MC/partial_dump_finish'
+                                  folder=folder_files
                                   )
 
         energy_vect = [energy[event] for event in data['test']]
@@ -113,20 +114,20 @@ def load_data_generators(batch_size=400, want_energy=False, want_position=False,
         train_gn = MAGIC_Generator(list_IDs=data['train'],
                                    labels=labels,
                                    batch_size=batch_size,
-                                   folder='/data2T/mariotti_data_2/MC_npy/finish_dump_MC/partial_dump_finish'
+                                   folder=folder_files
                                    )
 
         val_gn = MAGIC_Generator(list_IDs=data['validation'],
                                  labels=labels,
                                  batch_size=batch_size,
                                  shuffle=False,
-                                 folder='/data2T/mariotti_data_2/MC_npy/finish_dump_MC/partial_dump_finish'
+                                 folder=folder_files
                                  )
         test_gn = MAGIC_Generator(list_IDs=data['test'],
                                   labels=labels,
                                   shuffle=False,
                                   batch_size=batch_size,
-                                  folder='/data2T/mariotti_data_2/MC_npy/finish_dump_MC/partial_dump_finish'
+                                  folder=folder_files
                                   )
 
         labels_vect = [labels[event] for event in data['test']]
@@ -151,7 +152,7 @@ def load_data_generators(batch_size=400, want_energy=False, want_position=False,
                                    labels=position,
                                    position=True,
                                    batch_size=batch_size,
-                                   folder='/data2T/mariotti_data_2/MC_npy/finish_dump_MC/partial_dump_finish'
+                                   folder=folder_files
                                    )
 
         val_gn = MAGIC_Generator(list_IDs=data['validation'],
@@ -159,7 +160,7 @@ def load_data_generators(batch_size=400, want_energy=False, want_position=False,
                                  position=True,
                                  shuffle=False,
                                  batch_size=batch_size,
-                                 folder='/data2T/mariotti_data_2/MC_npy/finish_dump_MC/partial_dump_finish'
+                                 folder=folder_files
                                  )
 
         test_gn = MAGIC_Generator(list_IDs=data['test'],
@@ -167,7 +168,7 @@ def load_data_generators(batch_size=400, want_energy=False, want_position=False,
                                   position=True,
                                   shuffle=False,
                                   batch_size=batch_size,
-                                  folder='/data2T/mariotti_data_2/MC_npy/finish_dump_MC/partial_dump_finish'
+                                  folder=folder_files
                                   )
 
         position_vect = [position[event] for event in data['test']]

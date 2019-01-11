@@ -4,10 +4,10 @@ import pickle
 from tqdm import tqdm
 
 # %%
-filelist = glob.glob('/data/magic_data/magic_compl_comp/*')
+filelist = glob.glob('/data/magic_data/very_big_folder/*')
 
 # %%
-print(filelist[0])
+print(len(filelist))
 
 # %%
 with open(filelist[0], 'rb') as f:

@@ -191,3 +191,15 @@ def single_DenseNet_25_3_doubleDense():
     x = Dense(1, name='energy')(x)
     model1 = Model(inputs=input_img, output=x)
     return model1
+
+
+def MobileNetV2_separation():
+    input_img = Input(shape=(67, 68, 4), name='m1m2')
+
+    model = keras.applications.mobilenet_v2.MobileNetV2(alpha=1.0, depth_multiplier=1, include_top=False,
+                                                        weights=None, input_tensor=input_img, pooling='max')
+
+    x = model.layers[-1].output
+    x = Dense(1, name='gammaness', activation='sigmoid')(x)
+    model1 = Model(inputs=input_img, output=x)
+    return model1
