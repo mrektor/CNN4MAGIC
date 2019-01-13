@@ -9,11 +9,11 @@ from CNN4MAGIC.Generator.models import MobileNetV2_4dense_position
 BATCH_SIZE = 256
 
 print('Loading Data...')
-train_gn, val_gn, test_gn, labels = load_data_generators(batch_size=BATCH_SIZE, want_labels=True)
+train_gn, val_gn, test_gn, position = load_data_generators(batch_size=BATCH_SIZE, want_position=True)
 
 print('Loading the Neural Network...')
 model = MobileNetV2_4dense_position()
-model.compile(optimizer='sgd', loss='mse', metrics=['accuracy'])
+model.compile(optimizer='sgd', loss='mse')
 model.summary()
 
 # %% Train

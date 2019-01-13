@@ -215,7 +215,7 @@ def plot_confusion_matrix(y_pred, y_test, classes,
                           normalize=False,
                           title='Confusion matrix',
                           net_name='',
-                          folder_pic='/data/mariotti_data/CNN4MAGIC/CNN_Models/SeparationStereo/pics',
+                          fig_folder='/data/mariotti_data/CNN4MAGIC/CNN_Models/SeparationStereo/pics',
                           cmap=plt.cm.Blues):
     """
     This function prints and plots the confusion matrix.
@@ -251,12 +251,12 @@ def plot_confusion_matrix(y_pred, y_test, classes,
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
     plt.tight_layout()
-    plt.savefig(folder_pic + '/confusion_matrix_' + net_name + '.png')
-    plt.savefig(folder_pic + '/confusion_matrix_' + net_name + '.eps')
+    plt.savefig(fig_folder + '/confusion_matrix_' + net_name + '.png')
+    plt.savefig(fig_folder + '/confusion_matrix_' + net_name + '.eps')
     plt.show()
 
 
-def plot_gammaness(y_pred, y_true, net_name='', bins=85):
+def plot_gammaness(y_pred, y_true, net_name='', bins=85, fig_folder=''):
     hadrons = y_pred[y_true == 0]
     gammas = y_pred[y_true == 1]
     # sns.set()
@@ -267,8 +267,8 @@ def plot_gammaness(y_pred, y_true, net_name='', bins=85):
     plt.legend(['Hadrons', 'Gammas'])
     plt.title(net_name)
     plt.xlabel('Gammaness')
-    plt.savefig('/data/mariotti_data/CNN4MAGIC/CNN_Models/SeparationStereo/pics/gammaness_' + net_name + '.png')
-    plt.savefig('/data/mariotti_data/CNN4MAGIC/CNN_Models/SeparationStereo/pics/gammaness_' + net_name + '.eps')
+    plt.savefig(fig_folder + '/gammaness_' + net_name + '.png')
+    plt.savefig(fig_folder + '/gammaness_' + net_name + '.eps')
     plt.show()
 
 

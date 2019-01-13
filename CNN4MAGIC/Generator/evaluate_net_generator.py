@@ -1,78 +1,79 @@
+import numpy as np
 from keras.models import load_model
-from CNN4MAGIC.CNN_Models.BigData.utils import plot_hist2D, plot_gaussian_error
+
 from CNN4MAGIC.Generator.gen_util import load_data_generators
 
-BATCH_SIZE = 475
-train_gn, val_gn, test_gn, energy_te = load_data_generators(batch_size=BATCH_SIZE, want_energy=True)
+BATCH_SIZE = 641
+train_gn, val_gn, test_gn, energy_te = load_data_generators(batch_size=BATCH_SIZE, want_labels=True)
 
-net_name = 'MobileNetV2_energy-900kTrain'
-filepath='/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints/MobileNetV2-alpha1-buonanno-energy-transfer.hdf5'
-model = load_model(filepath)
-#%
-# import numpy as np
-# sintetic = np.random.randn(100, 67, 68, 4)
-# sintetic_label = np.random.randint(0, 1, 100)
-
-#%
-# model.fit(sintetic, sintetic_label, epochs=1)
-
-#%
-#%
+# %%
 print(len(energy_te))
-# print()
-#%
-print(len(test_gn)*475)
-#%
+print(len(test_gn) * BATCH_SIZE)
+# %%
+labels = np.array(energy_te)
+
+# %%
+
+net_name = 'MobileNetV2-separation-big'
+filepath = '/data/code/CNN4MAGIC/Generator/checkpoints/MobileNetV2-separation-big.hdf5'
+model = load_model(filepath)
+
+# %%
 print('Making predictions on test set...')
-y_pred = model.predict_generator(generator=test_gn, verbose=1, use_multiprocessing=True, workers=8)
-y_test = energy_te
+y_pred = model.predict_generator(generator=test_gn, verbose=1, use_multiprocessing=True, workers=24)
 
-#%
-print(y_pred[0:5])
-print(y_test[0:5])
 #%%
-print(len(y_pred))
-print(len(y_test))
+print(y_pred[0:30].flatten())
+print(labels[0:30].flatten())
+# %%
 
+y_true = labels
 
+# %%
+from CNN4MAGIC.CNN_Models.SeparationStereo.utils import *
 
+# %%
 
+hadrons = y_pred[y_true == 0]
+gammas = y_pred[y_true == 1]
+# sns.set()
+bins = 85
+plt.figure()
+plt.hist(hadrons, bins=bins, log=True, histtype='step', fill=True, alpha=0.5)
+plt.hist(gammas, bins=bins, log=True, histtype='step', fill=True, alpha=0.5)
+plt.xlim([0, 1])
+plt.legend(['Hadrons', 'Gammas'])
+plt.title(net_name)
+plt.xlabel('Gammaness')
+plt.savefig('/data/code/CNN4MAGIC/Generator/separation_generator_pic/gammaness_' + net_name + '.png')
+plt.savefig('/data/code/CNN4MAGIC/Generator/separation_generator_pic/gammaness_' + net_name + '.eps')
+plt.show()
 
-##########################3
+# %%
+print('Plotting Merit Figures...')
+plot_classification_merit_metrics(y_pred, y_true, net_name=net_name,
+                                  fig_folder='/data/code/CNN4MAGIC/Generator/separation_generator_pic')
+# %%
+# Plot stuff
+print('Plotting gammaness...')
+plot_gammaness(y_pred, y_true, net_name=net_name,
+               fig_folder='/data/code/CNN4MAGIC/Generator/separation_generator_pic')
 
-import glob
-import pickle as pkl
-import random
+# %%
+print('Plotting confusion matrix...')
+plot_confusion_matrix(y_pred, y_true, ['Hadrons', 'Gammas'], net_name=net_name,
+                      fig_folder='/data/code/CNN4MAGIC/Generator/separation_generator_pic')
 
-import numpy as np
+print('Plotting Merit Figures...')
+plot_classification_merit_metrics(y_pred, y_true, net_name=net_name,
+                                  fig_folder='/data/code/CNN4MAGIC/Generator/separation_generator_pic')
+print('All done')
 
-from CNN4MAGIC.Generator.keras_generator import MAGIC_Generator
-
-
-def clean_missing_data(data, labels):
-    p = 0
-    todelete = []
-    for key in data:
-        try:
-            a = labels[key]
-        except KeyError:
-            todelete.append(key)
-            p = p + 1
-    print(f'solved {len(todelete)} of KeyErrors.')
-    for key in todelete:
-        data.remove(key)
-    return data
-
-
-print('Loading labels...')
-filename = '/data2T/mariotti_data_2/MC_npy/complementary_dump_total_2.pkl'
-with open(filename, 'rb') as f:
-    _, energy, labels, position = pkl.load(f)
-
-eventList_total = glob.glob('/data2T/mariotti_data_2/MC_npy/finish_dump_MC/partial_dump_finish/*')
+# %%
+eventList_total = glob.glob('/data/magic_data/very_big_folder/*')
 newlist = []
 for event in eventList_total:
-    newlist.append(event[66:-4])
+    newlist.append(event[33:-4])
 
 eventList_total = newlist
 random.seed(42)
@@ -85,105 +86,155 @@ frac_val = 0.10
 partition['train'] = eventList_total[:int(num_files * frac_train)]
 partition['validation'] = eventList_total[int(num_files * frac_train):int(num_files * (frac_train + frac_val))]
 partition['test'] = eventList_total[int(num_files * (frac_train + frac_val)):]
+# %%
 
-want_energy=True
-if want_energy:
+event_list_test = partition['test']
 
-    print('Solving sponi...')
-    data = dict()
-    data['test'] = clean_missing_data(partition['test'], energy)
+# %%
+import pickle as pkl
 
+filename = '/data/magic_data/mc_root_labels.pkl'
+with open(filename, 'rb') as f:
+    labels_dict = pkl.load(f)
 
-    energy_log = {k: np.log10(v) for k, v in energy.items()}  # Convert energies in log10
+# %%
+predicted_as_gamma = y_pred > 0.5
+is_hadron = y_true == 0
 
+misclassified_hadrons_mask = np.logical_and(predicted_as_gamma.flatten(), is_hadron)
 
+# %%
+y_pred_flat = y_pred.flatten()
+misclassified_probability = y_pred_flat[misclassified_hadrons_mask]
+print(misclassified_probability)
 
-    test_gn = MAGIC_Generator(list_IDs=data['test'],
-                              shuffle=False,
-                              labels=energy_log,
-                              position=True,
-                              batch_size=BATCH_SIZE,
-                              folder='/data2T/mariotti_data_2/MC_npy/finish_dump_MC/partial_dump_finish'
-                              )
+# %%
+mezzSu = y_pred_flat < 0.9
+mezzGiu = y_pred_flat > 0.1
 
-    te_energy = [energy_log[event] for event in data['test']]
+ue = np.logical_and(mezzGiu, mezzSu)
+oi = y_pred_flat[ue]
+print(oi.shape)
 
+# %%
+from itertools import compress
 
-########################3
+misclassified_hadrons_labels = list(compress(event_list_test, misclassified_hadrons_mask))
 
+folder_file = '/data/magic_data/very_big_folder/'
+data_misclassified_hadrons = np.array([np.load(folder_file + label + '.npy') for label in misclassified_hadrons_labels])
 
-#%%
-print(len(te_energy))
-print(len(y_test))
-print(len(y_pred))
-print(len(data['test']))
+print(data_misclassified_hadrons.shape)
 
-#%% 475
-import numpy as np
-y_test = np.array(y_test)
+# %%
+fig_folder = '/data/code/CNN4MAGIC/Generator/separation_generator_pic/'
+num_events = data_misclassified_hadrons.shape[0]
+fig, axes = plt.subplots(num_events, 4, figsize=(15, num_events * 3))
 
+for i in range(num_events):
+    axes[i, 0].imshow(data_misclassified_hadrons[i, :, :, 0])  # TIME
+    axes[i, 0].set_title('M1 Time')
+    axes[i, 0].set_ylabel('Gammaness: ' + str(misclassified_probability[i]))
 
-#%%
-print('Plotting stuff...')
-plot_hist2D(y_test, y_pred,
-            fig_folder='/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/pics/',
-            net_name=net_name,
-            num_bins=100)
+    axes[i, 1].imshow(data_misclassified_hadrons[i, :, :, 1])  # PHE
+    axes[i, 1].set_title('M1 PHE')
 
-#%%
-plot_gaussian_error(y_test, y_pred,
-                    net_name=net_name + '_13bin',
-                    num_bins=13,
-                    fig_folder='/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/pics/')
-print('plotting metrics done')
+    axes[i, 2].imshow(data_misclassified_hadrons[i, :, :, 2])  # TIME
+    axes[i, 2].set_title('M2 Time')
 
-#%%
-import matplotlib.pyplot as plt
+    axes[i, 3].imshow(data_misclassified_hadrons[i, :, :, 3])  # PHE
+    axes[i, 3].set_title('M2 PHE')
 
-plt.figure()
-plt.hist(y_pred, bins=100)
-plt.savefig('/data/y_pred_MobileNetV2.png')
+fig.suptitle('Hadrons misclassified as Gammas')
+plt.tight_layout()
+plt.savefig(fig_folder + net_name + 'MisclassifiedHadrons.png')
+plt.savefig(fig_folder + net_name + 'MisclassifiedHadrons.pdf')
+plt.show()
 
-#%%
-print(np.mean(y_test))
-print(np.var(y_test))
-
-print(np.mean(y_pred))
-print(np.var(y_pred))
-#%%
-plt.hist(y_test)
+# %%
 
 
-# %% plot training
-# import matplotlib.pyplot as plt
-#
-# fig_folder = '/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/pics/'
-# # summarize history for loss
-# plt.plot(result.history['loss'])
-# plt.plot(result.history['val_loss'])
-# plt.title('model loss MSE')
-# plt.ylabel('loss')
-# plt.xlabel('epoch')
-# plt.legend(['train', 'test'], loc='upper left')
-# plt.savefig(fig_folder + net_name + '_loss_MSE.png')
-# plt.show()
-#
-# plt.plot(result.history['mean_absolute_error'])
-# plt.plot(result.history['val_mean_absolute_error'])
-# plt.title('model loss MAE')
-# plt.ylabel('loss')
-# plt.xlabel('epoch')
-# plt.legend(['train', 'test'], loc='upper left')
-# plt.savefig(fig_folder + net_name + '_loss_MAE.png')
-# plt.show()
-#
-# plt.plot(result.history['mean_absolute_percentage_error'])
-# plt.plot(result.history['val_mean_absolute_percentage_error'])
-# plt.title('model loss MAE')
-# plt.ylabel('loss')
-# plt.xlabel('epoch')
-# plt.legend(['train', 'test'], loc='upper left')
-# plt.savefig(fig_folder + net_name + '_loss_MAPE.png')
-# plt.show()
-#
-# print('plotting training done')
+# %%
+predicted_as_hadron = y_pred < 0.5
+is_gamma = y_true == 1
+
+misclassified_gamma_mask = np.logical_and(predicted_as_hadron.flatten(), is_gamma)
+
+# %%
+y_pred_flat = y_pred.flatten()
+misclassified_gamma_probability = y_pred_flat[misclassified_gamma_mask]
+
+# %%
+from itertools import compress
+
+misclassified_gamma_labels = list(compress(event_list_test, misclassified_gamma_mask))
+
+folder_file = '/data/magic_data/very_big_folder/'
+data_misclassified_gammas = np.array([np.load(folder_file + label + '.npy') for label in misclassified_gamma_labels])
+
+# %%
+print(data_misclassified_gammas.shape)
+# %%
+
+fig_folder = '/data/code/CNN4MAGIC/Generator/separation_generator_pic/'
+num_events = 30
+fig, axes = plt.subplots(num_events, 4, figsize=(15, num_events * 3))
+
+for i, idx in enumerate(range(30, 60)):
+    axes[i, 0].imshow(data_misclassified_gammas[idx, :, :, 0])  # TIME
+    axes[i, 0].set_title('M1 Time')
+    axes[i, 0].set_ylabel('Gammaness: ' + str(misclassified_gamma_probability[idx]))
+
+    axes[i, 1].imshow(data_misclassified_gammas[idx, :, :, 1])  # PHE
+    axes[i, 1].set_title('M1 PHE')
+
+    axes[i, 2].imshow(data_misclassified_gammas[idx, :, :, 2])  # TIME
+    axes[i, 2].set_title('M2 Time')
+
+    axes[i, 3].imshow(data_misclassified_gammas[idx, :, :, 3])  # PHE
+    axes[i, 3].set_title('M2 PHE')
+
+fig.suptitle('Gammas misclassified as Hadrons')
+plt.tight_layout()
+plt.savefig(fig_folder + net_name + 'MisclassifiedGammas0-30.png')
+plt.savefig(fig_folder + net_name + 'MisclassifiedGammas0-30.pdf')
+plt.show()
+
+# %%
+print(misclassified_gamma_probability)
+
+
+# %%
+def plot_misclassified_hadrons(m1_te, m2_te, y_pred_h, num_events=10, net_name='',
+                               fig_folder='/data/mariotti_data/CNN4MAGIC/CNN_Models/SeparationStereo/pics/'):
+    misclassified_hadrons_mask = y_pred_h > 0.5
+    misclassified_probability = y_pred_h[misclassified_hadrons_mask.flatten()]
+    misclassified_hadrons_M1 = m1_te[misclassified_hadrons_mask.flatten()]
+    misclassified_hadrons_M2 = m2_te[misclassified_hadrons_mask.flatten()]
+
+    print(f'there are {misclassified_hadrons_M1.shape[0]} misclassified hadrons')
+    if num_events > misclassified_hadrons_M1.shape[0]:
+        num_events = misclassified_hadrons_M1.shape[0]
+    fig, axes = plt.subplots(num_events, 4, figsize=(15, num_events * 3))
+
+    indexes = [i for i in range(misclassified_hadrons_M1.shape[0])]
+    random.shuffle(indexes)
+    for i, idx in enumerate(indexes[:num_events]):
+        axes[i, 0].imshow(misclassified_hadrons_M1[idx, :, :, 0])  # TIME
+        axes[i, 0].set_title('M1 Time')
+        axes[i, 0].set_ylabel('Gammaness: ' + str(misclassified_probability[idx]))
+
+        axes[i, 1].imshow(misclassified_hadrons_M1[idx, :, :, 1])  # PHE
+        axes[i, 1].set_title('M1 PHE')
+
+        axes[i, 2].imshow(misclassified_hadrons_M2[idx, :, :, 0])  # TIME
+        axes[i, 2].set_title('M2 Time')
+
+        axes[i, 3].imshow(misclassified_hadrons_M2[idx, :, :, 1])  # PHE
+        axes[i, 3].set_title('M2 PHE')
+
+    fig.suptitle('Hadrons misclassified as Gammas')
+    plt.tight_layout()
+    plt.savefig(fig_folder + net_name + 'MisclassifiedHadrons.png')
+    plt.savefig(fig_folder + net_name + 'MisclassifiedHadrons.pdf')
+    plt.show()
