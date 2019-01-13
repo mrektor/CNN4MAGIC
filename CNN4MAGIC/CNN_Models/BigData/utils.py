@@ -410,3 +410,27 @@ def compute_theta(pos_true, pos_pred, pos_in_mm=True, folder='', net_name='', pl
     plt.savefig(folder + '/' + net_name + '_angular.eps')
 
     return angular_resolution
+
+
+def plot_angular_resolution(position_true, position_prediction, energy_true,
+                            fig_folder='/data/code/CNN4MAGIC/Generator/position_pic', net_name=''):
+    binned_values, bins, bins_masks = bin_data_mask(energy_true, 11)
+    resolutions = []
+    bin_medians = []
+    for i, mask in enumerate(bins_masks):
+        bin_pos = position_true[mask]
+        bin_pred_pos = position_prediction[mask]
+        bin_value = np.sqrt(bins[i] * bins[i + 1])
+        res = compute_theta(bin_pos, bin_pred_pos, plot=False)
+        resolutions.append(res)
+        bin_medians.append(bin_value)
+
+        plt.figure()
+        plt.plot(bin_medians, resolutions)
+        plt.xlabel('Energy')
+        plt.ylabel('Angular Resolution')
+        plt.title('Angular Resolution of ' + net_name)
+        plt.grid()
+        plt.savefig(fig_folder + '/angular_resolution' + net_name + '.png')
+        plt.savefig(fig_folder + '/angular_resolution' + net_name + '.eps')
+        plt.show()

@@ -33,7 +33,7 @@ print(y_pred[:5], position_te_limato[:5])
 # %%
 
 
-from CNN4MAGIC.CNN_Models.BigData.utils import compute_theta
+from CNN4MAGIC.CNN_Models.BigData.utils import compute_theta, bin_data_mask
 
 # %%
 train_gn, val_gn, test_gn, energy_te = load_data_generators(batch_size=BATCH_SIZE, want_energy=True)
@@ -44,43 +44,26 @@ energy_te_limato = energy_te[:len(test_gn) * BATCH_SIZE]
 
 # %%
 
-def bin_data_mask(data, num_bins, bins=None):
-    if bins is None:
-        bins = np.linspace(np.min(data), np.max(data), num_bins)
-    binned_values = np.zeros(data.shape)
-    bins_masks = []
-    for i, bin in enumerate(bins):
-        if i < bins.shape[0] - 1:
-            mask = np.logical_and(data >= bins[i], data <= bins[i + 1])
-            binned_values[mask] = bin
-            bins_masks.append(mask)
-    return binned_values, bins, bins_masks
-
 
 # %%
-binned_values, bins, bins_masks = bin_data_mask(energy_te_limato, 11)
+def plot_angular_resolution(position_true, position_prediction, energy_true,
+                            fig_folder='/data/code/CNN4MAGIC/Generator/position_pic'):
+    binned_values, bins, bins_masks = bin_data_mask(energy_true, 11)
+    resolutions = []
+    bin_medians = []
+    for i, mask in enumerate(bins_masks):
+        bin_pos = position_true[mask]
+        bin_pred_pos = position_prediction[mask]
+        bin_value = np.sqrt(bins[i] * bins[i + 1])
+        res = compute_theta(bin_pos, bin_pred_pos, plot=False)
+        resolutions.append(res)
+        bin_medians.append(bin_value)
 
-resolutions = []
-bin_medians = []
-for i, mask in enumerate(bins_masks):
-    bin_pos = position_te_limato[mask]
-    bin_pred_pos = y_pred[mask]
-    bin_value = np.sqrt(bins[i] * bins[i + 1])
-    res = compute_theta(bin_pos, bin_pred_pos,
-                        folder='/data/code/CNN4MAGIC/Generator/position_pic',
-                        net_name=net_name + ' energy = ' + str(bin_value))
-    resolutions.append(res)
-    bin_medians.append(bin_value)
-
-# %%
-import matplotlib.pyplot as plt
-
-# %%
-plt.figure()
-plt.plot(bin_medians, resolutions)
-plt.xlabel('Energy')
-plt.ylabel('Angular Resolution')
-plt.title('Angular Resolution of ' + net_name)
-plt.grid()
-plt.savefig('/data/code/CNN4MAGIC/Generator/position_pic/angular_resolution.png')
-plt.show()
+        plt.figure()
+        plt.plot(bin_medians, resolutions)
+        plt.xlabel('Energy')
+        plt.ylabel('Angular Resolution')
+        plt.title('Angular Resolution of ' + net_name)
+        plt.grid()
+        plt.savefig(fig_folder + '/angular_resolution' + net_name + '.png')
+        plt.show()
