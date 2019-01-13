@@ -1,10 +1,10 @@
 import pickle
 
 from keras.callbacks import ModelCheckpoint, EarlyStopping
+from keras.models import load_model
 
 from CNN4MAGIC.CNN_Models.BigData.clr import OneCycleLR
 from CNN4MAGIC.Generator.gen_util import load_data_generators
-from CNN4MAGIC.Generator.models import MobileNetV2_4dense_position
 
 BATCH_SIZE = 256
 
@@ -12,14 +12,15 @@ print('Loading Data...')
 train_gn, val_gn, test_gn, position = load_data_generators(batch_size=BATCH_SIZE, want_position=True)
 
 print('Loading the Neural Network...')
-model = MobileNetV2_4dense_position()
+model = load_model('/data/code/CNN4MAGIC/Generator/checkpoints/MobileNetV2_4dense_position-big.hdf5')
+# model = MobileNetV2_4dense_position()
 model.compile(optimizer='sgd', loss='mse')
 model.summary()
 
 # %% Train
 EPOCHS = 30
 
-net_name = 'MobileNetV2_4dense_position-big'
+net_name = 'MobileNetV2_4dense_position-big-2'
 path = '/data/code/CNN4MAGIC/Generator/checkpoints/' + net_name + '.hdf5'
 check = ModelCheckpoint(filepath=path, save_best_only=True)
 clr = OneCycleLR(max_lr=0.0005,

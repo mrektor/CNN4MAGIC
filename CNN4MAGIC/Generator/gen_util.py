@@ -40,7 +40,10 @@ def load_data_generators(batch_size=400, want_energy=False, want_position=False,
         with open(filename, 'rb') as f:
             _, energy, labels, position = pkl.load(f)
 
-    eventList_total = glob.glob('/data/magic_data/very_big_folder/*')
+    if want_labels:
+        eventList_total = glob.glob('/data/magic_data/very_big_folder/*')
+    else:
+        eventList_total = glob.glob('/data/magic_data/very_big_folder/*corsika*')
     newlist = []
     for event in eventList_total:
         newlist.append(event[33:-4])
@@ -64,8 +67,8 @@ def load_data_generators(batch_size=400, want_energy=False, want_position=False,
         data['train'] = clean_missing_data(partition['train'], energy)
         data['test'] = clean_missing_data(partition['test'], energy)
         data['validation'] = clean_missing_data(partition['validation'], energy)
-        train_points = len(data['train'])
-        val_points = len(data['validation'])
+        train_points = len(partition['train'])
+        val_points = len(partition['validation'])
 
         print(f'Training on {train_points} data points')
         print(f'Validating on {val_points} data points')
@@ -73,27 +76,27 @@ def load_data_generators(batch_size=400, want_energy=False, want_position=False,
         energy = {k: np.log10(v) for k, v in energy.items()}  # Convert energies in log10
 
         # %% Define the generators
-        train_gn = MAGIC_Generator(list_IDs=data['train'],
+        train_gn = MAGIC_Generator(list_IDs=partition['train'],
                                    labels=energy,
                                    batch_size=batch_size,
                                    folder=folder_files
                                    )
 
-        val_gn = MAGIC_Generator(list_IDs=data['validation'],
+        val_gn = MAGIC_Generator(list_IDs=partition['validation'],
                                  labels=energy,
                                  shuffle=False,
                                  batch_size=batch_size,
                                  folder=folder_files
                                  )
 
-        test_gn = MAGIC_Generator(list_IDs=data['test'],
+        test_gn = MAGIC_Generator(list_IDs=partition['test'],
                                   labels=energy,
                                   shuffle=False,
                                   batch_size=batch_size,
                                   folder=folder_files
                                   )
 
-        energy_vect = [energy[event] for event in data['test']]
+        energy_vect = [energy[event] for event in partition['test']]
 
         return train_gn, val_gn, test_gn, energy_vect
 

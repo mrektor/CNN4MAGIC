@@ -371,7 +371,20 @@ def bin_data(data, num_bins, bins=None):
     return binned_values, bins
 
 
-def plot_theta(pos_true, pos_pred, pos_in_mm=True, folder='', net_name=''):
+def bin_data_mask(data, num_bins, bins=None):
+    if bins is None:
+        bins = np.linspace(np.min(data), np.max(data), num_bins)
+    binned_values = np.zeros(data.shape)
+    bins_masks = []
+    for i, bin in enumerate(bins):
+        if i < bins.shape[0] - 1:
+            mask = np.logical_and(data >= bins[i], data <= bins[i + 1])
+            binned_values[mask] = bin
+            bins_masks.append(mask)
+    return binned_values, bins, bins_masks
+
+
+def compute_theta(pos_true, pos_pred, pos_in_mm=True, folder='', net_name='', plot=True):
     if pos_in_mm:
         pos_true = pos_true * 0.00337  # in deg
         pos_pred = pos_pred * 0.00337  # in deg
@@ -383,6 +396,8 @@ def plot_theta(pos_true, pos_pred, pos_in_mm=True, folder='', net_name=''):
     hist_theta_sq_normed = hist_theta_sq / float(num_events)
     cumsum_hist = np.cumsum(hist_theta_sq_normed)
     angular_resolution = bins[np.where(cumsum_hist > 0.68)[0][0]]
+    if not plot:
+        return angular_resolution
 
     plt.figure()
     plt.hist(theta_sq, bins=1000)
