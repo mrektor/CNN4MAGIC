@@ -6,31 +6,31 @@ from CNN4MAGIC.Generator.gen_util import load_data_generators
 BATCH_SIZE = 641
 train_gn, val_gn, test_gn, energy_te = load_data_generators(batch_size=BATCH_SIZE, want_labels=True)
 
-# %%
+# %
 print(len(energy_te))
 print(len(test_gn) * BATCH_SIZE)
-# %%
+# %
 labels = np.array(energy_te)
 
-# %%
+# %
 
 net_name = 'MobileNetV2-separation-big'
 filepath = '/data/code/CNN4MAGIC/Generator/checkpoints/MobileNetV2-separation-big.hdf5'
 model = load_model(filepath)
 
-# %%
+# %
 print('Making predictions on test set...')
 y_pred = model.predict_generator(generator=test_gn, verbose=1, use_multiprocessing=True, workers=24)
 
 #%%
 print(y_pred[0:30].flatten())
 print(labels[0:30].flatten())
-# %%
+print(y_pred.shape, labels.shape)
 
 y_true = labels
 
 # %%
-from CNN4MAGIC.CNN_Models.SeparationStereo.utils import *
+from CNN4MAGIC.CNN_Models.SeparationStereo.utils import plot_classification_merit_metrics
 
 # %%
 

@@ -524,14 +524,16 @@ def plot_classification_merit_metrics(y_pred, y_true, net_name='',
     significance = []
     num_hadr_gammaness = []
     num_gamma_gammaness = []
+    is_gamma = y_true == 1
+    is_hadron = y_true == 0
 
     for threshold in gammaness:
-        hadr_tmp = np.zeros(y_pred.shape[0])
-        gamma_tmp = np.zeros(y_pred.shape[0])
-        hadr_tmp[y_pred.flatten() < threshold] = 1
-        gamma_tmp[y_pred.flatten() >= threshold] = 1
-        num_hadr = np.sum(hadr_tmp)
-        num_gammas = np.sum(gamma_tmp)
+        is_predicted_as_hadron = y_pred.flatten() < threshold
+        is_predicted_as_gamma = y_pred.flatten() >= threshold
+
+        num_hadr = np.sum(np.logical_and(is_hadron, is_predicted_as_hadron))
+        num_gammas = np.sum(np.logical_and(is_gamma, is_predicted_as_gamma))
+
         num_hadr_gammaness.append(num_hadr)
         num_gamma_gammaness.append(num_gammas)
 

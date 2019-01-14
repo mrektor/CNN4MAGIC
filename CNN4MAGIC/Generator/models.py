@@ -232,3 +232,36 @@ def MobileNetV2_separation():
     x = Dense(1, name='gammaness', activation='sigmoid')(x)
     model1 = Model(inputs=input_img, output=x)
     return model1
+
+
+def MobileNetV2_4dense_energy_dropout():
+    input_img = Input(shape=(67, 68, 4), name='m1')
+
+    model = MobileNetV2(alpha=1, depth_multiplier=1, include_top=False,
+                        weights=None, input_tensor=input_img, pooling='avg')
+
+    x = model.layers[-1].output
+
+    x = BatchNormalization()(x)
+    x = Dense(256)(x)
+    x = BatchNormalization()(x)
+    x = LeakyReLU()(x)
+    x = Dropout(0.3)(x)
+
+    x = Dense(128)(x)
+    x = BatchNormalization()(x)
+    x = LeakyReLU()(x)
+    x = Dropout(0.3)(x)
+
+    x = Dense(64)(x)
+    x = BatchNormalization()(x)
+    x = LeakyReLU()(x)
+    x = Dropout(0.3)(x)
+
+    x = Dense(32)(x)
+    x = BatchNormalization()(x)
+    x = LeakyReLU()(x)
+
+    x = Dense(1, name='energy')(x)
+    model1 = Model(inputs=input_img, output=x)
+    return model1
