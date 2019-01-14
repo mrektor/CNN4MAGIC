@@ -12,7 +12,7 @@ print('Loading Data...')
 train_gn, val_gn, test_gn, position = load_data_generators(batch_size=BATCH_SIZE, want_position=True)
 
 print('Loading the Neural Network...')
-model = load_model('/data/code/CNN4MAGIC/Generator/checkpoints/MobileNetV2_4dense_position-big.hdf5')
+model = load_model('/data/code/CNN4MAGIC/Generator/checkpoints/MobileNetV2_4dense_position-big-2.hdf5')
 # model = MobileNetV2_4dense_position()
 model.compile(optimizer='sgd', loss='mse')
 model.summary()

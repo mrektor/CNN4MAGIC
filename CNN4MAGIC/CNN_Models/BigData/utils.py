@@ -417,6 +417,7 @@ def plot_angular_resolution(position_true, position_prediction, energy_true,
     binned_values, bins, bins_masks = bin_data_mask(energy_true, 11)
     resolutions = []
     bin_medians = []
+
     for i, mask in enumerate(bins_masks):
         bin_pos = position_true[mask]
         bin_pred_pos = position_prediction[mask]
@@ -425,12 +426,18 @@ def plot_angular_resolution(position_true, position_prediction, energy_true,
         resolutions.append(res)
         bin_medians.append(bin_value)
 
-        plt.figure()
-        plt.plot(bin_medians, resolutions)
-        plt.xlabel('Energy')
-        plt.ylabel('Angular Resolution')
-        plt.title('Angular Resolution of ' + net_name)
-        plt.grid()
-        plt.savefig(fig_folder + '/angular_resolution' + net_name + '.png')
-        plt.savefig(fig_folder + '/angular_resolution' + net_name + '.eps')
-        plt.show()
+    state_of_the_art_theta = np.array([0.129, 0.148, 0.120, 0.097, 0.083, 0.082, 0.077, 0.068, 0.061, 0.059, 0.055])
+    state_of_the_art_energy = np.array([95, 150, 230, 378, 599, 949, 1504, 2383, 3777, 5986, 9487])
+
+    plt.figure()
+    plt.semilogx(10 ** np.array(bin_medians), resolutions, '-o')
+    plt.semilogx(state_of_the_art_energy, state_of_the_art_theta, '--*')
+
+    plt.xlabel('Energy')
+    plt.ylabel('Angular Resolution')
+    plt.title('Angular Resolution of ' + net_name)
+    plt.legend([net_name, 'State of the art'])
+    plt.grid()
+    plt.savefig(fig_folder + '/angular_resolution' + net_name + '.png')
+    plt.savefig(fig_folder + '/angular_resolution' + net_name + '.eps')
+    plt.show()
