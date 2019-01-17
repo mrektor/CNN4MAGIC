@@ -20,7 +20,7 @@ train_gn, val_gn, test_gn, energy_te = load_data_generators(batch_size=BATCH_SIZ
 EPOCHS = 30
 
 net_name = 'MobileNetV2_4dense_energy_drop03'
-path = '/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/checkpoints/' + net_name + '.hdf5'
+path = '/data/code/CNN4MAGIC/Generator/checkpoints/' + net_name + '.hdf5'
 check = ModelCheckpoint(filepath=path, save_best_only=True)
 clr = OneCycleLR(max_lr=0.08,
                  num_epochs=EPOCHS,

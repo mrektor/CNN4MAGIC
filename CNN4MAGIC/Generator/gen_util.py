@@ -76,27 +76,27 @@ def load_data_generators(batch_size=400, want_energy=False, want_position=False,
         energy = {k: np.log10(v) for k, v in energy.items()}  # Convert energies in log10
 
         # %% Define the generators
-        train_gn = MAGIC_Generator(list_IDs=partition['train'],
+        train_gn = MAGIC_Generator(list_IDs=data['train'],
                                    labels=energy,
                                    batch_size=batch_size,
                                    folder=folder_files
                                    )
 
-        val_gn = MAGIC_Generator(list_IDs=partition['validation'],
+        val_gn = MAGIC_Generator(list_IDs=data['validation'],
                                  labels=energy,
                                  shuffle=False,
                                  batch_size=batch_size,
                                  folder=folder_files
                                  )
 
-        test_gn = MAGIC_Generator(list_IDs=partition['test'],
+        test_gn = MAGIC_Generator(list_IDs=data['test'],
                                   labels=energy,
                                   shuffle=False,
                                   batch_size=batch_size,
                                   folder=folder_files
                                   )
 
-        energy_vect = [energy[event] for event in partition['test']]
+        energy_vect = [energy[event] for event in data['test']]
 
         return train_gn, val_gn, test_gn, energy_vect
 
