@@ -2,33 +2,40 @@ import numpy as np
 from keras.models import load_model
 
 from CNN4MAGIC.CNN_Models.BigData.utils import plot_angular_resolution
-from CNN4MAGIC.Generator.gen_util import load_data_generators
+from CNN4MAGIC.Generator.gen_util import load_point_generator
 
 # Loading the position data
-BATCH_SIZE = 24 * 20
-train_gn, val_gn, test_gn, position_te = load_data_generators(batch_size=BATCH_SIZE, want_position=True)
+BATCH_SIZE = 512
+point_gn, position_te = load_point_generator(batch_size=BATCH_SIZE, want_position=True)
 
 # Lima i dati perché prendendoli a batch te ne perdi qualcuno
 position_te = np.array(position_te)
-position_te_limato = position_te[:len(test_gn) * BATCH_SIZE]
+position_te_limato = position_te[:len(point_gn) * BATCH_SIZE]
 
 # % Load the Model
 net_name = 'MobileNetV2_4dense_position-big-2'
-filepath = '/data/code/CNN4MAGIC/Generator/checkpoints/MobileNetV2_4dense_position-big-2.hdf5'
+filepath = '/home/emariott/deepmagic/CNN4MAGIC/Generator/checkpoints/MobileNetV2_4dense_position-big-2.hdf5'
 model = load_model(filepath)
 
 # Make the predictions
 print('Making predictions on test set...')
-position_prediction = model.predict_generator(generator=test_gn, verbose=1, use_multiprocessing=True, workers=24)
+position_prediction = model.predict_generator(generator=point_gn, verbose=1, use_multiprocessing=True, workers=8)
 
-# %% Load the Energy so that you can make energy-binnings
-_, _, _, energy_te = load_data_generators(batch_size=BATCH_SIZE, want_energy=True)
+# % Load the Energy so that you can make energy-binnings
+point_gn, energy_te = load_point_generator(batch_size=BATCH_SIZE, want_energy=True)
 
 energy_te = np.array(energy_te)
-energy_te_limato = energy_te[:len(test_gn) * BATCH_SIZE]
+energy_te_limato = energy_te[:len(point_gn) * BATCH_SIZE]
 
 # % Plot this resolution
-plot_angular_resolution(position_te_limato, position_prediction, energy_te_limato, net_name=net_name)
+# %%
+plot_angular_resolution(position_te_limato, position_prediction, energy_te_limato, net_name=net_name + ' POINT-LIKE',
+                        fig_folder='/home/emariott/deepmagic/CNN4MAGIC/Generator/position_pic')
+# %%
+import pickle
+
+with open('/home/emariott/deepmagic/CNN4MAGIC/Generator/position_predictions/pos_pred' + net_name + '.pkl', 'wb') as f:
+    pickle.dump(position_prediction, f)
 # %%
 from CNN4MAGIC.CNN_Models.BigData.utils import bin_data_mask, compute_theta
 import matplotlib.pyplot as plt

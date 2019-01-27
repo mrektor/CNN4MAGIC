@@ -22,7 +22,8 @@ def clean_missing_data(data, labels):
     return data
 
 
-def load_data_generators(batch_size=400, want_energy=False, want_position=False, want_labels=False, want_test=False,
+def load_data_generators(batch_size=400,
+                         want_energy=False, want_position=False, want_labels=False, want_point_test=False,
                          folder_files='/data/magic_data/very_big_folder'):
     # load IDs
     print('Loading labels...')
@@ -177,3 +178,59 @@ def load_data_generators(batch_size=400, want_energy=False, want_position=False,
         position_vect = [position[event] for event in data['test']]
 
         return train_gn, val_gn, test_gn, position_vect
+
+
+def load_point_generator(batch_size=400,
+                         want_energy=False, want_position=False, want_labels=False,
+                         folder_files='/home/emariott/deepmagic/data_interpolated/point_like'):
+    complement_path = '/home/emariott/deepmagic/data_interpolated/point_like_complementary/point_complement.pkl'
+    with open(complement_path, 'rb') as f:
+        event_list_total, labels_total, energy_total, position_total = pkl.load(f)
+
+    random.seed(42)
+    num_files = len(event_list_total)
+    print(f'Number of files in folder: {num_files}')
+
+    if want_energy:
+        # %%
+
+        log_energy = {k: np.log10(v) for k, v in energy_total.items()}  # Convert energies in log10
+
+        # %% Define the generators
+        generator = MAGIC_Generator(list_IDs=event_list_total,
+                                    labels=log_energy,
+                                    batch_size=batch_size,
+                                    folder=folder_files,
+                                    shuffle=False
+                                    )
+
+        energy_vect = [log_energy[event] for event in event_list_total]
+
+        return generator, energy_vect
+
+    if want_labels:
+        # %% Define the generators
+        generator = MAGIC_Generator(list_IDs=event_list_total,
+                                    labels=labels_total,
+                                    batch_size=batch_size,
+                                    folder=folder_files,
+                                    shuffle=False
+                                    )
+
+        labels_vect = [labels_total[event] for event in event_list_total]
+
+        return generator, labels_vect
+
+    if want_position:
+        # %% Define the generators
+        generator = MAGIC_Generator(list_IDs=event_list_total,
+                                    labels=position_total,
+                                    position=True,
+                                    batch_size=batch_size,
+                                    folder=folder_files,
+                                    shuffle=False
+                                    )
+
+        position_vect = [position_total[event] for event in event_list_total]
+
+        return generator, position_vect

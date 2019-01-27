@@ -148,5 +148,4 @@ for w in "${files[@]}"; do
 
 	    wget http://data.magic.pic.es/Data/Calibrated/v1/SS433-e1-reg/2018_10_06/${w} --user=MAGIC --password=LmMwf5y+
 
-
 done

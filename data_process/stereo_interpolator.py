@@ -1027,7 +1027,7 @@ def stereo_interp_from_txt(filenames):
 ###############
 def MC_dump_npy(corsika, m1, m2, energy, posX1, posY1, filename, event_idx_list=None, labels=None, energy_labels=None,
                 position_labels=None,
-                dump_folder='/ph14-data1/users/mariotti_data/partial_dump_finish/'):
+                dump_folder='/home/emariott/deepmagic/data_interpolated/point_like'):
     # with open(filename, 'rb') as f:
     #     data = pkl.load(f)
 
@@ -1063,7 +1063,7 @@ def MC_dump_npy(corsika, m1, m2, energy, posX1, posY1, filename, event_idx_list=
         event_id_string = event_id + '_' + identifier
 
         # Dump the npy
-        np.save(dump_folder + event_id_string + '.npy', b)
+        np.save(dump_folder + '/' + event_id_string + '.npy', b)
 
         # Update Energy, labels and position
         labels[event_id_string] = 1
@@ -1130,14 +1130,14 @@ def stereo_interp_from_root(filenames):
                                                                              filename=filenameM1[-27:-5])
 
         with open(
-                '/ph14-data1/users/mariotti_data/complementary_computation/eventList_labels_energy_position' + filenameM1[
-                                                                                                               -27:-5] + '.pkl',
+                '/home/emariott/deepmagic/data_interpolated/complementary_computation_diffuse/' + filenameM1[
+                                                                                                  -27:-5] + '.pkl',
                 'wb') as f:
             pickle.dump((event_idx_list, labels, energy_labels, position_labels), f, protocol=2)
 
         # print(f'Saved {filenameM1[-28:-5]}')
     except KeyError:
-        print('Ker error for file {filenameM1}'.format())
+        print(f'Ker error for file {filenameM1}')
 
 
 #####################################
@@ -1155,18 +1155,8 @@ def stereo_interp_from_root(filenames):
 # Load all the filenames
 
 
-# print('Change filenames...')
-# filelist = glob.glob('/ph14-data1/users/mariotti_data/raw_files/GA*')
-# # os.system('cd /ph11-data1/mariotti_data/root_files/MC_nuovi/')
-# for a in tqdm(filelist):
-#     os.system('mv ' + a + ' ' + a[:-1])# os.system('mv ' + a + ' ' + a[:a.find('?')])
-
-#
-# print('filenames changed.')
-
-# %%
-# fileM1 = glob.glob('/data/magic_data/raw_files/*M1*')
-# fileM2 = glob.glob('/data/magic_data/raw_files/*M2*')
+fileM1 = glob.glob('/home/emariott/deepmagic/data_root/mc/point_like/*M1*')
+fileM2 = glob.glob('/home/emariott/deepmagic/data_root/mc/point_like/*M2*')
 
 
 def get_pair_match(a, b):
@@ -1191,22 +1181,19 @@ def imap_unordered_bar(func, args, n_processes=2):
     return res_list
 
 
-#
-#
-# mFull = get_pair_match(fileM1, fileM2)
+mFull = get_pair_match(fileM1, fileM2)
 
-# %%
-# print('It\'s Bum-Bum time:')
-# # Start the parallel computing
-# num_cpus = multiprocessing.cpu_count()
-# print(f'start multiprocessing with {num_cpus} jobs')
-# print(f'dumping {len(mFull[int(len(mFull)*0.4):])} files')
-# imap_unordered_bar(stereo_interp_from_root, mFull[int(len(mFull) * 0.4):], n_processes=num_cpus)
+print('It\'s Bum-Bum time:')
+# Start the parallel computing
+num_cpus = multiprocessing.cpu_count()
+print(f'start multiprocessing with {num_cpus} jobs')
+print(f'dumping {len(mFull)} files')
+imap_unordered_bar(stereo_interp_from_root, mFull, n_processes=num_cpus)
 # pool = multiprocessing.Pool(processes=num_cpus)
 # pool.map(stereo_interp_from_root, mFull)
 # pool.close()
 # pool.join()
-# print('All done, MONTACARLO Interpolation went fine')
+print('All done, MONTACARLO Interpolation went fine')
 
 #####################################
 #####################################
@@ -1231,31 +1218,31 @@ def imap_unordered_bar(func, args, n_processes=2):
 #
 # #
 # print('filenames changed.')
-
-fileM1 = glob.glob('/data/magic_data/raw_files/*M1*')
-fileM2 = glob.glob('/data/magic_data/raw_files/*M2*')
-
-
-def get_pair_match(a, b):
-    result = []
-    for i in a:
-        for j in b:
-            if i[-42:-6] == j[-42:-6]:  # -28:-5 for MC. -42:-6 for ROOT
-                result.append((i, j))
-    return result
-
-
-mFull = get_pair_match(fileM1, fileM2)
-
-# %%
-# Start the parallel computing
-print('Start interp ROOT')
-num_cpus = 11  # multiprocessing.cpu_count()
-print('start multiprocessing ROOT files with {} jobs'.format(num_cpus))
-imap_unordered_bar(stereo_interp_from_root_realdata, mFull, n_processes=num_cpus)
-
-# pool = multiprocessing.Pool(processes=num_cpus)
-# pool.map(stereo_interp_from_root_realdata, mFull)
-# pool.close()
-# pool.join()
-print('All done, ROOT Interpolation went fine')
+#
+# fileM1 = glob.glob('/data/magic_data/raw_files/*M1*')
+# fileM2 = glob.glob('/data/magic_data/raw_files/*M2*')
+#
+#
+# def get_pair_match(a, b):
+#     result = []
+#     for i in a:
+#         for j in b:
+#             if i[-42:-6] == j[-42:-6]:  # -28:-5 for MC. -42:-6 for ROOT
+#                 result.append((i, j))
+#     return result
+#
+#
+# mFull = get_pair_match(fileM1, fileM2)
+#
+# # %%
+# # Start the parallel computing
+# print('Start interp ROOT')
+# num_cpus = 11  # multiprocessing.cpu_count()
+# print('start multiprocessing ROOT files with {} jobs'.format(num_cpus))
+# imap_unordered_bar(stereo_interp_from_root_realdata, mFull, n_processes=num_cpus)
+#
+# # pool = multiprocessing.Pool(processes=num_cpus)
+# # pool.map(stereo_interp_from_root_realdata, mFull)
+# # pool.close()
+# # pool.join()
+# print('All done, ROOT Interpolation went fine')

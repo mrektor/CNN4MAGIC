@@ -1,7 +1,6 @@
 import numpy as np
 
 from CNN4MAGIC.CNN_Models.BigData.snapshot import SnapshotCallbackBuilder
-from CNN4MAGIC.CNN_Models.BigData.utils import plot_hist2D, plot_gaussian_error
 from CNN4MAGIC.Generator.gen_util import load_data_generators
 from CNN4MAGIC.Generator.models import single_DenseNet_25_3_doubleDense
 
@@ -41,6 +40,8 @@ y_pred = model.predict_generator(generator=test_gn, verbose=1, use_multiprocessi
 
 energy_te = np.array(energy_te)
 energy_te_limato = energy_te[:len(test_gn) * BATCH_SIZE]
+
+from CNN4MAGIC.CNN_Models.BigData.utils import plot_hist2D, plot_gaussian_error
 
 plot_hist2D(energy_te_limato, y_pred, net_name, fig_folder='/data/code/CNN4MAGIC/Generator/energy_pic/',
             num_bins=100)
