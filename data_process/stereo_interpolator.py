@@ -1027,7 +1027,7 @@ def stereo_interp_from_txt(filenames):
 ###############
 def MC_dump_npy(corsika, m1, m2, energy, posX1, posY1, filename, event_idx_list=None, labels=None, energy_labels=None,
                 position_labels=None,
-                dump_folder='/home/emariott/deepmagic/data_interpolated/point_like'):
+                dump_folder='/home/emariott/deepmagic/data_interpolated/diffuse'):
     # with open(filename, 'rb') as f:
     #     data = pkl.load(f)
 
@@ -1133,7 +1133,7 @@ def stereo_interp_from_root(filenames):
                 '/home/emariott/deepmagic/data_interpolated/complementary_computation_diffuse/' + filenameM1[
                                                                                                   -27:-5] + '.pkl',
                 'wb') as f:
-            pickle.dump((event_idx_list, labels, energy_labels, position_labels), f, protocol=2)
+            pickle.dump((event_idx_list, labels, energy_labels, position_labels, df1, df2), f, protocol=2)
 
         # print(f'Saved {filenameM1[-28:-5]}')
     except KeyError:
@@ -1155,8 +1155,8 @@ def stereo_interp_from_root(filenames):
 # Load all the filenames
 
 
-fileM1 = glob.glob('/home/emariott/deepmagic/data_root/mc/point_like/*M1*')
-fileM2 = glob.glob('/home/emariott/deepmagic/data_root/mc/point_like/*M2*')
+fileM1 = glob.glob('/home/emariott/deepmagic/data_root/mc/diffuse/*M1*')
+fileM2 = glob.glob('/home/emariott/deepmagic/data_root/mc/diffuse/*M2*')
 
 
 def get_pair_match(a, b):
