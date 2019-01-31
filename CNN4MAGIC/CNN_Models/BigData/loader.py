@@ -258,7 +258,6 @@ def load_data_append(which='train', fileListFolder='/data2T/mariotti_data_2/inte
         toLoad = fileList[1500:1900]
         print('Loading VALIDATION data')
 
-
     if which == 'test':
         toLoad = fileList[1900:]
         print('Loading TEST data')
@@ -289,7 +288,6 @@ def load_data_append(which='train', fileListFolder='/data2T/mariotti_data_2/inte
                     leak_ok_1 = data['extras1']['leakage1_pixel'] < 0.2
                     lk_condition = np.logical_and(leak_ok_2, leak_ok_1)
 
-
                 # condition = np.logical_and(energy_level_max, energy_level_min)
                 # condition = np.logical_and(condition, impact2)
                 condition = np.logical_and(intensity_ok_2, intensity_ok_1)
@@ -301,7 +299,6 @@ def load_data_append(which='train', fileListFolder='/data2T/mariotti_data_2/inte
 
                 if leak:
                     condition = np.logical_and(condition, lk_condition)
-
 
                 # Pruning
                 full_energy.append(data['energy'][condition].reshape(
@@ -329,6 +326,5 @@ def load_data_append(which='train', fileListFolder='/data2T/mariotti_data_2/inte
     print('cleaning memory...')
     gc.collect()
     print('cleaned.')
-
 
     return full_interp_M1, full_interp_M2, full_energy
