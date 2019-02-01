@@ -12,10 +12,8 @@ import uproot
 from scipy import interpolate
 from tqdm import *
 
-
-# from ctapipe.image import tailcuts_clean, hillas_parameters, leakage, concentration
-# from ctapipe.image.timing_parameters import timing_parameters
-# from ctapipe.instrument import CameraGeometry
+from ctapipe.image.timing_parameters import timing_parameters
+from ctapipe.instrument import CameraGeometry
 
 class InterpolateMagic:  # TODO make it parallel
 
@@ -828,18 +826,18 @@ def read_from_root(filename, want_extra=False, pruning=False):
     phe = df2['phe'].loc[event_idx].unstack(level=-1)
 
     # Compute hillas parameters, leakage and other hand-crafted features
-    # if want_extra:
-    #     extras = compute_stuff(phe, time, only_relevant=True)
-    #
-    #     # Filter with some criterion
-    #     if pruning:
-    #         intensity_ok = extras['intensity'] > 100
-    #         leak_ok = extras['leakage1_pixel'] < 0.2
-    #         condition = np.logical_and(intensity_ok, leak_ok)
-    #
-    #         return df[condition.values], extras[condition.values], phe[condition.values], time[condition.values]
-    #
-    #     return df, extras, phe, time
+    if want_extra:
+        extras = compute_stuff(phe, time, only_relevant=True)
+
+        # Filter with some criterion
+        if pruning:
+            intensity_ok = extras['intensity'] > 100
+            leak_ok = extras['leakage1_pixel'] < 0.2
+            condition = np.logical_and(intensity_ok, leak_ok)
+
+            return df[condition.values], extras[condition.values], phe[condition.values], time[condition.values]
+
+        return df, extras, phe, time
 
     return df, phe, time
 
@@ -1155,8 +1153,8 @@ def stereo_interp_from_root(filenames):
 # Load all the filenames
 
 
-fileM1 = glob.glob('/home/emariott/deepmagic/data_root/mc/diffuse/*M1*')
-fileM2 = glob.glob('/home/emariott/deepmagic/data_root/mc/diffuse/*M2*')
+fileM1 = glob.glob('/home/emariott/deepmagic/data_root/mc/diffuse/*M1*.root')
+fileM2 = glob.glob('/home/emariott/deepmagic/data_root/mc/diffuse/*M2*.root')
 
 
 def get_pair_match(a, b):
