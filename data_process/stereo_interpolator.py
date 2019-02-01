@@ -5,15 +5,18 @@ import pickle
 import time
 from hashlib import md5
 
+import ctapipe
 # import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import uproot
+from ctapipe.image import tailcuts_clean, hillas_parameters, leakage, concentration
+from ctapipe.image.cleaning import number_of_islands
+from ctapipe.image.timing_parameters import timing_parameters
+from ctapipe.instrument import CameraGeometry
 from scipy import interpolate
 from tqdm import *
 
-from ctapipe.image.timing_parameters import timing_parameters
-from ctapipe.instrument import CameraGeometry
 
 class InterpolateMagic:  # TODO make it parallel
 
@@ -778,6 +781,47 @@ def screma_allinea(df1, phe1, time1, df2, phe2, time2):
     return phe1_reduced_ok, time1_reduced_ok, phe2_reduced_ok, time2_reduced_ok
 
 
+def compute_stuff(phe_df, time_df, only_relevant=False):
+    camera_MAGIC = CameraGeometry.from_name('MAGICCamMars')
+    all_events = []
+    for i in range(phe_df.shape[0]):
+        event_image = phe_df.iloc[i, :1039]
+        clean = tailcuts_clean(camera_MAGIC, event_image, picture_thresh=6, boundary_thresh=4)
+        event_image_cleaned = event_image.copy()
+
+        try:
+            event_image_cleaned[~clean] = 0
+
+            all_data = {}
+
+            hillas_params = hillas_parameters(camera_MAGIC, event_image_cleaned)
+            leakage_params = leakage(camera_MAGIC, event_image, clean)
+
+            all_data.update(hillas_params)
+            all_data.update(leakage_params)
+
+            if not only_relevant:
+                event_time = time_df.iloc[i, :1039]
+                conc = concentration(camera_MAGIC, event_image, hillas_params)
+                n_islands, island_id = number_of_islands(camera_MAGIC, clean)
+                timing = timing_parameters(
+                    camera_MAGIC[clean],
+                    event_image[clean],
+                    event_time[clean],
+                    hillas_params,
+                )
+                all_data.update(conc)
+                all_data.update(timing)
+            all_events.append(all_data)
+        except ctapipe.image.hillas.HillasParameterizationError:
+            print(f'Skippato! sum={np.sum(event_image_cleaned)}')
+            all_events.append({'skipped': i, 'skipped_sum': np.sum(event_image_cleaned)})
+
+    df2 = pd.DataFrame(all_events)
+
+    return df2
+
+
 def read_from_root(filename, want_extra=False, pruning=False):
     ARRAY_COLUMNS = {
         'MMcEvt.fEvtNumber': 'corsika_event_number',
@@ -827,7 +871,7 @@ def read_from_root(filename, want_extra=False, pruning=False):
 
     # Compute hillas parameters, leakage and other hand-crafted features
     if want_extra:
-        extras = compute_stuff(phe, time, only_relevant=True)
+        extras = compute_stuff(phe, time, only_relevant=False)
 
         # Filter with some criterion
         if pruning:
@@ -1088,8 +1132,8 @@ def stereo_interp_from_root(filenames):
         print('Empty file: ' + filenameM2)
         return None
 
-    df1, phe1, time1 = read_from_root(filenameM1, want_extra=False, pruning=False)
-    df2, phe2, time2 = read_from_root(filenameM2, want_extra=False, pruning=False)
+    df1, extras1, phe1, time1 = read_from_root(filenameM1, want_extra=True, pruning=False)
+    df2, extras2, phe2, time2 = read_from_root(filenameM2, want_extra=True, pruning=False)
 
     interpolator = InterpolateMagic(15)
     num_events = df1.shape[0]
@@ -1131,7 +1175,8 @@ def stereo_interp_from_root(filenames):
                 '/home/emariott/deepmagic/data_interpolated/complementary_computation_diffuse/' + filenameM1[
                                                                                                   -27:-5] + '.pkl',
                 'wb') as f:
-            pickle.dump((event_idx_list, labels, energy_labels, position_labels, df1, df2), f, protocol=2)
+            pickle.dump((event_idx_list, labels, energy_labels, position_labels, df1, df2, extras1, extras2), f,
+                        protocol=2)
 
         # print(f'Saved {filenameM1[-28:-5]}')
     except KeyError:
