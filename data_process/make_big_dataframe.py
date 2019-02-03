@@ -45,3 +45,4 @@ print(golden_df.shape)
 
 with open('/home/emariott/deepmagic/data_interpolated/diffuse_complementary/diffuse_df.pkl', 'wb') as f:
     pickle.dump(big_df, f)
+

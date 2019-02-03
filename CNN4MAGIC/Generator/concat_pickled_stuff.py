@@ -4,14 +4,14 @@ import pickle
 from tqdm import tqdm
 
 # %
-filelist = glob.glob('/home/emariott/deepmagic/data_interpolated/complementary_computation_diffuse/*')
+filelist = glob.glob('/home/emariott/deepmagic/data_interpolated/complementary_computation_diffuse/*.pkl')
 
 # %
 print(len(filelist))
 
 # %
 with open(filelist[0], 'rb') as f:
-    eventList, labels, energy, position, df1, df2 = pickle.load(f)
+    eventList, labels, energy, position, df1, df2, extra1, extra2 = pickle.load(f)
 
 
 # %%
@@ -24,7 +24,7 @@ position_total = {}
 
 for file in tqdm(filelist):
     with open(file, 'rb') as f:
-        eventList, labels, energy, position, df1, df2 = pickle.load(f)
+        eventList, labels, energy, position, df1, df2, extra1, extra2 = pickle.load(f)
     eventList_total = eventList_total + eventList
     energy_total.update(energy)
     labels_total.update(labels)
