@@ -236,142 +236,121 @@ def load_point_generator(batch_size=400,
         return generator, position_vect
 
 
-def load_golden_generator(batch_size=400,
-                          want_energy=False, want_position=False, want_labels=False,
-                          ):
-    # load IDs
-    print('Loading labels...')
+def load_generators_diffuse_point(batch_size,
+                                  want_golden=True,
+                                  want_energy=True,
+                                  want_position=True,
+                                  folder_diffuse='/home/emariott/deepmagic/data_interpolated/diffuse',
+                                  folder_point='/home/emariott/deepmagic/data_interpolated/point_like',
+                                  ):
+    # % Load df and complement Diffuse
+    filepath_df_diffuse = '/home/emariott/deepmagic/data_interpolated/diffuse_complementary/diffuse_df.pkl'
+    with open(filepath_df_diffuse, 'rb') as f:
+        big_df_diffuse = pkl.load(f)
 
-    # Load Complement
-    filename = '/data/magic_data/MC_npy/complementary_dump_total_2.pkl'
-    with open(filename, 'rb') as f:
-        _, energy, labels, position = pkl.load(f)
+    filepath_complement_diffuse = '/home/emariott/deepmagic/data_interpolated/diffuse_complementary/diffuse_complement.pkl'
+    with open(filepath_complement_diffuse, 'rb') as f:
+        _, labels_diffuse, energy_diffuse, position_diffuse = pkl.load(f)
 
-    random.seed(42)
-    random.shuffle(eventList_total)
-    num_files = len(eventList_total)
-    print(f'Number of files in folder: {num_files}')
+    # % Load df and complement Point-Like
+    filepath_df_point = '/home/emariott/deepmagic/data_interpolated/point_like_complementary/point_df.pkl'
+    with open(filepath_df_point, 'rb') as f:
+        big_df_point = pkl.load(f)
+
+    filepath_complement_point = '/home/emariott/deepmagic/data_interpolated/point_like_complementary/point_complement.pkl'
+    with open(filepath_complement_point, 'rb') as f:
+        _, labels_point, energy_point, position_point = pkl.load(f)
+
+    if want_golden:
+        # % Select the golden dataset
+        golden_df_diffuse = big_df_diffuse[
+            (big_df_diffuse['impact_M1'] < 11000) &
+            (big_df_diffuse['impact_M2'] < 11000) &
+            (big_df_diffuse['impact_M1'] > 5000) &
+            (big_df_diffuse['impact_M2'] > 5000) &
+            (big_df_diffuse['intensity_M1'] > 100) &
+            (big_df_diffuse['intensity_M2'] > 100) &
+            (big_df_diffuse['leakage2_pixel_M1'] < 0.2) &
+            (big_df_diffuse['leakage2_pixel_M2'] < 0.2)
+            ]
+
+        golden_df_point = big_df_point[
+            (big_df_point['impact_M1'] < 11000) &
+            (big_df_point['impact_M2'] < 11000) &
+            (big_df_point['impact_M1'] > 5000) &
+            (big_df_point['impact_M2'] > 5000) &
+            (big_df_point['intensity_M1'] > 100) &
+            (big_df_point['intensity_M2'] > 100) &
+            (big_df_point['leakage2_pixel_M1'] < 0.2) &
+            (big_df_point['leakage2_pixel_M2'] < 0.2)
+            ]
+
+        ids_diffuse = golden_df_diffuse['ID'].values
+        ids_point = golden_df_point['ID'].values
+    else:
+        ids_diffuse = big_df_diffuse['ID'].values
+        ids_point = big_df_point['ID'].values
+
     partition = dict()
-    frac_train = 0.67
-    frac_val = 0.10
-    partition['train'] = eventList_total[:int(num_files * frac_train)]
-    partition['validation'] = eventList_total[int(num_files * frac_train):int(num_files * (frac_train + frac_val))]
-    partition['test'] = eventList_total[int(num_files * (frac_train + frac_val)):]
-
+    frac_train = 0.70
+    num_files = len(ids_diffuse)
+    partition['train'] = ids_diffuse[:int(num_files * frac_train)]
+    partition['validation'] = ids_diffuse[int(num_files * frac_train):]
+    partition['test'] = ids_point
+    print(
+        f'Training on {int(num_files * frac_train)} Diffuse\n Validating on {num_files-int(num_files * frac_train)} Diffuse\nTesting on {len(ids_point)} Point-Like')
+    # %
     if want_energy:
-        # %%
-        print('Solving sponi...')
-        data = dict()
-        data['train'] = clean_missing_data(partition['train'], energy)
-        data['test'] = clean_missing_data(partition['test'], energy)
-        data['validation'] = clean_missing_data(partition['validation'], energy)
-        train_points = len(partition['train'])
-        val_points = len(partition['validation'])
+        energy_diffuse = {k: np.log10(v) for k, v in energy_diffuse.items()}  # Convert energies in log10
 
-        print(f'Training on {train_points} data points')
-        print(f'Validating on {val_points} data points')
-
-        energy = {k: np.log10(v) for k, v in energy.items()}  # Convert energies in log10
-
-        # %% Define the generators
-        train_gn = MAGIC_Generator(list_IDs=data['train'],
-                                   labels=energy,
+        # % Define the generators
+        train_gn = MAGIC_Generator(list_IDs=partition['train'],
+                                   labels=energy_diffuse,
                                    batch_size=batch_size,
-                                   folder=folder_files
+                                   folder=folder_diffuse
                                    )
 
-        val_gn = MAGIC_Generator(list_IDs=data['validation'],
-                                 labels=energy,
+        val_gn = MAGIC_Generator(list_IDs=partition['validation'],
+                                 labels=energy_diffuse,
                                  shuffle=False,
                                  batch_size=batch_size,
-                                 folder=folder_files
+                                 folder=folder_diffuse
                                  )
 
-        test_gn = MAGIC_Generator(list_IDs=data['test'],
-                                  labels=energy,
+        test_gn = MAGIC_Generator(list_IDs=partition['test'],
+                                  labels=energy_point,
                                   shuffle=False,
                                   batch_size=batch_size,
-                                  folder=folder_files
+                                  folder=folder_point
                                   )
-
-        energy_vect = [energy[event] for event in data['test']]
-
+        # %
+        energy_vect = [energy_point[event] for event in partition['test']]
         return train_gn, val_gn, test_gn, energy_vect
-
-    if want_labels:
-        # %%
-        print('Solving sponi...')
-        data = dict()
-        data['train'] = clean_missing_data(partition['train'], labels)
-        data['test'] = clean_missing_data(partition['test'], labels)
-        data['validation'] = clean_missing_data(partition['validation'], labels)
-        train_points = len(data['train'])
-        val_points = len(data['validation'])
-
-        print(f'Training on {train_points} data points')
-        print(f'Validating on {val_points} data points')
-
-        # %% Define the generators
-        train_gn = MAGIC_Generator(list_IDs=data['train'],
-                                   labels=labels,
-                                   batch_size=batch_size,
-                                   folder=folder_files
-                                   )
-
-        val_gn = MAGIC_Generator(list_IDs=data['validation'],
-                                 labels=labels,
-                                 batch_size=batch_size,
-                                 shuffle=False,
-                                 folder=folder_files
-                                 )
-        test_gn = MAGIC_Generator(list_IDs=data['test'],
-                                  labels=labels,
-                                  shuffle=False,
-                                  batch_size=batch_size,
-                                  folder=folder_files
-                                  )
-
-        labels_vect = [labels[event] for event in data['test']]
-
-        return train_gn, val_gn, test_gn, labels_vect
-
+    # %
     if want_position:
-        # %%
-        print('Solving sponi...')
-        data = dict()
-        data['train'] = clean_missing_data(partition['train'], position)
-        data['test'] = clean_missing_data(partition['test'], position)
-        data['validation'] = clean_missing_data(partition['validation'], position)
-        train_points = len(data['train'])
-        val_points = len(data['validation'])
-
-        print(f'Training on {train_points} data points')
-        print(f'Validating on {val_points} data points')
-
-        # %% Define the generators
-        train_gn = MAGIC_Generator(list_IDs=data['train'],
-                                   labels=position,
+        # % Define the generators
+        train_gn = MAGIC_Generator(list_IDs=partition['train'],
+                                   labels=position_diffuse,
                                    position=True,
                                    batch_size=batch_size,
-                                   folder=folder_files
+                                   folder=folder_diffuse
                                    )
 
-        val_gn = MAGIC_Generator(list_IDs=data['validation'],
-                                 labels=position,
+        val_gn = MAGIC_Generator(list_IDs=partition['validation'],
+                                 labels=position_diffuse,
                                  position=True,
                                  shuffle=False,
                                  batch_size=batch_size,
-                                 folder=folder_files
+                                 folder=folder_diffuse
                                  )
 
-        test_gn = MAGIC_Generator(list_IDs=data['test'],
-                                  labels=position,
+        test_gn = MAGIC_Generator(list_IDs=partition['test'],
+                                  labels=position_point,
                                   position=True,
                                   shuffle=False,
                                   batch_size=batch_size,
-                                  folder=folder_files
+                                  folder=folder_point
                                   )
 
-        position_vect = [position[event] for event in data['test']]
-
+        position_vect = [position_point[event] for event in partition['test']]
         return train_gn, val_gn, test_gn, position_vect

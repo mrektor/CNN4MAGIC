@@ -5,7 +5,7 @@ import pandas as pd
 from tqdm import tqdm
 
 # %%
-filelist = glob.glob('/home/emariott/deepmagic/data_interpolated/complementary_computation_diffuse/*.pkl')
+filelist = glob.glob('/home/emariott/deepmagic/data_interpolated/complementary_computation_point/*.pkl')
 
 # %%
 print(len(filelist))
@@ -43,6 +43,6 @@ golden_df = big_df[gold]
 print(golden_df.shape)
 # %%
 
-with open('/home/emariott/deepmagic/data_interpolated/diffuse_complementary/diffuse_df.pkl', 'wb') as f:
+with open('/home/emariott/deepmagic/data_interpolated/point_like_complementary/point_df.pkl', 'wb') as f:
     pickle.dump(big_df, f)
 
