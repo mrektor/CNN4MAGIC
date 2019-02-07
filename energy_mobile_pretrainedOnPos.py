@@ -7,22 +7,24 @@ from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
 from CNN4MAGIC.Generator.models import *
 
 BATCH_SIZE = 128
-train_gn, val_gn, test_gn, energy, e2 = load_generators_diffuse_point(batch_size=BATCH_SIZE, want_energy=True)
+train_gn, val_gn, test_gn, energy = load_generators_diffuse_point(batch_size=BATCH_SIZE,
+                                                                  want_golden=True,
+                                                                  want_energy=True)
 
 # %
 print('Loading the Neural Network...')
-model = single_DenseNet_piccina()
+model = MobileNetV2_2dense_energy(pretrained=True, drop=False, freeze_cnn=False)
 model.compile(optimizer='sgd', loss='mse', metrics=['mae', 'mape'])
 model.summary()
 
 # % Train
 EPOCHS = 30
 
-net_name = 'single_DenseNet_piccina_Gold'
+net_name = 'MobileNetV2_2dense_energy_pretrained'
 path = '/home/emariott/deepmagic/CNN4MAGIC/Generator/checkpoints/' + net_name + '.hdf5'
 check = ModelCheckpoint(filepath=path, save_best_only=True, period=1)
 # %e
-clr = OneCycleLR(max_lr=0.5,
+clr = OneCycleLR(max_lr=0.06,
                  num_epochs=EPOCHS,
                  num_samples=len(train_gn),
                  batch_size=BATCH_SIZE)
@@ -35,7 +37,7 @@ result = model.fit_generator(generator=train_gn,
                              verbose=1,
                              callbacks=[check, clr, stop],
                              use_multiprocessing=False,
-                             workers=8)
+                             workers=3)
 
 print('Finished training, start prediction')
 # %%
