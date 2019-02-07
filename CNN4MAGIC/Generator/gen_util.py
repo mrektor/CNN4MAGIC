@@ -264,10 +264,10 @@ def load_generators_diffuse_point(batch_size,
     if want_golden:
         # % Select the golden dataset
         golden_df_diffuse = big_df_diffuse[
-            # (big_df_diffuse['impact_M1'] < 11000) &
-            # (big_df_diffuse['impact_M2'] < 11000) &
-            # (big_df_diffuse['impact_M1'] > 5000) &
-            # (big_df_diffuse['impact_M2'] > 5000) &
+            (big_df_diffuse['impact_M1'] < 11000) &
+            (big_df_diffuse['impact_M2'] < 11000) &
+            (big_df_diffuse['impact_M1'] > 5000) &
+            (big_df_diffuse['impact_M2'] > 5000) &
             (big_df_diffuse['intensity_M1'] > 100) &
             (big_df_diffuse['intensity_M2'] > 100) &
             (big_df_diffuse['leakage2_pixel_M1'] < 0.2) &
@@ -275,10 +275,10 @@ def load_generators_diffuse_point(batch_size,
             ]
 
         golden_df_point = big_df_point[
-            # (big_df_point['impact_M1'] < 11000) &
-            # (big_df_point['impact_M2'] < 11000) &
-            # (big_df_point['impact_M1'] > 5000) &
-            # (big_df_point['impact_M2'] > 5000) &
+            (big_df_point['impact_M1'] < 11000) &
+            (big_df_point['impact_M2'] < 11000) &
+            (big_df_point['impact_M1'] > 5000) &
+            (big_df_point['impact_M2'] > 5000) &
             (big_df_point['intensity_M1'] > 100) &
             (big_df_point['intensity_M2'] > 100) &
             (big_df_point['leakage2_pixel_M1'] < 0.2) &
