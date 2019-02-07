@@ -1,3 +1,4 @@
+import pickle
 import time
 
 from keras.callbacks import ModelCheckpoint, EarlyStopping
@@ -23,7 +24,11 @@ def get_telegram_callback():
     return telegram_callback
 
 
-def superconvergence_training(model, train_gn, val_gn, net_name, batch_size=128, max_lr=0.01, epochs=30, patience=5,
+def superconvergence_training(model, train_gn, val_gn, test_gn, net_name,
+                              batch_size=128,
+                              max_lr=0.01,
+                              epochs=30,
+                              patience=4,
                               model_checkpoint=1):
     model.compile(optimizer='sgd', loss='mse', metrics=['mae', 'mape'])
 
@@ -48,7 +53,20 @@ def superconvergence_training(model, train_gn, val_gn, net_name, batch_size=128,
                                  use_multiprocessing=False,
                                  workers=3)
 
-    return result
+    result_path = f'CNN4MAGIC/output_data/loss_history/{net_name_time}.pkl'
+    with open(result_path, 'wb') as f:
+        pickle.dump(result, f)
+
+    y_pred_test = model.predict_generator(generator=test_gn,
+                                          verbose=1,
+                                          use_multiprocessing=False,
+                                          workers=3)
+
+    reconstructions_path = f'CNN4MAGIC/output_data/reconstructions/{net_name_time}.pkl'
+    with open(reconstructions_path, 'wb') as f:
+        pickle.dump(y_pred_test, f)
+
+    return result, y_pred_test
 
 
 def snapshot_training(model, train_gn, val_gn, net_name, max_lr=0.01, epochs=10, snapshot_number=5):
