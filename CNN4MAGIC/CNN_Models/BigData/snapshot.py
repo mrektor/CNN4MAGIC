@@ -62,10 +62,10 @@ class SnapshotCallbackBuilder:
             os.makedirs('weights/')
 
         callback_list = [
-            callbacks.ModelCheckpoint("output_data/snapshots/%s-Best.h5" % model_prefix,
+            callbacks.ModelCheckpoint("CNN4MAGIC/output_data/snapshots/%s-Best.h5" % model_prefix,
                                       save_best_only=True, save_weights_only=True),
             callbacks.LearningRateScheduler(schedule=self._cosine_anneal_schedule),
-            SnapshotModelCheckpoint(self.T, self.M, fn_prefix='output_data/snapshots/%s' % model_prefix)]
+            SnapshotModelCheckpoint(self.T, self.M, fn_prefix='CNN4MAGIC/output_data/snapshots/%s' % model_prefix)]
 
         return callback_list
 

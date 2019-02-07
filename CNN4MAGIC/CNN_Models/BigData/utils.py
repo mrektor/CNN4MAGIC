@@ -223,7 +223,8 @@ def plot_stuff(model, x_test, y_test, net_name):
         plt.savefig('error_distribution_' + net_name + '.jpg')
 
 
-def compute_bin_gaussian_error(y_true, y_pred, net_name, num_bins=10, plot=True, save_error=False, fig_folder=''):
+def compute_bin_gaussian_error(y_true, y_pred, net_name, num_bins=10, plot=True, save_error=False, fig_folder='',
+                               do_show=False):
     '''
     Helper function that compute the gaussian fit statistics for a nuber of bins
     :param y_pred: Predicted y (Log Scale)
@@ -278,13 +279,14 @@ def compute_bin_gaussian_error(y_true, y_pred, net_name, num_bins=10, plot=True,
         plt.tight_layout()
         plt.savefig(fig_folder + net_name + '_GaussianErrorDist.png')
         plt.savefig(fig_folder + net_name + '_GaussianErrorDist.eps')
-        plt.show()
+        if do_show:
+            plt.show()
 
     bins_median_value_lin = np.power(10, bins_median_value)  # Bins back to linear
     return bins_mu, bins_sigma, bins_median_value_lin
 
 
-def plot_gaussian_error(y_true, y_pred, net_name, fig_folder, num_bins=10, **kwargs):
+def plot_gaussian_error(y_true, y_pred, net_name, fig_folder, num_bins=10, do_show=False, **kwargs):
     ######## PAPER DATA
     cutting_edge_magic_bins = [[47, 75],
                                [75, 119],
@@ -338,12 +340,13 @@ def plot_gaussian_error(y_true, y_pred, net_name, fig_folder, num_bins=10, **kwa
     plt.title('$\sigma$ distribution for each bin')
     plt.legend(['Estimated $\sigma$', 'Cutting Edge Technology'])
     plt.tight_layout()
-    plt.savefig(fig_folder + net_name + '.png')
-    plt.savefig(fig_folder + net_name + '.eps')
-    plt.show()
+    plt.savefig(fig_folder + '/' + net_name + '_bins.png')
+    plt.savefig(fig_folder + '/' + net_name + '_bins.eps')
+    if do_show:
+        plt.show()
 
 
-def plot_hist2D(y_true, y_pred, net_name, fig_folder, num_bins=10):
+def plot_hist2D(y_true, y_pred, net_name, fig_folder, num_bins=10, do_show=True):
     plt.figure()
     plt.hist2d(x=y_true, y=y_pred.flatten(), bins=num_bins, cmap='inferno', norm=PowerNorm(0.65))
     plt.plot([1, 10], [1, 10], 'w-')
@@ -354,9 +357,10 @@ def plot_hist2D(y_true, y_pred, net_name, fig_folder, num_bins=10):
     plt.legend(['Ideal Line'])
     plt.xlim(1.2, 4.5)
     plt.ylim(1.2, 4.5)
-    plt.savefig(fig_folder + net_name + '.png')
-    plt.savefig(fig_folder + net_name + '.eps')
-    plt.show()
+    plt.savefig(fig_folder + '/' + net_name + '_hist2D' + '.png')
+    plt.savefig(fig_folder + '/' + net_name + '_hist2D' + '.eps')
+    if do_show:
+        plt.show()
     plt.close()
 
 

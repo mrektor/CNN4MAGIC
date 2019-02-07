@@ -30,7 +30,7 @@ def superconvergence_training(model, train_gn, val_gn, net_name, batch_size=128,
     nowstr = time.strftime('%Y-%m-%d_%H-%M-%S')
     net_name_time = f"{net_name}_{nowstr}"
 
-    check_path = f'output_data/checkpoints/{net_name_time}.hdf5'
+    check_path = f'CNN4MAGIC/output_data/checkpoints/{net_name_time}.hdf5'
     check = ModelCheckpoint(filepath=check_path, save_best_only=True, period=model_checkpoint)
     clr = OneCycleLR(max_lr=max_lr,
                      num_epochs=epochs,
