@@ -3,13 +3,17 @@ from keras.utils import Sequence
 
 
 class MAGIC_Generator(Sequence):
-    def __init__(self, list_IDs, labels, batch_size=32, dim=(67, 68, 4), position=False, shuffle=True,
+    def __init__(self, list_IDs, labels, batch_size=32, dim=(67, 68, 4),
+                 position=False, separation=False, energy=False,
+                 shuffle=True,
                  folder='/data2T/mariotti_data_2/npy_dump/all_npy'):
         'Initialization'
         self.dim = dim
         self.batch_size = batch_size
         self.labels = labels
         self.list_IDs = list_IDs
+        self.separation = separation
+        self.energy = energy
         # self.n_channels = n_channels
         # self.n_classes = n_classes
         self.shuffle = shuffle
@@ -28,9 +32,13 @@ class MAGIC_Generator(Sequence):
         # Initialization
         X = np.empty((self.batch_size, *self.dim))
         if self.position:
-            y = np.empty((self.batch_size, 2), dtype=int)
-        else:
+            y = np.empty((self.batch_size, 2), dtype=float)
+        elif self.energy:
+            y = np.empty((self.batch_size), dtype=float)
+        elif self.separation:
             y = np.empty((self.batch_size), dtype=int)
+        else:
+            raise ValueError
 
         # Generate data
         for i, ID in enumerate(list_IDs_temp):

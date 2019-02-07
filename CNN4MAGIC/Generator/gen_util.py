@@ -307,21 +307,24 @@ def load_generators_diffuse_point(batch_size,
         train_gn = MAGIC_Generator(list_IDs=partition['train'],
                                    labels=energy_diffuse,
                                    batch_size=batch_size,
-                                   folder=folder_diffuse
+                                   folder=folder_diffuse,
+                                   energy=True
                                    )
 
         val_gn = MAGIC_Generator(list_IDs=partition['validation'],
                                  labels=energy_diffuse,
                                  shuffle=False,
                                  batch_size=batch_size,
-                                 folder=folder_diffuse
+                                 folder=folder_diffuse,
+                                 energy=True
                                  )
 
         test_gn = MAGIC_Generator(list_IDs=partition['test'],
                                   labels=energy_point,
                                   shuffle=False,
                                   batch_size=batch_size,
-                                  folder=folder_point
+                                  folder=folder_point,
+                                  energy=True
                                   )
         # %
         energy_vect = np.array([energy_point[event] for event in partition['test']])
