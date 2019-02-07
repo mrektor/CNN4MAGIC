@@ -264,10 +264,10 @@ def load_generators_diffuse_point(batch_size,
     if want_golden:
         # % Select the golden dataset
         golden_df_diffuse = big_df_diffuse[
-            (big_df_diffuse['impact_M1'] < 11000) &
-            (big_df_diffuse['impact_M2'] < 11000) &
-            (big_df_diffuse['impact_M1'] > 5000) &
-            (big_df_diffuse['impact_M2'] > 5000) &
+            # (big_df_diffuse['impact_M1'] < 11000) &
+            # (big_df_diffuse['impact_M2'] < 11000) &
+            # (big_df_diffuse['impact_M1'] > 5000) &
+            # (big_df_diffuse['impact_M2'] > 5000) &
             (big_df_diffuse['intensity_M1'] > 100) &
             (big_df_diffuse['intensity_M2'] > 100) &
             (big_df_diffuse['leakage2_pixel_M1'] < 0.2) &
@@ -275,10 +275,10 @@ def load_generators_diffuse_point(batch_size,
             ]
 
         golden_df_point = big_df_point[
-            (big_df_point['impact_M1'] < 11000) &
-            (big_df_point['impact_M2'] < 11000) &
-            (big_df_point['impact_M1'] > 5000) &
-            (big_df_point['impact_M2'] > 5000) &
+            # (big_df_point['impact_M1'] < 11000) &
+            # (big_df_point['impact_M2'] < 11000) &
+            # (big_df_point['impact_M1'] > 5000) &
+            # (big_df_point['impact_M2'] > 5000) &
             (big_df_point['intensity_M1'] > 100) &
             (big_df_point['intensity_M2'] > 100) &
             (big_df_point['leakage2_pixel_M1'] < 0.2) &
@@ -324,8 +324,9 @@ def load_generators_diffuse_point(batch_size,
                                   folder=folder_point
                                   )
         # %
-        energy_vect = [energy_point[event] for event in partition['test']]
-        return train_gn, val_gn, test_gn, energy_vect
+        energy_vect = np.array([energy_point[event] for event in partition['test']])
+        energy_log = np.log10(energy_vect)
+        return train_gn, val_gn, test_gn, energy_log
     # %
     if want_position:
         # % Define the generators
@@ -352,5 +353,5 @@ def load_generators_diffuse_point(batch_size,
                                   folder=folder_point
                                   )
 
-        position_vect = [position_point[event] for event in partition['test']]
+        position_vect = np.array([position_point[event] for event in partition['test']])
         return train_gn, val_gn, test_gn, position_vect

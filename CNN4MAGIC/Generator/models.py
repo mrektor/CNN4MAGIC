@@ -1,5 +1,6 @@
 import keras
 from keras.applications.mobilenetv2 import MobileNetV2
+from keras.models import load_model
 
 from CNN4MAGIC.CNN_Models.BigData.cbam_DenseNet import *
 from CNN4MAGIC.CNN_Models.BigData.se_DenseNet import SEDenseNet
@@ -138,6 +139,19 @@ def NASNet_mobile_position():
     return model1
 
 
+def NASNet_mobile_energy():
+    input_img = Input(shape=(67, 68, 4), name='m1')
+
+    model = keras.applications.nasnet.NASNetMobile(include_top=False, weights=None, input_tensor=input_img,
+                                                   pooling='avg')
+
+    x = model.layers[-1].output
+    x = BatchNormalization()(x)
+    x = Dropout(0.5)(x)
+    x = Dense(1, name='energy', kernel_regularizer='l2')(x)
+    model1 = Model(inputs=input_img, output=x)
+    return model1
+
 def DenseNet121_position():
     input_img = Input(shape=(67, 68, 4), name='m1')
 
@@ -267,21 +281,32 @@ def MobileNetV2_4dense_energy_dropout():
     return model1
 
 
-def MobileNetV2_2dense_energy():
+def MobileNetV2_2dense_energy(pretrained=False, drop=False):
     input_img = Input(shape=(67, 68, 4), name='m1')
 
-    model = MobileNetV2(alpha=1, depth_multiplier=1, include_top=False,
-                        weights=None, input_tensor=input_img, pooling='avg')
+    if pretrained:
+        path = '/home/emariott/deepmagic/CNN4MAGIC/Generator/checkpoints/MobileNetV2_4dense_position-big-2.hdf5'
+        model = load_model(path)
+        input_img = model.layers[0].input
+        x = model.layers[-15].output  # This is the output of the global avg pooling
+    else:
+        model = MobileNetV2(alpha=0.3, depth_multiplier=0.3, include_top=False,
+                            weights=None, input_tensor=input_img, pooling='avg')
 
-    x = model.layers[-1].output
+        x = model.layers[-1].output
 
     x = BatchNormalization()(x)
+    if drop:
+        x = Dropout(.4)(x)
     x = Dense(128)(x)
     x = BatchNormalization()(x)
+    x = Dropout(.4)(x)
     x = LeakyReLU()(x)
 
     x = Dense(64)(x)
     x = BatchNormalization()(x)
+    if drop:
+        x = Dropout(.4)(x)
     x = LeakyReLU()(x)
 
     x = Dense(1, name='energy')(x)
@@ -331,6 +356,39 @@ def single_DenseNet_25_3_doubleDense():
     x = Dense(32)(x)
     x = BatchNormalization()(x)
     x = LeakyReLU()(x)
+    x = Dense(1, name='energy')(x)
+    model1 = Model(inputs=input_img, output=x)
+    return model1
+
+
+def MobileNetV2_2dense_energy(pretrained=False, drop=False):
+    input_img = Input(shape=(67, 68, 4), name='m1')
+
+    if pretrained:
+        path = '/home/emariott/deepmagic/CNN4MAGIC/Generator/checkpoints/MobileNetV2_4dense_position-big-2.hdf5'
+        model = load_model(path)
+        input_img = model.layers[0].input
+        x = model.layers[-15].output  # This is the output of the global avg pooling
+    else:
+        model = NASNet_mobile_position(include_top=False,
+                                       weights=None, input_tensor=input_img, pooling='avg')
+
+        x = model.layers[-1].output
+
+    x = BatchNormalization()(x)
+    if drop:
+        x = Dropout(.4)(x)
+    x = Dense(128)(x)
+    x = BatchNormalization()(x)
+    x = Dropout(.4)(x)
+    x = LeakyReLU()(x)
+
+    x = Dense(64)(x)
+    x = BatchNormalization()(x)
+    if drop:
+        x = Dropout(.4)(x)
+    x = LeakyReLU()(x)
+
     x = Dense(1, name='energy')(x)
     model1 = Model(inputs=input_img, output=x)
     return model1
