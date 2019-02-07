@@ -27,7 +27,7 @@ class SnapshotModelCheckpoint(Callback):
         if epoch != 0 and (epoch + 1) % self.check == 0:
             filepath = self.fn_prefix + "-%d.h5" % ((epoch + 1) // self.check)
             self.model.save_weights(filepath, overwrite=True)
-            # print("Saved snapshot at weights/%s_%d.h5" % (self.fn_prefix, epoch))
+            print("Saved snapshot at weights/%s_%d.h5" % (self.fn_prefix, epoch))
 
 
 class SnapshotCallbackBuilder:
@@ -62,10 +62,10 @@ class SnapshotCallbackBuilder:
             os.makedirs('weights/')
 
         callback_list = [
-            callbacks.ModelCheckpoint("/data/code/CNN4MAGIC/Generator/snap_energy/%s-Best.h5" % model_prefix,
+            callbacks.ModelCheckpoint("output_data/snapshots/%s-Best.h5" % model_prefix,
                                       save_best_only=True, save_weights_only=True),
             callbacks.LearningRateScheduler(schedule=self._cosine_anneal_schedule),
-            SnapshotModelCheckpoint(self.T, self.M, fn_prefix='weights/%s' % model_prefix)]
+            SnapshotModelCheckpoint(self.T, self.M, fn_prefix='output_data/snapshots/%s' % model_prefix)]
 
         return callback_list
 
