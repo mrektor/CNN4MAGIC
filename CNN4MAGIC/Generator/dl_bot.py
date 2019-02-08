@@ -36,7 +36,7 @@ class DLBot(object):
                  commands to allow access only to a specific user. Optional, though highly recommended.
     """
 
-    def __init__(self, token, user_id=None):
+    def __init__(self, token, user_id=None, net_name=''):
         assert isinstance(token, str), 'Token must be of type string'
         assert user_id is None or isinstance(user_id, int) or isinstance(user_id, list), \
             'user_id must be of type int, list (or None)'
@@ -48,6 +48,7 @@ class DLBot(object):
         self.bot_active = False  # currently not in use
         self._status_message = "No status message was set"  # placeholder status message
         self.lr = None
+        self.net_name = net_name
         self.modify_lr = 1.0  # Initial lr multiplier
         self.verbose = True  # Automatic per epoch updates
         self.stop_train_flag = False  # Stop training flag
@@ -238,7 +239,7 @@ class DLBot(object):
         ax.plot(x, loss_np, 'b')  # Plot training loss
         if val_loss_np is not None:
             ax.plot(x, val_loss_np, 'r')  # Plot val loss
-        plt.title('Loss Convergence')
+        plt.title(f'Loss Convergence of {self.net_name}')
         plt.xlabel('Epoch')
         plt.ylabel('Loss')
         ax.legend(legend_keys)

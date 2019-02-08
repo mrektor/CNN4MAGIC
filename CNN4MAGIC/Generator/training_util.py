@@ -35,7 +35,7 @@ def superconvergence_training(model, train_gn, val_gn, test_gn, net_name,
     nowstr = time.strftime('%Y-%m-%d_%H-%M-%S')
     net_name_time = f"{net_name}_{nowstr}"
 
-    check_path = f'CNN4MAGIC/output_data/checkpoints/{net_name_time}.hdf5'
+    check_path = f'output_data/checkpoints/{net_name_time}.hdf5'
     check = ModelCheckpoint(filepath=check_path, save_best_only=True, period=model_checkpoint)
     clr = OneCycleLR(max_lr=max_lr,
                      num_epochs=epochs,
@@ -53,7 +53,7 @@ def superconvergence_training(model, train_gn, val_gn, test_gn, net_name,
                                  use_multiprocessing=False,
                                  workers=3)
 
-    result_path = f'CNN4MAGIC/output_data/loss_history/{net_name_time}.pkl'
+    result_path = f'output_data/loss_history/{net_name_time}.pkl'
     with open(result_path, 'wb') as f:
         pickle.dump(result, f)
 
@@ -62,7 +62,7 @@ def superconvergence_training(model, train_gn, val_gn, test_gn, net_name,
                                           use_multiprocessing=False,
                                           workers=3)
 
-    reconstructions_path = f'CNN4MAGIC/output_data/reconstructions/{net_name_time}.pkl'
+    reconstructions_path = f'output_data/reconstructions/{net_name_time}.pkl'
     with open(reconstructions_path, 'wb') as f:
         pickle.dump(y_pred_test, f)
 

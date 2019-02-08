@@ -7,7 +7,8 @@ https://eyalzk.github.io/
 
 import keras.backend as K
 from keras.callbacks import Callback
-from utils.dl_bot import DLBot
+
+from CNN4MAGIC.Generator.dl_bot import DLBot
 
 
 class TelegramBotCallback(Callback):
@@ -43,7 +44,10 @@ class TelegramBotCallback(Callback):
 
     def on_train_end(self, logs=None):
         self.kbot.send_message('Train Completed!')
-        self.kbot.plot_loss(self.kbot, self.kbot.updater)
+        try:
+            self.kbot.plot_loss(self.kbot, self.kbot.updater)
+        except AttributeError:
+            print('Attribute Error, non so che dire zi...')
         self.kbot.stop_bot()
 
     def on_epoch_begin(self, epoch, logs=None):
