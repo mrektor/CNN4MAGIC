@@ -3,10 +3,10 @@ import time
 
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 
-from CNN4MAGIC.CNN_Models.BigData.clr import OneCycleLR
-from CNN4MAGIC.CNN_Models.BigData.snapshot import SnapshotCallbackBuilder
-from CNN4MAGIC.Generator.dl_bot import DLBot
-from CNN4MAGIC.Generator.telegram_bot_callback import TelegramBotCallback
+from ..CNN_Models.BigData.clr import OneCycleLR
+from ..CNN_Models.BigData.snapshot import SnapshotCallbackBuilder
+from ..Other_utilities.dl_bot import DLBot
+from ..Other_utilities.telegram_bot_callback import TelegramBotCallback
 
 
 def get_telegram_callback(net_name=''):
@@ -43,7 +43,7 @@ def superconvergence_training(model, train_gn, val_gn, test_gn, net_name,
                      batch_size=batch_size)
 
     stop = EarlyStopping(patience=patience)
-    tg = get_telegram_callback(net_name)
+    # tg = get_telegram_callback(net_name)
 
     result = model.fit_generator(generator=train_gn,
                                  validation_data=val_gn,
@@ -77,8 +77,8 @@ def snapshot_training(model, train_gn, val_gn, test_gn, net_name, max_lr=0.01, e
 
     snapshot = SnapshotCallbackBuilder(epochs, snapshot_number, max_lr)
     callbacks = snapshot.get_callbacks(model_prefix=net_name_time)
-    tg = get_telegram_callback(net_name)
-    callbacks.append(tg)
+    # tg = get_telegram_callback(net_name)
+    # callbacks.append(tg)
     result = model.fit_generator(generator=train_gn,
                                  validation_data=val_gn,
                                  epochs=epochs,

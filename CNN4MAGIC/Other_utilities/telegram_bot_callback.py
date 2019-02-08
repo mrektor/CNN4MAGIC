@@ -8,7 +8,7 @@ https://eyalzk.github.io/
 import keras.backend as K
 from keras.callbacks import Callback
 
-from CNN4MAGIC.Generator.dl_bot import DLBot
+from .dl_bot import DLBot
 
 
 class TelegramBotCallback(Callback):

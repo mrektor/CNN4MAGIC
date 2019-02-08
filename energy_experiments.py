@@ -1,6 +1,9 @@
-from CNN4MAGIC.Generator.evaluation_util import evaluate_energy
+import matplotlib
+
+matplotlib.use('TkAgg')
 from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
-from CNN4MAGIC.Generator.models import *
+from CNN4MAGIC.Generator.models import MobileNetV2_2dense_energy
+from CNN4MAGIC.Generator.evaluation_util import evaluate_energy
 from CNN4MAGIC.Generator.training_util import snapshot_training
 
 BATCH_SIZE = 128
