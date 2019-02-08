@@ -43,11 +43,11 @@ class TelegramBotCallback(Callback):
         self.val_loss_hist = []
 
     def on_train_end(self, logs=None):
-        self.kbot.send_message('Train Completed!')
         try:
             self.kbot.plot_loss(self.kbot, self.kbot.updater)
         except AttributeError:
             print('Attribute Error, non so che dire zi...')
+        self.kbot.send_message('Train Completed!')
         self.kbot.stop_bot()
 
     def on_epoch_begin(self, epoch, logs=None):

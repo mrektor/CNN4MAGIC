@@ -9,7 +9,7 @@ from CNN4MAGIC.Generator.dl_bot import DLBot
 from CNN4MAGIC.Generator.telegram_bot_callback import TelegramBotCallback
 
 
-def get_telegram_callback():
+def get_telegram_callback(net_name=''):
     # Telegram Bot imports
     telegram_token = "705094604:AAG8zNsLbcpExd_Ezhhw5TcHmgnZ---5PqM"  # replace TOKEN with your bot's token
 
@@ -17,7 +17,7 @@ def get_telegram_callback():
     telegram_user_id = 30723327  # replace None with your telegram user id (integer):
 
     # Create a DLBot instance
-    bot = DLBot(token=telegram_token, user_id=telegram_user_id)
+    bot = DLBot(token=telegram_token, user_id=telegram_user_id, net_name=net_name)
     # Create a TelegramBotCallback instance
     telegram_callback = TelegramBotCallback(bot)
 
@@ -43,7 +43,7 @@ def superconvergence_training(model, train_gn, val_gn, test_gn, net_name,
                      batch_size=batch_size)
 
     stop = EarlyStopping(patience=patience)
-    tg = get_telegram_callback()
+    tg = get_telegram_callback(net_name)
 
     result = model.fit_generator(generator=train_gn,
                                  validation_data=val_gn,
@@ -69,7 +69,7 @@ def superconvergence_training(model, train_gn, val_gn, test_gn, net_name,
     return result, y_pred_test
 
 
-def snapshot_training(model, train_gn, val_gn, net_name, max_lr=0.01, epochs=10, snapshot_number=5):
+def snapshot_training(model, train_gn, val_gn, test_gn, net_name, max_lr=0.01, epochs=10, snapshot_number=5):
     model.compile(optimizer='sgd', loss='mse', metrics=['mae', 'mape'])
 
     nowstr = time.strftime('%Y-%m-%d_%H-%M-%S')
@@ -77,7 +77,7 @@ def snapshot_training(model, train_gn, val_gn, net_name, max_lr=0.01, epochs=10,
 
     snapshot = SnapshotCallbackBuilder(epochs, snapshot_number, max_lr)
     callbacks = snapshot.get_callbacks(model_prefix=net_name_time)
-    tg = get_telegram_callback()
+    tg = get_telegram_callback(net_name)
     callbacks.append(tg)
     result = model.fit_generator(generator=train_gn,
                                  validation_data=val_gn,
@@ -87,4 +87,17 @@ def snapshot_training(model, train_gn, val_gn, net_name, max_lr=0.01, epochs=10,
                                  use_multiprocessing=False,
                                  workers=3)
 
-    return result
+    result_path = f'output_data/loss_history/{net_name_time}.pkl'
+    with open(result_path, 'wb') as f:
+        pickle.dump(result, f)
+
+    y_pred_test = model.predict_generator(generator=test_gn,
+                                          verbose=1,
+                                          use_multiprocessing=False,
+                                          workers=3)
+
+    reconstructions_path = f'output_data/reconstructions/{net_name_time}.pkl'
+    with open(reconstructions_path, 'wb') as f:
+        pickle.dump(y_pred_test, f)
+
+    return result, y_pred_test

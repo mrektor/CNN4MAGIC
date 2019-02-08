@@ -277,8 +277,8 @@ def compute_bin_gaussian_error(y_true, y_pred, net_name, num_bins=10, plot=True,
 
     if plot:
         plt.tight_layout()
-        plt.savefig(fig_folder + net_name + '_GaussianErrorDist.png')
-        plt.savefig(fig_folder + net_name + '_GaussianErrorDist.eps')
+        plt.savefig(fig_folder + '/' + net_name + '_GaussianErrorDist.png')
+        plt.savefig(fig_folder + '/' + net_name + '_GaussianErrorDist.eps')
         if do_show:
             plt.show()
 
