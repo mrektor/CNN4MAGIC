@@ -16,6 +16,7 @@ train_gn, val_gn, test_gn, energy = load_generators_diffuse_point(batch_size=BAT
 # Load the model
 print('Loading the Neural Network...')
 model = MobileNetV2_2dense_energy(pretrained=True, drop=False, freeze_cnn=False)
+model.load_weights('output_data/snapshots/MobileNetV2_2dense_energy_snap_whole_2019-02-08_02-14-49-Best.h5')
 net_name = 'MobileNetV2_2dense_energy_snap_whole'
 
 # Train
@@ -29,7 +30,7 @@ result, y_pred = snapshot_training(model=model,
                                    train_gn=train_gn, val_gn=val_gn, test_gn=test_gn,
                                    net_name=net_name,
                                    max_lr=0.05,
-                                   epochs=6,
+                                   epochs=5,
                                    snapshot_number=4
                                    )
 
