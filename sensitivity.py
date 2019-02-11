@@ -53,6 +53,7 @@ train_gn, val_gn, test_gn, position_test = load_generators_diffuse_point(batch_s
 # %%
 position_test_trimmed = position_test[:position_gamm.shape[0]]
 energy_test_trimmed = energy_test[:energy_gamma.shape[0]]
+gammaness_trimmed = separation_gamma[:energy_gamma.shape[0]]
 
 # %%
 ###### Read files #######
@@ -66,7 +67,6 @@ e_trig = e[separation_gamma.flatten() > 0.5]
 # If want linar
 e = np.power(10, e)
 e_trig = np.power(10, e_trig)
-
 
 Simulated_Events = np.size(e)
 Triggered_Events = np.size(e_trig)
@@ -162,6 +162,8 @@ if pos_in_mm:
 
 theta2 = np.sum((pos_true - pos_pred) ** 2, axis=1)
 
+# %%
+
 theta2_trig = np.sum((pos_true[trigger] - pos_pred[trigger]) ** 2, axis=1)  # maximum 0.5 deg^2
 
 trigger_hadron = gammaness_hadrons.flatten() > 0.5
@@ -171,19 +173,21 @@ gammaness_trig_h = gammaness_hadrons[trigger_hadron]
 
 # %% ???? COME FACCIO QUA???????
 # TODO: check theta2 for hadrons
-# pos_pred_h = position_hadrons
-# pos_in_mm=True
-# if pos_in_mm:
-#     pos_pred_h = pos_pred_h * 0.00337  # in deg
-#
-# theta2_h = np.sum((pos_true - pos_pred_h) ** 2, axis=1)
-#
-# theta2_trig_h = np.sum((pos_true[trigger] - pos_pred[trigger]) ** 2, axis=1)  # maximum 0.5 deg^2
+# Assumo pos_true_h = 0 always
+pos_pred_h = position_hadrons
+pos_in_mm = True
+if pos_in_mm:
+    pos_pred_h = pos_pred_h * 0.00337  # in deg
+
+theta2_h = np.sum(pos_pred_h ** 2, axis=1)
+
+theta2_trig_h = np.sum((pos_pred_h[trigger_hadron]) ** 2, axis=1)  # maximum 0.5 deg^2
 
 # %%
 ##### ??????
 # TODO: check time for hadrons
 obs_time_h = np.sum(hadrons_complement[0]['timediff'])
+obs_time_g = 1 / 8614.1 * gammaness.shape[0]
 ####### Sensitivity calculation ##########
 # We will first go for a implementation using Sig = Nex/sqrt(Nbg)
 # obstime = 50 * 3600 # s (50 hours)
@@ -247,7 +251,7 @@ print("The total rate of simulated gamma events is %.1f Hz" % R)
 
 e_w = ((e / E0) ** (index_w - Index_sim)) * R / N_
 e_trig_w = ((e_trig / E0) ** (index_w - Index_sim)) * R / N_
-ep_w = ((e / E0) ** (index_w - Index_sim)) * Rp / Np_
+ep_w = ((energy_hadrons / E0) ** (index_w - Index_sim)) * Rp / Np_
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
 
@@ -262,7 +266,7 @@ ax1.legend()
 # ax2.hist(np.log10(e),histtype=u'step',bins=20,label="Simulated rate")
 ax2.hist(np.log10(e), histtype=u'step', bins=20, weights=e_w, label="Simulated rate weighted to Crab")
 ax2.hist(np.log10(e_trig), histtype=u'step', bins=20, weights=e_trig_w, label="Triggered rate weighted to Crab")
-ax2.hist(np.log10(e), histtype=u'step', bins=20, weights=ep_w, label="Protons")
+ax2.hist(np.log10(energy_hadrons), histtype=u'step', bins=20, weights=ep_w, label="Protons")
 ax2.legend()
 ax2.set_yscale('log')
 ax2.set_xlabel("$log_{10}E (GeV)$")
@@ -292,13 +296,28 @@ for i in range(0, eedges - 1):  # binning in energy
         Ngammas = []
         Nhadrons = []
         for t in range(0, theta2_bins):  # cut in theta2
-            e_trig_w_sum = np.sum(e_trig_w[(e_trig < E[i + 1]) & (e_trig > E[i]) \
-                                           & (gammaness_trig > 0.1 * g) & (theta2_trig < 0.05 * (t + 1))])
-            # Just considering all the hadrons give trigger...
-            ep_w_sum = np.sum(ep_w[(e < E[i + 1]) & (e > E[i]) \
-                                   & (gammaness_h > 0.1 * g) & (theta2_h < 0.05 * (t + 1))])
+            # print('cond')
+            condition1 = e_trig_w[(energy_test_trimmed[trigger] < E[i + 1]) &
+                                  (energy_test_trimmed[trigger] > E[i]) &
+                                  (gammaness_trimmed[trigger].flatten() > 0.1 * g) &
+                                  (theta2[trigger] < 0.05 * (t + 1))]
+            # tmp = e_trig_w[condition]
 
-            final_gamma[i][g][t] = e_trig_w_sum * obstime
+            e_trig_w_sum = np.sum(condition1)
+            # Just considering all the hadrons give trigger...
+            # print('cond2')
+            condition2 = np.logical_and(energy_hadrons < E[i + 1], energy_hadrons > E[i])
+            # print('ok')
+            cond_2_1 = gammaness_hadrons.flatten() > 0.1 * g
+            cond_2_2 = theta2_h < 0.05 * (t + 1)
+            condition2_bis = np.logical_and(cond_2_1, cond_2_2)
+            # print('quasi')
+            print(condition2.shape, condition2_bis.shape)
+            condition2_tris = np.logical_and(condition2.flatten(), condition2_bis)
+            # print('end_cond2')
+            ep_w_sum = np.sum(ep_w[condition2_tris])
+
+            final_gamma[i][g][t] = e_trig_w_sum * obs_time_g
             final_hadrons[i][g][t] = ep_w_sum * obs_time_h
 
 
@@ -403,8 +422,9 @@ def format_axes(ax, pl):
     cbar.set_label('Sensitivity (% Crab)', fontsize=15)
 
 
+from tqdm import tqdm
 # Sensitivity plots for different Energy bins
-for ebin in range(0, ebins):
+for ebin in tqdm(range(0, ebins)):
     fig, ax = plt.subplots(figsize=(8, 8))
     pl = ax.imshow(sens_LiMa[ebin], cmap='viridis', extent=[0., 0.5, 1., 0.])
     fill_bin_content(ax, ebin)
@@ -514,3 +534,24 @@ format_axes(ax)
 ax.legend(numpoints=1, prop={'size': 9}, ncol=2, loc='upper right')
 plt.savefig(f'{pic_folder}/crab_trallalla.png')
 plt.close()
+
+# %%
+
+plt.figure()
+plt.hist(gammaness_hadrons, log=True, bins=100, alpha=0.55)
+plt.hist(gammaness, log=True, bins=100, alpha=0.55)
+plt.xlabel('Gammaness $P_\gamma$')
+plt.title('Gammaness on ~2M Real Data and 500k Point-Like MC')
+plt.legend(['Real Data', 'Point-like Montecarlos'])
+plt.savefig(f'{pic_folder}/gammaness_data.png')
+
+# %%
+plt.figure()
+zeta_h = -np.log10((1 - gammaness_hadrons))
+zeta_g = -np.log10((1 - gammaness))
+plt.hist(zeta_h[zeta_h < 1e9], log=True, bins=100, alpha=0.55)
+plt.hist(zeta_g[zeta_g < 1e9], log=True, bins=100, alpha=0.55)
+plt.xlabel('$-Log_{10}(1-P_\gamma)$')
+plt.title('Gammaness on ~2M Real Data and 500k Point-Like MC')
+plt.legend(['Real Data', 'Point-like Montecarlos'])
+plt.savefig(f'{pic_folder}/gammaness_data_logp.png')
