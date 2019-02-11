@@ -20,3 +20,12 @@ with open(dump_name, 'wb') as f:
     pickle.dump(y_pred_test, f)
 
 # %%
+import matplotlib.pyplot as plt
+
+plt.figure()
+plt.hist(y_pred_test, bins=100, log=True)
+plt.xlabel('Gammaness')
+plt.ylabel('Counts')
+plt.title(f'Gammaness of {y_pred_test.shape[0]} Point-Like MC')
+plt.savefig('output_data/pictures/gammaness_pointlike.png')
+plt.close()
