@@ -7,7 +7,7 @@ from matplotlib.colors import LogNorm
 
 pic_folder = 'notebooks/pic_folders'
 
-# %%
+# %
 from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
 
 
@@ -26,7 +26,7 @@ energy_gamma = read_pkl(energy_gamma_filename)
 
 pos_gamma_filename = '/home/emariott/deepmagic/output_data/reconstructions/pos_predMobileNetV2_4dense_position-big-2.pkl'
 position_gamm = read_pkl(pos_gamma_filename)
-# %%
+# %
 
 energy_hadrons = read_pkl(
     '/home/emariott/deepmagic/output_data/reconstructions/hadron_pred/y_pred_new_energy_hadrons.pkl')
@@ -37,7 +37,7 @@ position_hadrons = read_pkl(
 hadrons_complement = read_pkl(
     '/home/emariott/deepmagic/output_data/reconstructions/hadron_pred/new_root_complement.pkl')
 
-# %%
+# %
 # Load the data
 BATCH_SIZE = 128
 train_gn, val_gn, test_gn, energy_test = load_generators_diffuse_point(batch_size=BATCH_SIZE,
@@ -50,12 +50,12 @@ train_gn, val_gn, test_gn, position_test = load_generators_diffuse_point(batch_s
                                                                          want_golden=False,
                                                                          want_position=True)
 
-# %%
+# %
 position_test_trimmed = position_test[:position_gamm.shape[0]]
 energy_test_trimmed = energy_test[:energy_gamma.shape[0]]
 gammaness_trimmed = separation_gamma[:energy_gamma.shape[0]]
 
-# %%
+# %
 ###### Read files #######
 
 e = energy_test_trimmed
@@ -63,7 +63,7 @@ e = energy_test_trimmed
 # We take as triggered energies an array of 10% the size of the original
 e_trig = e[separation_gamma.flatten() > 0.5]
 
-# %%
+# %
 # If want linar
 e = np.power(10, e)
 e_trig = np.power(10, e_trig)
@@ -76,7 +76,7 @@ ax.set_yscale("log")
 plt.savefig(f'{pic_folder}/hist2.png')
 plt.close()
 
-# %%
+# %
 
 ##### Binnings and constants######
 # Whenever implemented using simulated files, most of these values can be read from the simulations
@@ -102,7 +102,7 @@ Index_Crab = -2.62
 cone = 0.
 
 
-# %%
+# %
 
 ##### Collection area calculation ######
 def collection_area(Esim, Etrig):
@@ -128,7 +128,7 @@ def collection_area(Esim, Etrig):
     return area
 
 
-# %%
+# %
 
 
 # Plot the collection area
@@ -142,7 +142,7 @@ ax.loglog(E[:-1], area)
 plt.savefig(f'{pic_folder}/collection_area2.png')
 plt.close()
 
-# %%
+# %
 
 
 # Fake energy, gammaness and theta2 arrays for simulated and triggered events
@@ -162,7 +162,7 @@ if pos_in_mm:
 
 theta2 = np.sum((pos_true - pos_pred) ** 2, axis=1)
 
-# %%
+# %
 
 theta2_trig = np.sum((pos_true[trigger] - pos_pred[trigger]) ** 2, axis=1)  # maximum 0.5 deg^2
 
@@ -312,7 +312,7 @@ for i in range(0, eedges - 1):  # binning in energy
             cond_2_2 = theta2_h < 0.05 * (t + 1)
             condition2_bis = np.logical_and(cond_2_1, cond_2_2)
             # print('quasi')
-            print(condition2.shape, condition2_bis.shape)
+            # print(condition2.shape, condition2_bis.shape)
             condition2_tris = np.logical_and(condition2.flatten(), condition2_bis)
             # print('end_cond2')
             ep_w_sum = np.sum(ep_w[condition2_tris])
@@ -358,7 +358,7 @@ def significanceLiMa(g, b, alpha):
 def Calculate_sensitivity(Ng, Nh, alpha):
     significance = (Ng) / np.sqrt(Nh * alpha)
     # significance = significanceLiMa(Ng+Nh, Nh, alpha)
-    sensitivity = 5 / significance * 100  # percentage of Crab
+    sensitivity = 5. / significance * 100.  # percentage of Crab
 
     return sensitivity
 
@@ -372,11 +372,13 @@ Tolerance_abs = 0.1
 def Calculate_sensitivity_LiMa(Ng, Nh, alpha):
     Non_loop = Ng + Nh
     Tolerance = 1
+    i = 0
     # for i in range(0,100):
     while (Tolerance > Tolerance_abs):
+
+        i = i + 1
         SignificanceLiMa_loop = significanceLiMa(Non_loop, Nh, alpha)
         Tolerance = abs(5 - SignificanceLiMa_loop)
-        # print(Non_loop, Nh, SignificanceLiMa_loop, Tolerance)
         if (Tolerance < Tolerance_abs):
             break
         if ((SignificanceLiMa_loop > 5.) & (Non_loop - Nh > 0)):
@@ -384,12 +386,17 @@ def Calculate_sensitivity_LiMa(Ng, Nh, alpha):
         else:
             Non_loop = Non_loop + 0.005 * Non_loop
 
+        if i % 5000000 == 0:
+            print(Tolerance, SignificanceLiMa_loop, Tolerance_abs)
+
     return abs(Non_loop - Nh) / Ng * 100
 
 
+from tqdm import tqdm
+
 sens_LiMa = np.ndarray(shape=(ebins, gammaness_bins, theta2_bins))
 
-for ix, iy, iz in np.ndindex(final_gamma.shape):
+for ix, iy, iz in tqdm(np.ndindex(final_gamma.shape)):
     # print(ix,iy,iz)
     sens_LiMa[ix, iy, iz] = Calculate_sensitivity_LiMa(final_gamma[ix, iy, iz], final_hadrons[ix, iy, iz], 1)
     # print(final_gamma[ix,iy,iz], final_hadrons[ix,iy,iz], final_gamma[ix,iy,iz] / final_hadrons[ix,iy,iz])
@@ -422,7 +429,6 @@ def format_axes(ax, pl):
     cbar.set_label('Sensitivity (% Crab)', fontsize=15)
 
 
-from tqdm import tqdm
 # Sensitivity plots for different Energy bins
 for ebin in tqdm(range(0, ebins)):
     fig, ax = plt.subplots(figsize=(8, 8))

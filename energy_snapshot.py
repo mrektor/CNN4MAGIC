@@ -1,7 +1,7 @@
 import numpy as np
 
 from CNN4MAGIC.CNN_Models.BigData.snapshot import SnapshotCallbackBuilder
-from CNN4MAGIC.Generator.gen_util import load_data_generators
+from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
 from CNN4MAGIC.Generator.models import single_DenseNet_25_3_doubleDense
 
 M = 5  # number of snapshots
@@ -20,8 +20,10 @@ print('Model Loaded.')
 
 # %%
 BATCH_SIZE = 512
-train_gn, val_gn, test_gn, energy_te = load_data_generators(batch_size=BATCH_SIZE, want_energy=True)
-
+train_gn, val_gn, test_gn, position = load_generators_diffuse_point(batch_size=BATCH_SIZE,
+                                                                    want_energy=True,
+                                                                    want_golden=False
+                                                                    )
 # %% Train
 result = model.fit_generator(generator=train_gn,
                              validation_data=val_gn,
