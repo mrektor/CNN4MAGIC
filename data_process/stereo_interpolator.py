@@ -980,7 +980,7 @@ def stereo_interp_from_root_realdata(filenames):
     phe1, time1, phe2, time2 = screma_allinea(df1, phe1, time1, df2, phe2, time2)
     bef2 = time.time()
     interpolator = InterpolateMagic(15)
-    num_events = df1.shape[0]
+    num_events = phe1.shape[0]
     m1_interp = np.zeros((num_events, 67, 68, 2))
     m2_interp = np.zeros((num_events, 67, 68, 2))
 

@@ -343,7 +343,7 @@ def MobileNetV2_4dense_energy(pretrained=False, drop=False, freeze_cnn=False):
             for layer in model.layers[:-15]:
                 layer.trainable = False
     else:
-        model = MobileNetV2(alpha=0.3, depth_multiplier=0.3, include_top=False,
+        model = MobileNetV2(alpha=1, depth_multiplier=1, include_top=False,
                             weights=None, input_tensor=input_img, pooling='avg')
 
         x = model.layers[-1].output

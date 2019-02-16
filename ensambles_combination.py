@@ -1,55 +1,91 @@
 import glob
 import pickle
 
+import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
 
+from CNN4MAGIC.CNN_Models.BigData.utils import compute_bin_gaussian_error, plot_gaussian_error, plot_hist2D
 from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
 
-# %%
-BATCH_SIZE = 512
-train_gn, val_gn, test_gn, energy_te = load_generators_diffuse_point(batch_size=BATCH_SIZE,
-                                                                     want_energy=True,
-                                                                     want_golden=False
-                                                                     )
+folder_fig = '/home/emariott/deepmagic/pics'
 
-# %%
-energy_te_limato = energy_te[:len(test_gn) * BATCH_SIZE]
-
-
-# %%
 
 def load_pickle(file):
     with open(file, 'rb') as f:
         return pickle.load(f)
 
 
+# %
+BATCH_SIZE = 512
+train_gn, val_gn, test_gn, energy_te = load_generators_diffuse_point(batch_size=BATCH_SIZE,
+                                                                     want_energy=True,
+                                                                     want_golden=False
+                                                                     )
+
+energy_te_limato = energy_te[:len(test_gn) * BATCH_SIZE]
+
+# %
 prediction_filenames = glob.glob('output_data/reconstructions/ensambels/pred*')
 
 prediction_filenames = sorted(prediction_filenames)
 print(prediction_filenames)
-# %%
-predictions = np.array([load_pickle(name).flatten() for name in prediction_filenames])
+# %
+pred_list = [load_pickle(name).flatten() for name in prediction_filenames]
+predictions = np.array(pred_list)
 
-# %%
+# %
+losses = [np.sum(np.power(pred - energy_te_limato, 2)) for pred in pred_list]
+print(losses)
 
-
-# %%
-print(predictions.shape)
-
-# %%
-geometric_mean = np.power(10, np.mean(predictions, axis=0))
-print(geometric_mean.shape)
-
-# %%
-linear_mean = np.mean(np.power(10, predictions), axis=0)
+# %
+linear_mean = np.mean(predictions[-3:], axis=0)
 print(linear_mean.shape)
 
+# %
+ensambels = [np.mean(predictions[-i:], axis=0) for i in range(1, len(pred_list))]
+
+# %
+ensambels_losses = [np.sum(np.power(pred - energy_te_limato, 2)) for pred in ensambels]
 # %%
-from CNN4MAGIC.CNN_Models.BigData.utils import compute_bin_gaussian_error
-import matplotlib.pyplot as plt
+print(ensambels_losses)
+print(losses)
+# %%
+
+sns.set()
+plt.figure()
+plt.plot(range(5, 12), losses)
+plt.xlabel('Snapshot')
+plt.ylabel('MSE loss')
+plt.title('Test loss of the last snapshots')
+plt.savefig(f'{folder_fig}/losses.pdf')
+
+# %%
+enseambles_legend = ['Best Snapshot (11)', '11 & 10', '11 & 10 & 9', '11 & 10 & 9 & 8', '11 & 10 & 9 & 8',
+                     '11 & 10 & 9 & 8 & 7']
+plt.figure()
+plt.barh(enseambles_legend, ensambels_losses)
+plt.xlabel('MSE loss evaluated on the test set')
+plt.title('Losses comparison of different Ensembles')
+plt.xlim([15500, 17300])
+plt.tight_layout()
+plt.savefig(f'{folder_fig}/ensambels_losses.eps')
+
+# %%
+
+plot_hist2D(energy_te_limato, pred_list[-1], 'Modified MobileNetV2 (Best Network)', fig_folder=folder_fig, num_bins=300)
+plot_gaussian_error(energy_te_limato, pred_list[-1], 'Modified MobileNetV2 (Best Network)', fig_folder=folder_fig)
+
+plot_hist2D(energy_te_limato, ensambels[2], 'Modified MobileNetV2 (Ensamble of last 2 nets)', fig_folder=folder_fig,
+            num_bins=300)
+plot_gaussian_error(energy_te_limato, ensambels[2], 'Modified MobileNetV2 (Ensamble of last 2 nets)',
+                    fig_folder=folder_fig)
 
 
-def plot_gaussian_error(y_true, y_pred, net_name, fig_folder, legend_list, num_bins=10, do_show=False, **kwargs):
+# %%
+
+
+def plot_gaussian_error_2(y_true, y_pred, net_name, fig_folder, legend_list, num_bins=10, do_show=False, **kwargs):
     ######## PAPER DATA
     cutting_edge_magic_bins = [[47, 75],
                                [75, 119],
@@ -88,7 +124,7 @@ def plot_gaussian_error(y_true, y_pred, net_name, fig_folder, legend_list, num_b
         plt.subplot(1, 2, 1)
         plt.semilogx(bins_median_value, bins_mu, '-*')
     # plt.semilogx([min(bins_median_value), max(bins_median_value)], [np.mean(bins_mu), np.mean(bins_mu)], 'r--')
-    # plt.semilogx(cutting_edge_magic_bins_median, cutting_edge_magic_bias, 'r-o')
+    plt.semilogx(cutting_edge_magic_bins_median, cutting_edge_magic_bias, 'r-o')
     plt.grid(which='both')
     plt.legend(legend_list)
     plt.xlabel('Bin mean value')
@@ -103,7 +139,7 @@ def plot_gaussian_error(y_true, y_pred, net_name, fig_folder, legend_list, num_b
         plt.subplot(1, 2, 2)
         # plt.figure()
         plt.semilogx(bins_median_value, bins_sigma, '-*')
-    # plt.semilogx(cutting_edge_magic_bins_median, cutting_edge_magic_sigma, '--*')
+    plt.semilogx(cutting_edge_magic_bins_median, cutting_edge_magic_sigma, '--*')
     # plt.semilogx([min(bins_median_value), max(bins_median_value)], [np.mean(bins_sigma), np.mean(bins_sigma)], 'r--')
     plt.grid(which='both')
     plt.ylabel('$\sigma$ of linear prediction error')
@@ -118,32 +154,17 @@ def plot_gaussian_error(y_true, y_pred, net_name, fig_folder, legend_list, num_b
 
 
 # %%
-legend = [f'snapshot epoch {name[-1]}' for name in prediction_filenames]
-legend.append('Mean of all snapshots')
-legend.append('Mean of 4 and 5')
-# legend.append('Geometric Mean')
-# %%
-pred_list = [load_pickle(name).flatten() for name in prediction_filenames]
-pred_list.append(np.log10(linear_mean))
-linear_mean_last2 = np.mean(np.power(10, predictions[-2:]), axis=0)
-pred_list.append(np.log10(linear_mean_last2))
 
-# pred_list.append(np.log10(geometric_mean))
-plot_gaussian_error(energy_te_limato, pred_list, 'Snapshot_Ensamble_5epochs',
-                    fig_folder='output_data/pictures/energy_reconstruction', legend_list=legend, num_bins=10,
+to_draw_list = [predictions[-2], predictions[-1], ensambels[1]]
+legend = ['Snapshot epoch 10', 'Snapshot epoch 11', 'Ensamble of epoch 10 and 11', 'Current State-of-the-Art']
+plot_gaussian_error_2(energy_te_limato, to_draw_list, 'Snapshot Ensamble 11 Epochs',
+                      fig_folder=folder_fig, legend_list=legend, num_bins=10,
                     do_show=False)
 
-# %%
-print([f'snapshot epoch {name[-1]}' for name in prediction_filenames])
-
-# %%
-legend.append('Cutting Edge Technology')
-print(legend)
 
 # %%
 
-losses = [np.sum(np.power(pred - energy_te_limato, 2)) for pred in pred_list]
-print(losses)
+
 # %%
 import seaborn as sns
 
