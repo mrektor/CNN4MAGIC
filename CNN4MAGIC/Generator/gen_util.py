@@ -240,8 +240,8 @@ def load_generators_diffuse_point(batch_size,
                                   want_golden=False,
                                   want_energy=False,
                                   want_position=False,
-                                  folder_diffuse='/home/emariott/deepmagic/data_interpolated/diffuse',
-                                  folder_point='/home/emariott/deepmagic/data_interpolated/point_like',
+                                  folder_diffuse='/data4T/data_processed/diffuse',
+                                  folder_point='/data4T/data_processed/point_like',
                                   ):
     # % Load df and complement Diffuse
     filepath_df_diffuse = '/home/emariott/deepmagic/data_interpolated/diffuse_complementary/diffuse_df.pkl'
@@ -264,10 +264,10 @@ def load_generators_diffuse_point(batch_size,
     if want_golden:
         # % Select the golden dataset
         golden_df_diffuse = big_df_diffuse[
-            (big_df_diffuse['impact_M1'] < 11000) &
-            (big_df_diffuse['impact_M2'] < 11000) &
-            (big_df_diffuse['impact_M1'] > 5000) &
-            (big_df_diffuse['impact_M2'] > 5000) &
+            # (big_df_diffuse['impact_M1'] < 11000) &
+            # (big_df_diffuse['impact_M2'] < 11000) &
+            # (big_df_diffuse['impact_M1'] > 5000) &
+            # (big_df_diffuse['impact_M2'] > 5000) &
             (big_df_diffuse['intensity_M1'] > 100) &
             (big_df_diffuse['intensity_M2'] > 100) &
             (big_df_diffuse['leakage2_pixel_M1'] < 0.2) &
@@ -275,10 +275,10 @@ def load_generators_diffuse_point(batch_size,
             ]
 
         golden_df_point = big_df_point[
-            (big_df_point['impact_M1'] < 11000) &
-            (big_df_point['impact_M2'] < 11000) &
-            (big_df_point['impact_M1'] > 5000) &
-            (big_df_point['impact_M2'] > 5000) &
+            # (big_df_point['impact_M1'] < 11000) &
+            # (big_df_point['impact_M2'] < 11000) &
+            # (big_df_point['impact_M1'] > 5000) &
+            # (big_df_point['impact_M2'] > 5000) &
             (big_df_point['intensity_M1'] > 100) &
             (big_df_point['intensity_M2'] > 100) &
             (big_df_point['leakage2_pixel_M1'] < 0.2) &
@@ -292,7 +292,7 @@ def load_generators_diffuse_point(batch_size,
         ids_point = big_df_point['ID'].values
 
     partition = dict()
-    frac_train = 0.70
+    frac_train = 0.75
     num_files = len(ids_diffuse)
     partition['train'] = ids_diffuse[:int(num_files * frac_train)]
     partition['validation'] = ids_diffuse[int(num_files * frac_train):]

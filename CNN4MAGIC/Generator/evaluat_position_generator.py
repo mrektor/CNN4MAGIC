@@ -27,15 +27,17 @@ point_gn, energy_te = load_point_generator(batch_size=BATCH_SIZE, want_energy=Tr
 energy_te = np.array(energy_te)
 energy_te_limato = energy_te[:len(point_gn) * BATCH_SIZE]
 
-# % Plot this resolution
-# %%
-plot_angular_resolution(position_te_limato, position_prediction, energy_te_limato, net_name=net_name + ' POINT-LIKE',
-                        fig_folder='/home/emariott/deepmagic/CNN4MAGIC/Generator/position_pic')
-# %%
+# %
 import pickle
 
 with open('/home/emariott/deepmagic/CNN4MAGIC/Generator/position_predictions/pos_pred' + net_name + '.pkl', 'wb') as f:
     pickle.dump(position_prediction, f)
+
+# % Plot this resolution
+# %
+plot_angular_resolution(position_te_limato, position_prediction, energy_te_limato, net_name=net_name + ' POINT-LIKE',
+                        fig_folder='/home/emariott/deepmagic/CNN4MAGIC/Generator/position_pic')
+
 # %%
 from CNN4MAGIC.CNN_Models.BigData.utils import bin_data_mask, compute_theta
 import matplotlib.pyplot as plt

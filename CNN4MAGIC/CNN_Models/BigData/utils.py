@@ -10,7 +10,6 @@ import tensorflow as tf
 from keras.callbacks import ModelCheckpoint, EarlyStopping, TensorBoard, ReduceLROnPlateau, TerminateOnNaN
 from matplotlib.colors import PowerNorm
 from scipy.stats import norm
-from sklearn.mixture import GaussianMixture
 
 
 def load_magic_data(logx=False, energy_th=0):
@@ -233,7 +232,7 @@ def compute_bin_gaussian_error(y_true, y_pred, net_name, num_bins=10, plot=True,
     :return: bins_mu, bins_sigma, bins_mean_value
     '''
 
-    gaussian = GaussianMixture(n_components=1)
+    # gaussian = GaussianMixture(n_components=1)
     bins = np.linspace(1, max(y_true), num_bins)
 
     bins_mu = np.zeros(num_bins - 1)
@@ -255,9 +254,17 @@ def compute_bin_gaussian_error(y_true, y_pred, net_name, num_bins=10, plot=True,
             np.logical_and(error_pure < np.percentile(error_pure, 95), error_pure > np.percentile(error_pure, 5))]
         error = error_subset[:, np.newaxis]  # Add a new axis just for interface with Gaussian Mixture
 
-        gaussian.fit(error)
-        mu = gaussian.means_
-        sigma = np.sqrt(gaussian.covariances_)
+        # gaussian.fit(error)
+        # mu = gaussian.means_
+        # sigma = np.sqrt(gaussian.covariances_)
+
+        # Error sigma as collecting 68% of data
+        mu = np.sum(error)
+        up = np.percentile(error, 84)  # 100 - (100-68)/2
+        low = np.percentile(error, 16)  # (100-68)/2
+        sigma = (up - low) / 2
+
+
         bins_mu[i] = mu
         bins_sigma[i] = sigma
         bins_median_value[i] = np.sqrt([bins[i] * bins[i + 1]])

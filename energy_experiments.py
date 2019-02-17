@@ -10,14 +10,15 @@ BATCH_SIZE = 128
 
 # Load the data
 train_gn, val_gn, test_gn, energy = load_generators_diffuse_point(batch_size=BATCH_SIZE,
-                                                                  want_golden=False,
+                                                                  want_golden=True,
                                                                   want_energy=True)
 
 # Load the model
 print('Loading the Neural Network...')
 model = MobileNetV2_2dense_energy(pretrained=True, drop=False, freeze_cnn=False)
-model.load_weights('output_data/snapshots/MobileNetV2_2dense_energy_snap_whole_2019-02-08_14-59-54-Best.h5')
-net_name = 'MobileNetV2_2dense_energy_snap_whole_2'
+model.load_weights(
+    '/home/emariott/deepmagic/output_data/snapshots/MobileNetV2_2dense_energy_snap_whole_2_2019-02-12_14-59-08-4.h5')
+net_name = 'MobileNetV2_2dense_energy_snap_whole_11'
 
 # Train
 # result, y_pred = superconvergence_training(model=model, net_name=net_name,
