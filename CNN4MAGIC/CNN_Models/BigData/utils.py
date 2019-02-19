@@ -260,7 +260,7 @@ def compute_bin_gaussian_error(y_true, y_pred, net_name, num_bins=10, plot=True,
         # sigma = np.sqrt(gaussian.covariances_)
 
         # Error sigma as collecting 68% of data
-        mu = np.sum(error_pure)
+        mu = np.percentile(error_pure, 50)
         up = np.percentile(error_pure, 84)  # 100 - (100-68)/2
         low = np.percentile(error_pure, 16)  # (100-68)/2
         sigma = (up - low) / 2

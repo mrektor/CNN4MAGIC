@@ -64,7 +64,29 @@ def magic_plot_time(filename, idx):
 
 # %%
 m1, m2 = filenames[0]
+print(m1, m2)
 res = stereo_interp_from_root((m1, m2))
+
+# %%
+print(m1, m1[55:70])
+# %%
+files_m1_npy = glob(f'/ssdraptor/magic_data/data_processed/diffuse/*{m1[55:69]}*.npy')
+print(len(files_m1_npy))
+import numpy as np
+
+npy_files = [np.load(file) for file in files_m1_npy]
+
+# %%
+print(res['M1_interp'].shape)
+# %%
+from keras.models import load_model
+
+model = load_model('/home/emariott/deepmagic/CNN4MAGIC/Generator/checkpoints/MobileNetV2_4dense_position-big-2.hdf5')
+# %%
+single = npy_files[0]
+print(single[np.newaxis].shape)
+# %%
+pos_pred = model.predict_on_batch(single[np.newaxis])
 
 
 # %%
@@ -104,8 +126,38 @@ def plot_interp(idx, plot_position=False):
 idx_to_plot = 47
 plot_interp(idx_to_plot)
 # %%
+idx_to_plot = 0
 magic_plot_phe(m1, idx_to_plot)
-magic_plot_phe(m2, idx_to_plot)
+
+# %%
+plt.figure()
+plt.imshow(single[:, :, 3], origin='lower')
+plt.savefig(f'{folder_pic}/event_0_speriamo.png')
+plt.close()
+
+# %%
+print(res.keys())
+# %%
+print(res['corsika_event_number_1'])
+print(sorted(files_m1_npy))
+
+# %%
+
+i2 = res['M2_interp']
+i1 = res['M1_interp']
+print(i1.shape, i2.shape)
+i12 = np.concatenate((i1, i2), axis=1)
+print(i12.shape)
+
+# %%
+plt.figure()
+plt.imshow(i12[20, 3, :, :], origin='lower')
+plt.savefig(f'{folder_pic}/event_res_20_speriamo.png')
+plt.close()
+
+# %%
+magic_plot_phe(m2, 0)
+#%%
 magic_plot_time(m1, idx_to_plot)
 magic_plot_time(m2, idx_to_plot)
 

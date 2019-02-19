@@ -331,8 +331,11 @@ def MobileNetV2_2dense_energy(pretrained=False, drop=False, freeze_cnn=False):
     return model1
 
 
-def MobileNetV2_4dense_energy(pretrained=False, drop=False, freeze_cnn=False):
-    input_img = Input(shape=(67, 68, 4), name='m1')
+def MobileNetV2_4dense_energy(pretrained=False, drop=False, freeze_cnn=False, input=None):
+    if input is not None:
+        input_img = Input(shape=(67, 68, 4), name='m1')
+    else:
+        input_img = input
 
     if pretrained:
         path = '/home/emariott/deepmagic/CNN4MAGIC/Generator/checkpoints/MobileNetV2_4dense_position-big-2.hdf5'
