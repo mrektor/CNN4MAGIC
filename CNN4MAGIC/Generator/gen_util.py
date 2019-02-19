@@ -240,8 +240,8 @@ def load_generators_diffuse_point(batch_size,
                                   want_golden=False,
                                   want_energy=False,
                                   want_position=False,
-                                  folder_diffuse='/data4T/data_processed/diffuse',
-                                  folder_point='/data4T/data_processed/point_like',
+                                  folder_diffuse='/ssdraptor/magic_data/data_processed//diffuse',
+                                  folder_point='/ssdraptor/magic_data/data_processed/point_like',
                                   ):
     # % Load df and complement Diffuse
     filepath_df_diffuse = '/home/emariott/deepmagic/data_interpolated/diffuse_complementary/diffuse_df.pkl'

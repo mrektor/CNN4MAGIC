@@ -86,18 +86,21 @@ def snapshot_training(model, train_gn, val_gn, test_gn, net_name, max_lr=0.01, e
                                  callbacks=callbacks,
                                  use_multiprocessing=False,
                                  workers=3)
-
+    print('Training completed')
     result_path = f'output_data/loss_history/{net_name_time}.pkl'
     with open(result_path, 'wb') as f:
         pickle.dump(result, f)
+    print('Result saved')
 
     y_pred_test = model.predict_generator(generator=test_gn,
                                           verbose=1,
                                           use_multiprocessing=False,
                                           workers=3)
 
+    print('Saving predictions...')
     reconstructions_path = f'output_data/reconstructions/{net_name_time}.pkl'
     with open(reconstructions_path, 'wb') as f:
         pickle.dump(y_pred_test, f)
+    print('saved')
 
     return result, y_pred_test

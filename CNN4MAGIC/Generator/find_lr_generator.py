@@ -1,28 +1,19 @@
 from __future__ import print_function
 
-import glob
-import os
-import random
-
-from tqdm import tqdm
-
 from CNN4MAGIC.CNN_Models.BigData.clr import LRFinder
-from CNN4MAGIC.Generator.keras_generator import MAGIC_Generator
-from CNN4MAGIC.Generator.models import SE_InceptionV3_DoubleDense_energy
+from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
+from CNN4MAGIC.Generator.models import MobileNetV2_4dense_position
 
-from CNN4MAGIC.Generator.gen_util import load_data_generators
-from CNN4MAGIC.Generator.models import MobileNetV2_energy
+net_name = 'MobileNetV2_energy_4dense_Batch2128'
 
-import pickle as pkl
-
-net_name = 'MobileNetV2_energy_Batch256'
-
-
-BATCH_SIZE = 256
+BATCH_SIZE = 128
 nb_epoch = 1  # Only finding lr
 
-train_gn, val_gn, test_gn, energy_te = load_data_generators(batch_size=BATCH_SIZE, want_energy=True)
-
+train_gn, val_gn, test_gn, energy = load_generators_diffuse_point(batch_size=BATCH_SIZE,
+                                                                  want_golden=True,
+                                                                  want_position=True,
+                                                                  folder_diffuse='/ssdraptor/magic_data/data_processed/diffuse',
+                                                                  folder_point='/ssdraptor/magic_data/data_processed/point_like')
 num_samples = len(val_gn)*BATCH_SIZE
 # Exponential lr finder
 # USE THIS FOR A LARGE RANGE SEARCH
@@ -47,9 +38,9 @@ lr_finder = LRFinder(num_samples, BATCH_SIZE, minimum_lr=1e-4, maximum_lr=10,
 
 # For training, the auxilary branch must be used to correctly train NASNet
 
-# %% Load Model
+# %%Load Model
 print('Loading the Neural Network...')
-model = MobileNetV2_energy()
+model = MobileNetV2_4dense_position()
 model.compile(optimizer='sgd', loss='mse')
 model.summary()
 
