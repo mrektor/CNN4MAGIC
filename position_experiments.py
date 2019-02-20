@@ -6,7 +6,7 @@ from CNN4MAGIC.Generator.models import MobileNetV2_4dense_position
 from CNN4MAGIC.Generator.training_util import snapshot_training
 from CNN4MAGIC.CNN_Models.BigData.utils import plot_angular_resolution
 
-BATCH_SIZE = 128
+BATCH_SIZE = 512
 
 # Load the data
 train_gn, val_gn, test_gn, position = load_generators_diffuse_point(
@@ -34,7 +34,7 @@ net_name = 'MobileNetV2_4dense_position_beast'
 result, position_prediction = snapshot_training(model=model,
                                                 train_gn=train_gn, val_gn=val_gn, test_gn=test_gn,
                                                 net_name=net_name,
-                                                max_lr=0.001,
+                                                max_lr=0.005,
                                                 epochs=30,
                                                 snapshot_number=10
                                                 )

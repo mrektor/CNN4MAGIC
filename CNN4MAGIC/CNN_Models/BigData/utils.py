@@ -265,7 +265,6 @@ def compute_bin_gaussian_error(y_true, y_pred, net_name, num_bins=10, plot=True,
         low = np.percentile(error_pure, 16)  # (100-68)/2
         sigma = (up - low) / 2
 
-
         bins_mu[i] = mu
         bins_sigma[i] = sigma
         bins_median_value[i] = np.sqrt([bins[i] * bins[i + 1]])
@@ -396,7 +395,7 @@ def bin_data_mask(data, num_bins, bins=None):
     return binned_values, bins, bins_masks
 
 
-def compute_theta(pos_true, pos_pred, pos_in_mm=True, folder='', net_name='', plot=True):
+def compute_theta(pos_true, pos_pred, en_bin, pos_in_mm=True, folder='', net_name='', plot=True):
     if pos_in_mm:
         pos_true = pos_true * 0.00337  # in deg
         pos_pred = pos_pred * 0.00337  # in deg
@@ -412,14 +411,15 @@ def compute_theta(pos_true, pos_pred, pos_in_mm=True, folder='', net_name='', pl
         return angular_resolution
 
     plt.figure()
-    plt.hist(theta_sq, bins=300, log=True)
+    plt.hist(theta_sq, bins=80, log=True)
+    plt.xlim([0, 0.4])
     plt.axvline(x=angular_resolution, color='darkorange', linestyle='--')
-    plt.title(net_name + ' Direction Reconstruction')
+    plt.title(f'{net_name} Direction Reconstruction. Energy {en_bin}')
     plt.xlabel(r'$\theta^2$')
     plt.ylabel('Counts')
     plt.legend(['Angular Resolution: {:02e}'.format(angular_resolution)])
-    plt.savefig(folder + '/' + net_name + '_angular.png')
-    plt.savefig(folder + '/' + net_name + '_angular.eps')
+    plt.savefig(folder + '/' + net_name + '_angular_' + str(en_bin) + '.png')
+    plt.savefig(folder + '/' + net_name + '_angular' + str(en_bin) + '.eps')
 
     return angular_resolution
 
@@ -435,7 +435,7 @@ def plot_angular_resolution(position_true, position_prediction, energy_true,
         bin_pos = position_true[mask]
         bin_pred_pos = position_prediction[mask]
         bin_value = np.sqrt(bins[i] * bins[i + 1])
-        res = compute_theta(bin_pos, bin_pred_pos, plot=True,
+        res = compute_theta(bin_pos, bin_pred_pos, en_bin=bin_value, plot=True,
                             folder='/home/emariott/deepmagic/output_data/pictures/direction_reconstruction/histograms')
         resolutions.append(res)
         bin_medians.append(bin_value)

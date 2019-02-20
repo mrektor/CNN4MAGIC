@@ -134,7 +134,7 @@ def NASNet_mobile_position():
                                                    pooling='avg')
 
     x = model.layers[-1].output
-    x = Dense(2, name='position', kernel_regularizer='l2')(x)
+    x = Dense(2, name='position')(x)
     model1 = Model(inputs=input_img, output=x)
     return model1
 
