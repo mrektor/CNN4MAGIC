@@ -50,5 +50,5 @@ train_gn, val_gn, test_gn, energy = load_generators_diffuse_point(
 
 position_te_limato = position[:position_prediction.shape[0], :]
 energy_te_limato = energy[:position_prediction.shape[0]]
-
+# %%
 plot_angular_resolution(position_te_limato, position_prediction, energy_te_limato, net_name=net_name)

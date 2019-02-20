@@ -219,8 +219,11 @@ def single_DenseNet_piccina():
     return model1
 
 
-def MobileNetV2_4dense_position():
-    input_img = Input(shape=(67, 68, 4), name='m1')
+def MobileNetV2_4dense_position(input=None):
+    if input is None:
+        input_img = Input(shape=(67, 68, 4), name='m1')
+    else:
+        input_img = input
 
     model = MobileNetV2(alpha=1, depth_multiplier=1, include_top=False,
                         weights=None, input_tensor=input_img, pooling='avg')

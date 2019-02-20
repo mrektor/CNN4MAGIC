@@ -31,6 +31,7 @@ def superconvergence_training(model, train_gn, val_gn, test_gn, net_name,
                               patience=4,
                               model_checkpoint=1):
     model.compile(optimizer='sgd', loss='mse', metrics=['mae', 'mape'])
+    model.summary()
 
     nowstr = time.strftime('%Y-%m-%d_%H-%M-%S')
     net_name_time = f"{net_name}_{nowstr}"
@@ -43,13 +44,13 @@ def superconvergence_training(model, train_gn, val_gn, test_gn, net_name,
                      batch_size=batch_size)
 
     stop = EarlyStopping(patience=patience)
-    tg = get_telegram_callback(net_name)
+    # tg = get_telegram_callback(net_name)
 
     result = model.fit_generator(generator=train_gn,
                                  validation_data=val_gn,
                                  epochs=epochs,
                                  verbose=1,
-                                 callbacks=[check, clr, stop, tg],
+                                 callbacks=[check, clr, stop],  # tg],
                                  use_multiprocessing=False,
                                  workers=3)
 

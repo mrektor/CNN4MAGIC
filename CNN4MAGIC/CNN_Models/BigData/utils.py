@@ -412,7 +412,7 @@ def compute_theta(pos_true, pos_pred, pos_in_mm=True, folder='', net_name='', pl
         return angular_resolution
 
     plt.figure()
-    plt.hist(theta_sq, bins=1000)
+    plt.hist(theta_sq, bins=300, log=True)
     plt.axvline(x=angular_resolution, color='darkorange', linestyle='--')
     plt.title(net_name + ' Direction Reconstruction')
     plt.xlabel(r'$\theta^2$')
@@ -435,11 +435,12 @@ def plot_angular_resolution(position_true, position_prediction, energy_true,
         bin_pos = position_true[mask]
         bin_pred_pos = position_prediction[mask]
         bin_value = np.sqrt(bins[i] * bins[i + 1])
-        res = compute_theta(bin_pos, bin_pred_pos, plot=False)
+        res = compute_theta(bin_pos, bin_pred_pos, plot=True,
+                            folder='/home/emariott/deepmagic/output_data/pictures/direction_reconstruction/histograms')
         resolutions.append(res)
         bin_medians.append(bin_value)
 
-    state_of_the_art_theta = np.array([0.129, 0.148, 0.120, 0.097, 0.083, 0.082, 0.077, 0.068, 0.061, 0.059, 0.055])
+    state_of_the_art_theta = np.array([0.157, 0.135, 0.108, 0.095, 0.081, 0.073, 0.071, 0.067, 0.065, 0.062, 0.056])
     state_of_the_art_energy = np.array([95, 150, 230, 378, 599, 949, 1504, 2383, 3777, 5986, 9487])
 
     plt.figure()
