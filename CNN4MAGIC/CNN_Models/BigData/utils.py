@@ -407,7 +407,7 @@ def compute_theta(pos_true, pos_pred, pos_in_mm=True, folder='', net_name='', pl
     hist_theta_sq, bins = np.histogram(theta_sq, bins=num_events)
     hist_theta_sq_normed = hist_theta_sq / float(num_events)
     cumsum_hist = np.cumsum(hist_theta_sq_normed)
-    angular_resolution = bins[np.where(cumsum_hist > 0.68)[0][0]]
+    angular_resolution = np.sqrt(bins[np.where(cumsum_hist > 0.68)[0][0]])
     if not plot:
         return angular_resolution
 
@@ -425,7 +425,8 @@ def compute_theta(pos_true, pos_pred, pos_in_mm=True, folder='', net_name='', pl
 
 
 def plot_angular_resolution(position_true, position_prediction, energy_true,
-                            fig_folder='/data/code/CNN4MAGIC/Generator/position_pic', net_name=''):
+                            fig_folder='/home/emariott/deepmagic/output_data/pictures/direction_reconstruction',
+                            net_name=''):
     binned_values, bins, bins_masks = bin_data_mask(energy_true, 11)
     resolutions = []
     bin_medians = []

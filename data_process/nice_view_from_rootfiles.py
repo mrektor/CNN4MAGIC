@@ -130,7 +130,7 @@ def magic_plot_phe_pos(idx, pos_true_x, pos_true_y, pos_reco_x, pos_reco_y, high
         display.highlight_pixels([i for i in range(len(phe_to_view.values))])
     plt.title(f'MAGIC cam Phe signal of event {idx}')
 
-    plt.savefig(f'/home/emariott/deepmagic/data_process/visualisation_pics/pos_01_highlight/magic_camera_{idx}_phe.png')
+    plt.savefig(f'/home/emariott/deepmagic/data_process/visualisation_pics/pos_04_highlight/magic_camera_{idx}_phe.png')
     plt.close()
 
 

@@ -292,7 +292,7 @@ def load_generators_diffuse_point(batch_size,
         ids_point = big_df_point['ID'].values
 
     partition = dict()
-    frac_train = 0.75
+    frac_train = 0.70
     num_files = len(ids_diffuse)
     partition['train'] = ids_diffuse[:int(num_files * frac_train)]
     partition['validation'] = ids_diffuse[int(num_files * frac_train):]
@@ -358,3 +358,4 @@ def load_generators_diffuse_point(batch_size,
 
         position_vect = np.array([position_point[event] for event in partition['test']])
         return train_gn, val_gn, test_gn, position_vect
+
