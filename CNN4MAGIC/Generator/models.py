@@ -127,8 +127,11 @@ def MobileNetV2_energy_doubleDense():
     return model1
 
 
-def NASNet_mobile_position():
-    input_img = Input(shape=(67, 68, 4), name='m1')
+def NASNet_mobile_position(input=None):
+    if input is None:
+        input_img = Input(shape=(67, 68, 4), name='m1')
+    else:
+        input_img = input
 
     model = keras.applications.nasnet.NASNetMobile(include_top=False, weights=None, input_tensor=input_img,
                                                    pooling='avg')

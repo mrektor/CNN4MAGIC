@@ -2,11 +2,11 @@ from __future__ import print_function
 
 from CNN4MAGIC.CNN_Models.BigData.clr import LRFinder
 from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
-from CNN4MAGIC.Generator.models import MobileNetV2_4dense_position
+from CNN4MAGIC.Generator.models import NASNet_mobile_position
 
-net_name = 'MobileNetV2_energy_4dense_Batch2128'
+net_name = 'NASNet_mobile_position_Batch512'
 
-BATCH_SIZE = 128
+BATCH_SIZE = 512
 nb_epoch = 1  # Only finding lr
 
 train_gn, val_gn, test_gn, energy = load_generators_diffuse_point(batch_size=BATCH_SIZE,
@@ -40,7 +40,7 @@ lr_finder = LRFinder(num_samples, BATCH_SIZE, minimum_lr=1e-4, maximum_lr=10,
 
 # %%Load Model
 print('Loading the Neural Network...')
-model = MobileNetV2_4dense_position()
+model = NASNet_mobile_position()
 model.compile(optimizer='sgd', loss='mse')
 model.summary()
 
@@ -50,7 +50,7 @@ result = model.fit_generator(generator=val_gn,
                              epochs=1,
                              verbose=1,
                              callbacks=[lr_finder],
-                             use_multiprocessing=True,
+                             use_multiprocessing=False,
                              workers=8
                              )
 

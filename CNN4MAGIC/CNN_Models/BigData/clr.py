@@ -420,8 +420,8 @@ class LRFinder(Callback):
         plt.xlabel('learning rate')
         plt.ylabel('loss')
         plt.grid()
-        plt.savefig('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/learning_rates_pics/' + net_name + '_lr_loss.png')
-        plt.savefig('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/learning_rates_pics/' + net_name + '_lr_loss.eps')
+        plt.savefig('/home/emariott/deepmagic/output_data/lr_findings/' + net_name + '_lr_loss.png')
+        # plt.savefig('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/learning_rates_pics/' + net_name + '_lr_loss.eps')
 
         plt.show()
 
@@ -430,8 +430,8 @@ class LRFinder(Callback):
         plt.xlabel('learning rate')
         plt.ylabel('loss on LOG')
         plt.grid()
-        plt.savefig('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/learning_rates_pics/' + net_name + '_lr_loss.png')
-        plt.savefig('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/learning_rates_pics/' + net_name + '_lr_loss.eps')
+        plt.savefig('/home/emariott/deepmagic/output_data/lr_findings/' + net_name + '_lr_loss.png')
+        # plt.savefig('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/learning_rates_pics/' + net_name + '_lr_loss.eps')
 
         plt.show()
 

@@ -96,7 +96,7 @@ def snapshot_training(model, train_gn, val_gn, test_gn, net_name, max_lr=0.01, e
     y_pred_test = model.predict_generator(generator=test_gn,
                                           verbose=1,
                                           use_multiprocessing=False,
-                                          workers=3)
+                                          workers=8)
 
     print('Saving predictions...')
     reconstructions_path = f'output_data/reconstructions/{net_name_time}.pkl'

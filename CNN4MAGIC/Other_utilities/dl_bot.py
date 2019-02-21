@@ -244,6 +244,8 @@ class DLBot(object):
         plt.ylabel('Loss')
         ax.legend(legend_keys)
         buffer = BytesIO()
-        fig.savefig(buffer, format='png')
+        # fig.savefig(buffer, format='png')
+        plt.savefig(buffer, format='png')
         buffer.seek(0)
         update.message.reply_photo(buffer)  # Sent image to user
+        plt.close()

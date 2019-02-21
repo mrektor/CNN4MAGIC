@@ -822,7 +822,7 @@ def compute_stuff(phe_df, time_df, only_relevant=False):
     return df2
 
 
-def read_from_root(filename, want_extra=False, pruning=False):
+def read_from_root(filename, want_extra=False, pruning=False, clean=False):
     ARRAY_COLUMNS = {
         'MMcEvt.fEvtNumber': 'corsika_event_number',
         'MMcEvt.fEnergy': 'energy',
@@ -868,6 +868,17 @@ def read_from_root(filename, want_extra=False, pruning=False):
     time = df2['photon_time'].loc[event_idx].unstack(level=-1)
 
     phe = df2['phe'].loc[event_idx].unstack(level=-1)
+
+    if clean:
+        camera_MAGIC = CameraGeometry.from_name('MAGICCamMars')
+        for idx in range(phe.shape[0]):
+            clean = tailcuts_clean(camera_MAGIC,
+                                   phe.iloc[idx, :1039],
+                                   boundary_thresh=10,
+                                   picture_thresh=5,
+                                   min_number_picture_neighbors=2)
+            phe.iloc[idx, :1039][~ clean] = 0.
+            time.iloc[idx, :1039][~ clean] = 0.
 
     # Compute hillas parameters, leakage and other hand-crafted features
     if want_extra:
@@ -1132,11 +1143,11 @@ def stereo_interp_from_root(filenames):
         print('Empty file: ' + filenameM2)
         return None
 
-    df1, extras1, phe1, time1 = read_from_root(filenameM1, want_extra=True, pruning=False)
-    df2, extras2, phe2, time2 = read_from_root(filenameM2, want_extra=True, pruning=False)
+    df1, phe1, time1 = read_from_root(filenameM1, want_extra=False, pruning=False, clean=True)
+    df2, phe2, time2 = read_from_root(filenameM2, want_extra=False, pruning=False, clean=True)
 
     interpolator = InterpolateMagic(15)
-    num_events = df1.shape[0]
+    num_events = phe1.shape[0]
     m1_interp = np.zeros((num_events, 67, 68, 2))
     m2_interp = np.zeros((num_events, 67, 68, 2))
     pos_interp1 = np.zeros((num_events, 2))
@@ -1169,13 +1180,12 @@ def stereo_interp_from_root(filenames):
                                                                              energy=result['energy'],
                                                                              posX1=result['src_X1'],
                                                                              posY1=result['src_Y1'],
-                                                                             filename=filenameM1[-27:-5])
+                                                                             filename=filenameM1[-27:-5],
+                                                                             dump_folder='/ssdraptor/magic_data/data_processed/diffuse_clean_10_5')
 
         with open(
-                '/home/emariott/deepmagic/data_interpolated/complementary_computation_point/' + filenameM1[
-                                                                                                -27:-5] + '.pkl',
-                'wb') as f:
-            pickle.dump((event_idx_list, labels, energy_labels, position_labels, df1, df2, extras1, extras2), f,
+                '/ssdraptor/magic_data/complement/diffuse_clean_10_5/' + filenameM1[-27:-5] + '.pkl', 'wb') as f:
+            pickle.dump((event_idx_list, labels, energy_labels, position_labels, df1, df2), f,
                         protocol=2)
 
         # print(f'Saved {filenameM1[-28:-5]}')
@@ -1198,8 +1208,8 @@ def stereo_interp_from_root(filenames):
 # Load all the filenames
 
 
-fileM1 = glob.glob('/home/emariott/deepmagic/data_root/mc/point_like/*M1*.root')
-fileM2 = glob.glob('/home/emariott/deepmagic/data_root/mc/point_like/*M2*.root')
+fileM1 = glob.glob('/home/emariott/deepmagic/data_root/mc/diffuse/*M1*.root')
+fileM2 = glob.glob('/home/emariott/deepmagic/data_root/mc/diffuse/*M2*.root')
 
 
 def get_pair_match(a, b):
