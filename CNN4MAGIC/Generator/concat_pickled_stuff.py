@@ -4,7 +4,7 @@ import pickle
 from tqdm import tqdm
 
 # %
-filelist = glob.glob('/home/emariott/deepmagic/data_interpolated/complementary_computation_point/*.pkl')
+filelist = glob.glob('/ssdraptor/magic_data/complement/diffuse_clean_6_3punto5/*.pkl')
 
 # %
 print(len(filelist))
@@ -16,11 +16,13 @@ with open(filelist[0], 'rb') as f:
 
 # %%
 import pickle
-
+import pandas as pd
 eventList_total = []
 energy_total = {}
 labels_total = {}
 position_total = {}
+df_big = pd.DataFrame()
+extra_big = pd.DataFrame
 
 for file in tqdm(filelist):
     with open(file, 'rb') as f:
@@ -29,6 +31,8 @@ for file in tqdm(filelist):
     energy_total.update(energy)
     labels_total.update(labels)
     position_total.update(position)
+    # df_big = df_big.append(df1)
+    # extra_big = extra_big.append(extra1)
 
 # %%
 print(len(eventList_total))
@@ -37,7 +41,7 @@ print(len(labels_total.keys()))
 print(len(position_total))
 
 # %%
-with open('/home/emariott/deepmagic/data_interpolated/point_like_complementary/point_complement.pkl', 'wb') as f:
+with open('/ssdraptor/magic_data/complement/diffuse_clean_6_3punto5_complement.pkl', 'wb') as f:
     pickle.dump((eventList_total, labels_total, energy_total, position_total), f)
 # %%
 filename = '/data/magic_data/MC_npy/complementary_dump_total_2.pkl'

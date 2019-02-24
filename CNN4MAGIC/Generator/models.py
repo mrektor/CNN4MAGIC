@@ -254,6 +254,38 @@ def MobileNetV2_4dense_position(input=None):
     return model1
 
 
+def Slim_MobileNetV2_4dense_position(input=None):
+    if input is None:
+        input_img = Input(shape=(67, 68, 4), name='m1')
+    else:
+        input_img = input
+
+    model = MobileNetV2(alpha=1, depth_multiplier=1, include_top=False,
+                        weights=None, input_tensor=input_img, pooling='avg')
+
+    x = model.layers[-1].output
+    x = BatchNormalization()(x)
+    x = Dense(256)(x)
+    x = BatchNormalization()(x)
+    x = LeakyReLU()(x)
+
+    x = Dense(128)(x)
+    x = BatchNormalization()(x)
+    x = LeakyReLU()(x)
+
+    x = Dense(64)(x)
+    x = BatchNormalization()(x)
+    x = LeakyReLU()(x)
+
+    x = Dense(32)(x)
+    x = BatchNormalization()(x)
+    x = LeakyReLU()(x)
+
+    x = Dense(2, name='position')(x)
+    model1 = Model(inputs=input_img, output=x)
+    return model1
+
+
 def MobileNetV2_separation():
     input_img = Input(shape=(67, 68, 4), name='m1m2')
 
@@ -443,3 +475,26 @@ def MobileNetV2_4dense_energy(pretrained=False, drop=False, freeze_cnn=False, in
 #     model1 = Model(inputs=input_img, output=x)
 #     return model1
 
+
+def Slim_MobileNetV2_2dense_position(input=None, alpha=0.1, depth_m=1):
+    if input is None:
+        input_img = Input(shape=(67, 68, 4), name='m1')
+    else:
+        input_img = input
+
+    model = MobileNetV2(alpha=alpha, depth_multiplier=depth_m, include_top=False,
+                        weights=None, input_tensor=input_img, pooling='avg')
+
+    x = model.layers[-1].output
+    x = BatchNormalization()(x)
+    x = Dense(32)(x)
+    x = BatchNormalization()(x)
+    x = LeakyReLU()(x)
+
+    x = Dense(16)(x)
+    x = BatchNormalization()(x)
+    x = LeakyReLU()(x)
+
+    x = Dense(2, name='position')(x)
+    model1 = Model(inputs=input_img, output=x)
+    return model1

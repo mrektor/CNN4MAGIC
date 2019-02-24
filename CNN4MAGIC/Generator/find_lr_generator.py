@@ -2,17 +2,16 @@ from __future__ import print_function
 
 from CNN4MAGIC.CNN_Models.BigData.clr import LRFinder
 from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
-from CNN4MAGIC.Generator.models import NASNet_mobile_position
+from CNN4MAGIC.Generator.models import DenseNet121_position
 
-net_name = 'NASNet_mobile_position_Batch512'
-
-BATCH_SIZE = 512
+# %%
+BATCH_SIZE = 128
 nb_epoch = 1  # Only finding lr
 
 train_gn, val_gn, test_gn, energy = load_generators_diffuse_point(batch_size=BATCH_SIZE,
                                                                   want_golden=True,
                                                                   want_position=True,
-                                                                  folder_diffuse='/ssdraptor/magic_data/data_processed/diffuse',
+                                                                  folder_diffuse='/ssdraptor/magic_data/data_processed/diffuse_6_3punto5',
                                                                   folder_point='/ssdraptor/magic_data/data_processed/point_like')
 num_samples = len(val_gn)*BATCH_SIZE
 # Exponential lr finder
@@ -39,12 +38,14 @@ lr_finder = LRFinder(num_samples, BATCH_SIZE, minimum_lr=1e-4, maximum_lr=10,
 # For training, the auxilary branch must be used to correctly train NASNet
 
 # %%Load Model
+net_name = 'DenseNet121_position_batch128'
+
 print('Loading the Neural Network...')
-model = NASNet_mobile_position()
+model = DenseNet121_position()
 model.compile(optimizer='sgd', loss='mse')
 model.summary()
 
-#%%
+#%
 result = model.fit_generator(generator=val_gn,
                              # validation_data=val_gn,
                              epochs=1,

@@ -240,15 +240,26 @@ def load_generators_diffuse_point(batch_size,
                                   want_golden=False,
                                   want_energy=False,
                                   want_position=False,
-                                  folder_diffuse='/ssdraptor/magic_data/data_processed//diffuse',
-                                  folder_point='/ssdraptor/magic_data/data_processed/point_like',
+                                  clean=False,
+                                  # folder_diffuse='/ssdraptor/magic_data/data_processed/diffuse',
+                                  # folder_point='/ssdraptor/magic_data/data_processed/point_like',
                                   ):
     # % Load df and complement Diffuse
-    filepath_df_diffuse = '/home/emariott/deepmagic/data_interpolated/diffuse_complementary/diffuse_df.pkl'
+    # TODO: change when point will be available
+    folder_point = '/ssdraptor/magic_data/data_processed/point_like',
+
+    if clean:
+        folder_diffuse = '/ssdraptor/magic_data/data_processed/diffuse_6_3punto5'
+        filepath_df_diffuse = '/ssdraptor/magic_data/complement/diffuse_clean_6_3punto5_big_df.pkl'  # '/home/emariott/deepmagic/data_interpolated/diffuse_complementary/diffuse_df.pkl'
+        filepath_complement_diffuse = '/ssdraptor/magic_data/complement/diffuse_clean_6_3punto5_complement.pkl'  # '/ssdraptor/magic_data/complement/diffuse_clean_complement_complement.pkl' #'/home/emariott/deepmagic/data_interpolated/diffuse_complementary/diffuse_complement.pkl'
+    else:
+        folder_diffuse = '/ssdraptor/magic_data/data_processed/diffuse'
+        filepath_df_diffuse = '/home/emariott/deepmagic/data_interpolated/diffuse_complementary/diffuse_df.pkl'
+        filepath_complement_diffuse = '/home/emariott/deepmagic/data_interpolated/diffuse_complementary/diffuse_complement.pkl'
+
     with open(filepath_df_diffuse, 'rb') as f:
         big_df_diffuse = pkl.load(f)
 
-    filepath_complement_diffuse = '/home/emariott/deepmagic/data_interpolated/diffuse_complementary/diffuse_complement.pkl'
     with open(filepath_complement_diffuse, 'rb') as f:
         _, labels_diffuse, energy_diffuse, position_diffuse = pkl.load(f)
 

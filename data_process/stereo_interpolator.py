@@ -866,23 +866,24 @@ def read_from_root(filename, want_extra=False, pruning=False, clean=False):
     event_idx = df['event_id'].values
 
     time = df2['photon_time'].loc[event_idx].unstack(level=-1)
-
+    time_copy = time.copy()
     phe = df2['phe'].loc[event_idx].unstack(level=-1)
+    phe_copy = phe.copy()
 
     if clean:
         camera_MAGIC = CameraGeometry.from_name('MAGICCamMars')
         for idx in range(phe.shape[0]):
             clean = tailcuts_clean(camera_MAGIC,
                                    phe.iloc[idx, :1039],
-                                   boundary_thresh=10,
-                                   picture_thresh=5,
+                                   boundary_thresh=6,
+                                   picture_thresh=3.5,
                                    min_number_picture_neighbors=2)
             phe.iloc[idx, :1039][~ clean] = 0.
             time.iloc[idx, :1039][~ clean] = 0.
 
     # Compute hillas parameters, leakage and other hand-crafted features
     if want_extra:
-        extras = compute_stuff(phe, time, only_relevant=False)
+        extras = compute_stuff(phe_copy, time_copy, only_relevant=False)
 
         # Filter with some criterion
         if pruning:
@@ -1143,8 +1144,8 @@ def stereo_interp_from_root(filenames):
         print('Empty file: ' + filenameM2)
         return None
 
-    df1, phe1, time1 = read_from_root(filenameM1, want_extra=False, pruning=False, clean=True)
-    df2, phe2, time2 = read_from_root(filenameM2, want_extra=False, pruning=False, clean=True)
+    df1, extra1, phe1, time1 = read_from_root(filenameM1, want_extra=True, pruning=False, clean=True)
+    df2, extra2, phe2, time2 = read_from_root(filenameM2, want_extra=True, pruning=False, clean=True)
 
     interpolator = InterpolateMagic(15)
     num_events = phe1.shape[0]
@@ -1181,11 +1182,11 @@ def stereo_interp_from_root(filenames):
                                                                              posX1=result['src_X1'],
                                                                              posY1=result['src_Y1'],
                                                                              filename=filenameM1[-27:-5],
-                                                                             dump_folder='/ssdraptor/magic_data/data_processed/diffuse_clean_10_5')
+                                                                             dump_folder='/ssdraptor/magic_data/data_processed/diffuse_6_3punto5')
 
         with open(
-                '/ssdraptor/magic_data/complement/diffuse_clean_10_5/' + filenameM1[-27:-5] + '.pkl', 'wb') as f:
-            pickle.dump((event_idx_list, labels, energy_labels, position_labels, df1, df2), f,
+                '/ssdraptor/magic_data/complement/diffuse_clean_6_3punto5/' + filenameM1[-27:-5] + '.pkl', 'wb') as f:
+            pickle.dump((event_idx_list, labels, energy_labels, position_labels, df1, df2, extra1, extra2), f,
                         protocol=2)
 
         # print(f'Saved {filenameM1[-28:-5]}')

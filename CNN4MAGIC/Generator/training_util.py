@@ -1,7 +1,7 @@
 import pickle
 import time
 
-from keras.callbacks import ModelCheckpoint, EarlyStopping
+from keras.callbacks import ModelCheckpoint, EarlyStopping, CSVLogger
 
 from ..CNN_Models.BigData.clr import OneCycleLR
 from ..CNN_Models.BigData.snapshot import SnapshotCallbackBuilder
@@ -52,22 +52,22 @@ def superconvergence_training(model, train_gn, val_gn, test_gn, net_name,
                                  verbose=1,
                                  callbacks=[check, clr, stop],  # tg],
                                  use_multiprocessing=False,
-                                 workers=3)
+                                 workers=1)
 
     result_path = f'output_data/loss_history/{net_name_time}.pkl'
     with open(result_path, 'wb') as f:
         pickle.dump(result, f)
 
-    y_pred_test = model.predict_generator(generator=test_gn,
-                                          verbose=1,
-                                          use_multiprocessing=False,
-                                          workers=3)
+    # y_pred_test = model.predict_generator(generator=test_gn,
+    #                                       verbose=1,
+    #                                       use_multiprocessing=False,
+    #                                       workers=1)
 
-    reconstructions_path = f'output_data/reconstructions/{net_name_time}.pkl'
-    with open(reconstructions_path, 'wb') as f:
-        pickle.dump(y_pred_test, f)
+    # reconstructions_path = f'output_data/reconstructions/{net_name_time}.pkl'
+    # with open(reconstructions_path, 'wb') as f:
+    #     pickle.dump(y_pred_test, f)
 
-    return result, y_pred_test
+    return result  # , y_pred_test
 
 
 def snapshot_training(model, train_gn, val_gn, test_gn, net_name, max_lr=0.01, epochs=10, snapshot_number=5):
@@ -79,7 +79,9 @@ def snapshot_training(model, train_gn, val_gn, test_gn, net_name, max_lr=0.01, e
     snapshot = SnapshotCallbackBuilder(epochs, snapshot_number, max_lr)
     callbacks = snapshot.get_callbacks(model_prefix=net_name_time)
     tg = get_telegram_callback(net_name)
+    logger = CSVLogger(f'output_data/csv_logs/{net_name_time}.csv')
     callbacks.append(tg)
+    callbacks.append(logger)
     result = model.fit_generator(generator=train_gn,
                                  validation_data=val_gn,
                                  epochs=epochs,
