@@ -11,10 +11,8 @@ from ..Other_utilities.telegram_bot_callback import TelegramBotCallback
 
 def get_telegram_callback(net_name='', machine='towerino'):
     if machine == 'towerino':
-    # Telegram Bot imports
-    telegram_token = '705094604:AAG8zNsLbcpExd_Ezhhw5TcHmgnZ---5PqM'  # replace TOKEN with your bot's token
-    #  user id is optional, however highly recommended as it limits the access to you alone.
-    elif machine == '24_cores':
+        telegram_token = '705094604:AAG8zNsLbcpExd_Ezhhw5TcHmgnZ---5PqM'  # replace TOKEN with your bot's token
+    elif machine == '24cores':
         telegram_token = '645822793:AAF3cL_mbfq-U1M2WnI5kDPYEt8Jy5kirsg'
 
     telegram_user_id = 30723327  # replace None with your telegram user id (integer):

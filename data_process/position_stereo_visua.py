@@ -101,8 +101,8 @@ def stereo_interp_from_root(filenames):
 # file1 = '/data/mariotti_data/download_magic/MC/GA_M1_za05to35_8_821320_Y_w0.root'
 # file2 = '/data/mariotti_data/download_magic/MC/GA_M2_za05to35_8_821320_Y_w0.root'
 # res = stereo_interp_from_root([file1, file2])
-#
-# # %%
+
+# %%
 # fig, axs = plt.subplots(10, 4, figsize=(6 * 2, 12 * 2))
 # idx = 1
 # for row in range(10):
@@ -124,9 +124,9 @@ def stereo_interp_from_root(filenames):
 #     idx += 1
 #
 # plt.tight_layout()
-# # fig.suptitle('Event ' + str(idx) + ' Energy = ' + str(res['energy'][idx]))
+# fig.suptitle('Event ' + str(idx) + ' Energy = ' + str(res['energy'][idx]))
 # plt.savefig('/data/mariotti_data/data_process/energy_time_pos/new_fig' + str(idx) + '.png')
 # plt.savefig('/data/mariotti_data/data_process/energy_time_pos/fig' + str(idx) + '.eps')
 # plt.savefig('/data/mariotti_data/data_process/energy_time_pos/fig' + str(idx) + '.pdf')
 #
-# # plt.show()
+# plt.show()

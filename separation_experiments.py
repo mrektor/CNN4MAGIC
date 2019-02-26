@@ -5,7 +5,7 @@ from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
 from CNN4MAGIC.Generator.models import MobileNetV2_separation
 from CNN4MAGIC.Generator.training_util import snapshot_training
 
-BATCH_SIZE = 1024
+BATCH_SIZE = 64
 machine = '24cores'
 
 # Load the data
