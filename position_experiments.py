@@ -2,10 +2,10 @@ import matplotlib
 
 matplotlib.use('TkAgg')
 from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
-from CNN4MAGIC.Generator.models import DenseNet121_position
+from CNN4MAGIC.Generator.models import SEDenseNet121_position
 from CNN4MAGIC.Generator.training_util import snapshot_training
 
-BATCH_SIZE = 512
+BATCH_SIZE = 32
 
 # Load the data
 train_gn, val_gn, test_gn, position = load_generators_diffuse_point(
@@ -16,10 +16,10 @@ train_gn, val_gn, test_gn, position = load_generators_diffuse_point(
 
 # Load the model
 print('Loading the Neural Network...')
-model = DenseNet121_position()
+model = SEDenseNet121_position()
 # model.load_weights(
 #     '/home/emariott/deepmagic/output_data/snapshots/MobileNetV2_2dense_energy_snap_whole_11_2019-02-17_01-38-48-5.h5')
-net_name = 'DenseNet121_position_noclean_Gold'
+net_name = 'SEDenseNet121_position_noclean_Gold'
 
 # Train
 # result, y_pred = superconvergence_training(model=model, net_name=net_name,
@@ -32,7 +32,7 @@ net_name = 'DenseNet121_position_noclean_Gold'
 result = snapshot_training(model=model,
                            train_gn=train_gn, val_gn=val_gn, test_gn=test_gn,
                            net_name=net_name,
-                           max_lr=0.01,
+                           max_lr=0.0001,
                            epochs=40,
                            snapshot_number=15
                            )

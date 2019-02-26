@@ -237,21 +237,26 @@ def load_point_generator(batch_size=400,
 
 
 def load_generators_diffuse_point(batch_size,
+                                  machine='24cores',
                                   want_golden=False,
                                   want_energy=False,
                                   want_position=False,
-                                  clean=False,
-                                  # folder_diffuse='/ssdraptor/magic_data/data_processed/diffuse',
-                                  # folder_point='/ssdraptor/magic_data/data_processed/point_like',
+                                  want_label=False,
+                                  clean=False
                                   ):
     # % Load df and complement Diffuse
     # TODO: change when point will be available
     folder_point = '/ssdraptor/magic_data/data_processed/point_like',
 
     if clean:
-        folder_diffuse = '/ssdraptor/magic_data/data_processed/diffuse_6_3punto5'
-        filepath_df_diffuse = '/ssdraptor/magic_data/complement/diffuse_clean_6_3punto5_big_df.pkl'  # '/home/emariott/deepmagic/data_interpolated/diffuse_complementary/diffuse_df.pkl'
-        filepath_complement_diffuse = '/ssdraptor/magic_data/complement/diffuse_clean_6_3punto5_complement.pkl'  # '/ssdraptor/magic_data/complement/diffuse_clean_complement_complement.pkl' #'/home/emariott/deepmagic/data_interpolated/diffuse_complementary/diffuse_complement.pkl'
+        if machine == 'towerino':
+            folder_diffuse = '/ssdraptor/magic_data/data_processed/diffuse_6_3punto5'
+            filepath_df_diffuse = '/ssdraptor/magic_data/complement/diffuse_clean_6_3punto5_big_df.pkl'  # '/home/emariott/deepmagic/data_interpolated/diffuse_complementary/diffuse_df.pkl'
+            filepath_complement_diffuse = '/ssdraptor/magic_data/complement/diffuse_clean_6_3punto5_complement.pkl'  # '/ssdraptor/magic_data/complement/diffuse_clean_complement_complement.pkl' #'/home/emariott/deepmagic/data_interpolated/diffuse_complementary/diffuse_complement.pkl'
+        elif machine == '24cores':
+            folder_diffuse = '/data/magic_data/clean_6_3punto5/montecarlo_diffuse/npy_dump'
+            filepath_df_diffuse = '/data/magic_data/clean_6_3punto5/montecarlo_diffuse/big_df.pkl'
+            filepath_complement_diffuse = '/data/magic_data/clean_6_3punto5/montecarlo_diffuse/diffuse_clean_complement.pkl'  # TODO: add here
     else:
         folder_diffuse = '/ssdraptor/magic_data/data_processed/diffuse'
         filepath_df_diffuse = '/home/emariott/deepmagic/data_interpolated/diffuse_complementary/diffuse_df.pkl'
@@ -261,16 +266,17 @@ def load_generators_diffuse_point(batch_size,
         big_df_diffuse = pkl.load(f)
 
     with open(filepath_complement_diffuse, 'rb') as f:
-        _, labels_diffuse, energy_diffuse, position_diffuse = pkl.load(f)
+        eventList_diffuse, labels_diffuse, energy_diffuse, position_diffuse = pkl.load(f)
 
     # % Load df and complement Point-Like
-    filepath_df_point = '/home/emariott/deepmagic/data_interpolated/point_like_complementary/point_df.pkl'
-    with open(filepath_df_point, 'rb') as f:
-        big_df_point = pkl.load(f)
+    if want_position or want_energy:
+        filepath_df_point = '/home/emariott/deepmagic/data_interpolated/point_like_complementary/point_df.pkl'
+        with open(filepath_df_point, 'rb') as f:
+            big_df_point = pkl.load(f)
 
-    filepath_complement_point = '/home/emariott/deepmagic/data_interpolated/point_like_complementary/point_complement.pkl'
-    with open(filepath_complement_point, 'rb') as f:
-        _, labels_point, energy_point, position_point = pkl.load(f)
+        filepath_complement_point = '/home/emariott/deepmagic/data_interpolated/point_like_complementary/point_complement.pkl'
+        with open(filepath_complement_point, 'rb') as f:
+            _, labels_point, energy_point, position_point = pkl.load(f)
 
     if want_golden:
         # % Select the golden dataset
@@ -300,16 +306,18 @@ def load_generators_diffuse_point(batch_size,
         ids_point = golden_df_point['ID'].values
     else:
         ids_diffuse = big_df_diffuse['ID'].values
-        ids_point = big_df_point['ID'].values
+        if want_energy or want_position:
+            ids_point = big_df_point['ID'].values
 
-    partition = dict()
-    frac_train = 0.70
-    num_files = len(ids_diffuse)
-    partition['train'] = ids_diffuse[:int(num_files * frac_train)]
-    partition['validation'] = ids_diffuse[int(num_files * frac_train):]
-    partition['test'] = ids_point
-    print(
-        f'Training on {int(num_files * frac_train)} Diffuse\n Validating on {num_files-int(num_files * frac_train)} Diffuse\nTesting on {len(ids_point)} Point-Like')
+    if want_energy or want_position:
+        partition = dict()
+        frac_train = 0.70
+        num_files = len(ids_diffuse)
+        partition['train'] = ids_diffuse[:int(num_files * frac_train)]
+        partition['validation'] = ids_diffuse[int(num_files * frac_train):]
+        partition['test'] = ids_point
+        print(
+            f'Training on {int(num_files * frac_train)} Diffuse\n Validating on {num_files-int(num_files * frac_train)} Diffuse\nTesting on {len(ids_point)} Point-Like')
     # %
     if want_energy:
         energy_diffuse = {k: np.log10(v) for k, v in energy_diffuse.items()}  # Convert energies in log10
@@ -370,3 +378,42 @@ def load_generators_diffuse_point(batch_size,
         position_vect = np.array([position_point[event] for event in partition['test']])
         return train_gn, val_gn, test_gn, position_vect
 
+    if want_label:
+        folder_global = '/data/magic_data/clean_6_3punto5/very_big_npy_dump_clean'
+        folder_realdata = '/data/magic_data/clean_6_3punto5/cyn_1ES2037/npy_dump'
+        filepath_complement_realdata = '/data/magic_data/clean_6_3punto5/cyn_1ES2037/cyn_1ES2037_6_3punto5_complement.pkl'
+        with open(filepath_complement_realdata, 'rb') as f:
+            eventList_realdata, labels_realdata, df_big = pkl.load(f)
+
+        eventList_global = eventList_diffuse + eventList_realdata
+        labels_global = dict()
+        labels_global.update(labels_diffuse)
+        labels_global.update(labels_realdata)
+
+        random.seed(42)
+        random.shuffle(eventList_global)
+        partition = dict()
+        num_events = len(eventList_global)
+        frac_tr_te = 0.70
+        partition['train'] = eventList_global[:int(num_events * frac_tr_te)]
+        partition['validation'] = eventList_global[int(num_events * frac_tr_te):]
+
+        print(
+            f'Training on {len(eventList_global[:int(num_events * frac_tr_te)])}\n Validating on {len(eventList_global[int(num_events * frac_tr_te):])}')
+
+        train_gn = MAGIC_Generator(list_IDs=partition['train'],
+                                   labels=labels_global,
+                                   separation=True,
+                                   batch_size=batch_size,
+                                   folder=folder_global
+                                   )
+
+        val_gn = MAGIC_Generator(list_IDs=partition['validation'],
+                                 labels=labels_global,
+                                 separation=True,
+                                 shuffle=False,
+                                 batch_size=batch_size,
+                                 folder=folder_global
+                                 )
+
+        return train_gn, val_gn

@@ -200,7 +200,7 @@ def SEDenseNetImageNet121(input_shape=None,
                           activation='softmax'):
     return SEDenseNet(input_shape, depth=121, nb_dense_block=4, growth_rate=32, nb_filter=64,
                       nb_layers_per_block=[6, 12, 24, 16], bottleneck=bottleneck, reduction=reduction,
-                      dropout_rate=dropout_rate, weight_decay=weight_decay, subsample_initial_block=True,
+                      dropout_rate=dropout_rate, weight_decay=weight_decay, subsample_initial_block=False,
                       include_top=include_top, weights=weights, input_tensor=input_tensor,
                       classes=classes, activation=activation)
 

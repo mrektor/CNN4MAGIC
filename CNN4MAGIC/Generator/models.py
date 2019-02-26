@@ -1,9 +1,10 @@
 import keras
+from keras.applications.inception_v3 import InceptionV3
 from keras.applications.mobilenetv2 import MobileNetV2
 from keras.models import load_model
 
 from CNN4MAGIC.CNN_Models.BigData.cbam_DenseNet import *
-from CNN4MAGIC.CNN_Models.BigData.se_DenseNet import SEDenseNet
+from CNN4MAGIC.CNN_Models.BigData.se_DenseNet import SEDenseNet, SEDenseNetImageNet121
 from CNN4MAGIC.Generator.SqueezeExciteInceptionV3gencopy import SEInceptionV3
 
 
@@ -166,6 +167,28 @@ def DenseNet121_position():
     model1 = Model(inputs=input_img, output=x)
     return model1
 
+
+def SEDenseNet121_position():
+    input_img = Input(shape=(67, 68, 4), name='m1')
+
+    model = SEDenseNetImageNet121(input_tensor=input_img, include_top=False, weights=None)
+
+    x = model.layers[-1].output
+    x = Dense(2, name='position')(x)
+    model1 = Model(inputs=input_img, output=x)
+    return model1
+
+
+def InceptionV3_position():
+    input_img = Input(shape=(67, 68, 4), name='m1')
+
+    model = InceptionV3(include_top=False, weights=None, input_tensor=input_img,
+                        pooling='avg')
+
+    x = model.layers[-1].output
+    x = Dense(2, name='position')(x)
+    model1 = Model(inputs=input_img, output=x)
+    return model1
 
 def CBAM_DenseNet161_Energy():
     input_img = Input(shape=(67, 68, 4), name='m1m2')

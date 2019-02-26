@@ -43,6 +43,6 @@ golden_df = big_df[gold]
 print(golden_df.shape)
 # %%
 
-with open('/ssdraptor/magic_data/complement/diffuse_clean_6_3punto5_big_df.pkl', 'wb') as f:
+with open('/data/magic_data/clean_6_3punto5/montecarlo_diffuse/big_df.pkl', 'wb') as f:
     pickle.dump(big_df, f)
 
