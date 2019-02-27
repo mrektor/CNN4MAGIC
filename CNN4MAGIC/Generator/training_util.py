@@ -6,6 +6,7 @@ from keras.callbacks import ModelCheckpoint, EarlyStopping, CSVLogger
 from ..CNN_Models.BigData.clr import OneCycleLR
 from ..CNN_Models.BigData.snapshot import SnapshotCallbackBuilder
 from ..Other_utilities.dl_bot import DLBot
+from ..Other_utilities.swa import SWA
 from ..Other_utilities.telegram_bot_callback import TelegramBotCallback
 
 
@@ -72,24 +73,38 @@ def superconvergence_training(model, train_gn, val_gn, test_gn, net_name,
 
 
 def snapshot_training(model, train_gn, val_gn, net_name, max_lr=0.01, epochs=10, snapshot_number=5, task='direction',
-                      do_telegram=True, machine='towerino', test_gn=None):
+                      do_telegram=True, machine='towerino', test_gn=None, swa=True):
+    # Compile accordingly
     if task == 'direction':
         model.compile(optimizer='sgd', loss='mse')
     elif task == 'energy':
         model.compile(optimizer='sgd', loss='mse')
     elif task == 'separation':
-        model.compile(optimizer='sgd', loss='binary_crossentropy', metrics=['acc'])
+        model.compile(optimizer='sgd', loss='binary_crossentropy', metrics=['accuracy'])
 
+    # check the model
+    model.summary()
+
+    # Set unique model name based on date-time
     nowstr = time.strftime('%Y-%m-%d_%H-%M-%S')
     net_name_time = f"{net_name}_{nowstr}"
 
+    # Callbacks setup
     snapshot = SnapshotCallbackBuilder(epochs, snapshot_number, max_lr)
     callbacks = snapshot.get_callbacks(model_prefix=net_name_time)
     if do_telegram:
         tg = get_telegram_callback(net_name, machine=machine)
         callbacks.append(tg)
+
+    if swa:
+        filename = f'output_data/swa_models/{net_name_time}.h5'
+        swa_callback = SWA(filename, snapshot_number)
+        callbacks.append(swa_callback)
+
     logger = CSVLogger(f'output_data/csv_logs/{net_name_time}.csv')
     callbacks.append(logger)
+
+    # Training
     if machine == 'towerino':
         result = model.fit_generator(generator=train_gn,
                                      validation_data=val_gn,
@@ -107,10 +122,14 @@ def snapshot_training(model, train_gn, val_gn, net_name, max_lr=0.01, epochs=10,
                                      callbacks=callbacks,
                                      use_multiprocessing=True,
                                      workers=24)
+
+    # Save the result
     result_path = f'output_data/loss_history/{net_name_time}.pkl'
     with open(result_path, 'wb') as f:
         pickle.dump(result, f)
     print('Result saved')
+
+    # Perform Test
     if test_gn is not None:
         y_pred_test = model.predict_generator(generator=test_gn,
                                               verbose=1,

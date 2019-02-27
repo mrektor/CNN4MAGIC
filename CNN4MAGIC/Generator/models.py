@@ -309,10 +309,10 @@ def Slim_MobileNetV2_4dense_position(input=None):
     return model1
 
 
-def MobileNetV2_separation():
+def MobileNetV2_separation(alpha=1.0):
     input_img = Input(shape=(67, 68, 4), name='m1m2')
 
-    model = keras.applications.mobilenet_v2.MobileNetV2(alpha=1.0, depth_multiplier=1, include_top=False,
+    model = keras.applications.mobilenet_v2.MobileNetV2(alpha=alpha, depth_multiplier=1, include_top=False,
                                                         weights=None, input_tensor=input_img, pooling='max')
 
     x = model.layers[-1].output

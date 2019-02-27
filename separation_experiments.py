@@ -18,9 +18,9 @@ train_gn, val_gn = load_generators_diffuse_point(
 
 # Load the model
 print('Loading the Neural Network...')
-model = MobileNetV2_separation()
+model = MobileNetV2_separation(alpha=1.0)
 # model.load_weights(
-#     '/home/emariott/deepmagic/output_data/snapshots/MobileNetV2_2dense_energy_snap_whole_11_2019-02-17_01-38-48-5.h5')
+#     '/data/new_magic/output_data/snapshots/MobileNetV2_separation_clean6_3punto5_Gold_2019-02-26_13-22-24-Best.h5')
 net_name = 'MobileNetV2_separation_clean6_3punto5_Gold'
 
 result = snapshot_training(model=model,
@@ -28,7 +28,8 @@ result = snapshot_training(model=model,
                            net_name=net_name,
                            machine=machine,
                            max_lr=0.05,
-                           epochs=15,
+                           epochs=10,
                            snapshot_number=10,
+                           task='separation',
                            do_telegram=True
                            )
