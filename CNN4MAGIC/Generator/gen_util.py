@@ -242,7 +242,8 @@ def load_generators_diffuse_point(batch_size,
                                   want_energy=False,
                                   want_position=False,
                                   want_label=False,
-                                  clean=False
+                                  clean=False,
+                                  include_time=True
                                   ):
     # % Load df and complement Diffuse
     # TODO: change when point will be available
@@ -327,7 +328,8 @@ def load_generators_diffuse_point(batch_size,
                                    labels=energy_diffuse,
                                    batch_size=batch_size,
                                    folder=folder_diffuse,
-                                   energy=True
+                                   energy=True,
+                                   include_time=include_time
                                    )
 
         val_gn = MAGIC_Generator(list_IDs=partition['validation'],
@@ -335,7 +337,8 @@ def load_generators_diffuse_point(batch_size,
                                  shuffle=False,
                                  batch_size=batch_size,
                                  folder=folder_diffuse,
-                                 energy=True
+                                 energy=True,
+                                 include_time=include_time
                                  )
 
         test_gn = MAGIC_Generator(list_IDs=partition['test'],
@@ -343,7 +346,8 @@ def load_generators_diffuse_point(batch_size,
                                   shuffle=False,
                                   batch_size=batch_size,
                                   folder=folder_point,
-                                  energy=True
+                                  energy=True,
+                                  include_time=include_time
                                   )
         # %
         energy_vect = np.array([energy_point[event] for event in partition['test']])
@@ -356,7 +360,8 @@ def load_generators_diffuse_point(batch_size,
                                    labels=position_diffuse,
                                    position=True,
                                    batch_size=batch_size,
-                                   folder=folder_diffuse
+                                   folder=folder_diffuse,
+                                   include_time=include_time
                                    )
 
         val_gn = MAGIC_Generator(list_IDs=partition['validation'],
@@ -364,7 +369,8 @@ def load_generators_diffuse_point(batch_size,
                                  position=True,
                                  shuffle=False,
                                  batch_size=batch_size,
-                                 folder=folder_diffuse
+                                 folder=folder_diffuse,
+                                 include_time=include_time
                                  )
 
         test_gn = MAGIC_Generator(list_IDs=partition['test'],
@@ -372,7 +378,8 @@ def load_generators_diffuse_point(batch_size,
                                   position=True,
                                   shuffle=False,
                                   batch_size=batch_size,
-                                  folder=folder_point
+                                  folder=folder_point,
+                                  include_time=include_time
                                   )
 
         position_vect = np.array([position_point[event] for event in partition['test']])
@@ -405,7 +412,8 @@ def load_generators_diffuse_point(batch_size,
                                    labels=labels_global,
                                    separation=True,
                                    batch_size=batch_size,
-                                   folder=folder_global
+                                   folder=folder_global,
+                                   include_time=include_time
                                    )
 
         val_gn = MAGIC_Generator(list_IDs=partition['validation'],
@@ -413,7 +421,8 @@ def load_generators_diffuse_point(batch_size,
                                  separation=True,
                                  shuffle=False,
                                  batch_size=batch_size,
-                                 folder=folder_global
+                                 folder=folder_global,
+                                 include_time=include_time
                                  )
 
         return train_gn, val_gn

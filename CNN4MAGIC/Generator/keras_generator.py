@@ -3,23 +3,26 @@ from keras.utils import Sequence
 
 
 class MAGIC_Generator(Sequence):
-    def __init__(self, list_IDs, labels, batch_size=32, dim=(67, 68, 4),
+    def __init__(self, list_IDs, labels, batch_size=32, include_time=True,
                  position=False, separation=False, energy=False,
                  shuffle=True,
                  folder='/data2T/mariotti_data_2/npy_dump/all_npy'):
         'Initialization'
-        self.dim = dim
+        self.include_time = include_time
+        if self.include_time:
+            self.dim = (67, 68, 4)
+        else:
+            self.dim = (67, 68, 2)
         self.batch_size = batch_size
         self.labels = labels
         self.list_IDs = list_IDs
         self.separation = separation
         self.energy = energy
-        # self.n_channels = n_channels
-        # self.n_classes = n_classes
         self.shuffle = shuffle
         self.folder = folder
         self.position = position
         self.on_epoch_end()
+        self.select_phe = np.array([False, True, False, True])
 
     def on_epoch_end(self):
         'Updates indexes after each epoch'
@@ -43,7 +46,10 @@ class MAGIC_Generator(Sequence):
         # Generate data
         for i, ID in enumerate(list_IDs_temp):
             # Store sample
-            X[i,] = np.load(self.folder + '/' + ID + '.npy')
+            if self.include_time:
+                X[i,] = np.load(self.folder + '/' + ID + '.npy')
+            else:
+                X[i,] = np.load(self.folder + '/' + ID + '.npy')[:, :, self.select_phe]
 
             # Store class
             y[i] = self.labels[ID]
