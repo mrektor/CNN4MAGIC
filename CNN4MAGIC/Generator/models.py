@@ -179,6 +179,17 @@ def SEDenseNet121_position():
     return model1
 
 
+def SEDenseNet121_energy():
+    input_img = Input(shape=(67, 68, 4), name='m1')
+
+    model = SEDenseNetImageNet121(input_tensor=input_img, include_top=False, weights=None)
+
+    x = model.layers[-1].output
+    x = Dense(1, name='energy')(x)
+    model1 = Model(inputs=input_img, output=x)
+    return model1
+
+
 def InceptionV3_position():
     input_img = Input(shape=(67, 68, 4), name='m1')
 
@@ -307,6 +318,51 @@ def Slim_MobileNetV2_4dense_position(input=None):
     x = Dense(2, name='position')(x)
     model1 = Model(inputs=input_img, output=x)
     return model1
+
+
+def dummy_cnn():
+    # input_img = Input(shape=(67, 68, 2), name='m1m2')
+
+    input_img = Input(shape=(67, 68, 2), name='m1m2')
+
+    x = Conv2D(80, (5, 5), strides=(2, 2))(input_img)
+    # x = BatchNormalization()(x)
+    x = LeakyReLU()(x)
+
+    # x = Conv2D(50, (1, 1))(x)
+    # x = BatchNormalization()(x)
+    # x = LeakyReLU()(x)
+
+    # x = MaxPooling2D((3, 3))(x)
+    # x = Conv2D(40, (3, 3))(x)
+    # x = BatchNormalization()(x)
+    # x = LeakyReLU()(x)
+
+    # x = MaxPooling2D((3,3))(x)
+    # x = Conv2D(40, (3, 3))(x)
+    # x = BatchNormalization()(x)
+    # x = LeakyReLU()(x)
+    #
+    # x = Conv2D(40, (3, 3))(x)
+    # x = BatchNormalization()(x)
+    # x = LeakyReLU()(x)
+
+    # x = MaxPooling2D((3,3))(x)
+    # x = Conv2D(40, (3,3))(x)
+    # x = BatchNormalization()(x)
+    # x = LeakyReLU()(x)
+
+    x = GlobalMaxPool2D()(x)
+    x = Dense(20)(x)
+    x = BatchNormalization()(x)
+    x = LeakyReLU()(x)
+
+    out = Dense(1, activation='sigmoid')(x)
+
+    model_dummy = Model(input_img, out)
+
+    return model_dummy
+
 
 
 def MobileNetV2_separation(alpha=1.0, include_time=True):

@@ -2,12 +2,12 @@ from __future__ import print_function
 
 from CNN4MAGIC.CNN_Models.BigData.clr import LRFinder
 from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
-from CNN4MAGIC.Generator.models import MobileNetV2_separation
+from CNN4MAGIC.Generator.models import SEDenseNet121_energy
 
 # %%
-BATCH_SIZE = 128
+BATCH_SIZE = 32
 nb_epoch = 1  # Only finding lr
-machine = '24cores'
+machine = 'towerino'
 
 # train_gn, val_gn, test_gn, energy = load_generators_diffuse_point(batch_size=BATCH_SIZE,
 #                                                                   want_golden=True,
@@ -15,19 +15,20 @@ machine = '24cores'
 #                                                                   folder_diffuse='/ssdraptor/magic_data/data_processed/diffuse_6_3punto5',
 #                                                                   folder_point='/ssdraptor/magic_data/data_processed/point_like')
 
-train_gn, val_gn = load_generators_diffuse_point(
+train_gn, val_gn, test_gn, energy = load_generators_diffuse_point(
     batch_size=BATCH_SIZE,
-    want_golden=False,
-    want_label=True,
+    want_golden=True,
+    want_energy=True,
+    want_log_energy=True,
     machine=machine,
-    clean=True,
-    include_time=False)
+    clean=False,
+    include_time=True)
 
 num_samples = len(val_gn)*BATCH_SIZE
 # Exponential lr finder
 # USE THIS FOR A LARGE RANGE SEARCH
 # Uncomment the validation_data flag to reduce speed but get a better idea of the learning rate
-lr_finder = LRFinder(num_samples, BATCH_SIZE, minimum_lr=5e-4, maximum_lr=10,
+lr_finder = LRFinder(num_samples, BATCH_SIZE, minimum_lr=5e-5, maximum_lr=1,
                      lr_scale='exp',
                      # validation_data=({'m1': m1_val, 'm2': m2_val}, energy_val),  # use the validation data for losses
                      validation_sample_rate=5,
@@ -48,12 +49,12 @@ lr_finder = LRFinder(num_samples, BATCH_SIZE, minimum_lr=5e-4, maximum_lr=10,
 # For training, the auxilary branch must be used to correctly train NASNet
 
 # %%Load Model
-net_name = 'MobileNetV2_separation_clean_notime_128'
+net_name = 'SEDenseNet121_energy'
 
 print('Loading the Neural Network...')
-model = MobileNetV2_separation(alpha=1.0, include_time=False)
+model = SEDenseNet121_energy()
 # model.compile(optimizer='sgd', loss='mse')
-model.compile(optimizer='sgd', loss='binary_crossentropy', metrics=['accuracy'])
+model.compile(optimizer='sgd', loss='mse')
 model.summary()
 
 #%
@@ -62,8 +63,8 @@ result = model.fit_generator(generator=val_gn,
                              epochs=1,
                              verbose=1,
                              callbacks=[lr_finder],
-                             use_multiprocessing=True,
-                             workers=24
+                             use_multiprocessing=False,
+                             workers=1
                              )
 
 lr_finder.plot_schedule(clip_beginning=10, clip_endding=5, net_name=net_name)

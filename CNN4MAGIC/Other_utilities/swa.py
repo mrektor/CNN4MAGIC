@@ -34,14 +34,18 @@ class SWA(keras.callbacks.Callback):
                                        (epoch - self.swa_epoch) + self.model.get_weights()[i]) / \
                                       ((epoch - self.swa_epoch) + 1)
 
+            # Ehilà, Salve.
+            # self.model.set_weights(self.swa_weights)
+            # print('Final model parameters set to stochastic weight average.')
+            # self.model.save_weights(self.filepath)
+            # print('Final stochastic averaged weights saved to file.')
+
+
         else:
             pass
 
-
-def on_train_end(self, logs=None):
-    self.model.set_weights(self.swa_weights)
-    print('Final model parameters set to stochastic weight average.')
-    self.model.save_weights(self.filepath)
-
-
-print('Final stochastic averaged weights saved to file.')
+    def on_train_end(self, logs=None):
+        self.model.set_weights(self.swa_weights)
+        print('Final model parameters set to stochastic weight average.')
+        self.model.save_weights(self.filepath)
+        print('Final stochastic averaged weights saved to file.')

@@ -4,14 +4,15 @@ import pickle
 from tqdm import tqdm
 
 # %
-filelist = glob.glob('/data/magic_data/clean_6_3punto5/montecarlo_diffuse/complement/*.pkl')
+filelist = glob.glob('/data/magic_data/clean_6_3punto5/crab/complement/*.pkl')
 
 # %
 print(len(filelist))
 
 # %%
 with open(filelist[0], 'rb') as f:
-    eventList, labels, energy, position, df1, df2, extra1, extra2 = pickle.load(f)
+    eventList, labels = pickle.load(f)
+    # eventList, labels, energy, position, df1, df2, extra1, extra2 = pickle.load(f)
 
 
 # %%
@@ -26,12 +27,13 @@ extra_big = pd.DataFrame
 
 for file in tqdm(filelist):
     with open(file, 'rb') as f:
+        eventList, labels = pickle.load(f)
         # df1, df2, eventList, labels = pickle.load(f)
-        eventList, labels, energy, position, df1, df2, extra1, extra2 = pickle.load(f)
+        # eventList, labels, energy, position, df1, df2, extra1, extra2 = pickle.load(f)
     eventList_total = eventList_total + eventList
-    energy_total.update(energy)
+    # energy_total.update(energy)
     labels_total.update(labels)
-    position_total.update(position)
+    # position_total.update(position)
     # df_big = df_big.append(df1)
     # extra_big = extra_big.append(extra1)
 
@@ -40,6 +42,10 @@ print(len(eventList_total))
 print(len(labels_total.keys()))
 # %%
 print(len(position_total))
+# %%
+with open('/data/magic_data/clean_6_3punto5/crab/events_labels.pkl', 'wb') as f:
+    pickle.dump((eventList_total, labels_total), f)
+
 
 # %%
 with open('/data/magic_data/clean_6_3punto5/montecarlo_diffuse/diffuse_clean_complement.pkl', 'wb') as f:

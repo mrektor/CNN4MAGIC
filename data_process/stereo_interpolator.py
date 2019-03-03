@@ -898,9 +898,13 @@ def read_from_root(filename, want_extra=False, pruning=False, clean=False):
     return df, phe, time
 
 
-def read_from_root_realdata(filename, want_extra=False, pruning=False):
+def read_from_root_realdata(filename, want_extra=False, clean=False, pruning=False):
     ARRAY_COLUMNS = {
-        'MRawEvtHeader.fStereoEvtNumber': 'stereo_evt_number'
+        'MRawEvtHeader.fStereoEvtNumber': 'stereo_evt_number',
+        'MTime.fTime.fMilliSec': 'millisec',
+        'MTime.fNanoSec': 'nanosec',
+        'MRawEvtHeader.fTimeDiff': 'timediff',
+        # 'MRawEvtHeader.fTheta' : 'theta'
     }
 
     PIXEL_COLUMNS = {
@@ -939,6 +943,37 @@ def read_from_root_realdata(filename, want_extra=False, pruning=False):
     # print('unstack phe...')
     # phe = df2['phe'].loc[event_idx].unstack(level=-1)
     phe = df2['phe'].unstack(level=-1)
+
+    # time = df2['photon_time'].loc[event_idx].unstack(level=-1)
+    time_copy = time.copy()
+    # phe = df2['phe'].loc[event_idx].unstack(level=-1)
+    phe_copy = phe.copy()
+
+    if clean:
+        camera_MAGIC = CameraGeometry.from_name('MAGICCamMars')
+        for idx in range(phe.shape[0]):
+            clean = tailcuts_clean(camera_MAGIC,
+                                   phe.iloc[idx, :1039],
+                                   boundary_thresh=6,
+                                   picture_thresh=3.5,
+                                   min_number_picture_neighbors=2)
+            phe.iloc[idx, :1039][~ clean] = 0.
+            time.iloc[idx, :1039][~ clean] = 0.
+
+    # Compute hillas parameters, leakage and other hand-crafted features
+    if want_extra:
+        extras = compute_stuff(phe_copy, time_copy, only_relevant=False)
+
+        # Filter with some criterion
+        if pruning:
+            intensity_ok = extras['intensity'] > 100
+            leak_ok = extras['leakage1_pixel'] < 0.2
+            condition = np.logical_and(intensity_ok, leak_ok)
+
+            return df[condition.values], extras[condition.values], phe[condition.values], time[condition.values]
+
+        return df, extras, phe, time
+
     # print('done.')
 
     return df, phe, time
@@ -971,6 +1006,22 @@ def ROOT_dump_npy(m1, m2, filename, event_idx_list=None, labels=None,
     return event_idx_list, labels
 
 
+def is_zenith_ok(filename, zenith_upper_limit=35):
+    # print('opening root file')
+    f = uproot.open(filename)
+
+    # Zenith check:
+    drive_tree = f['Drive']
+    df_zenith = drive_tree.pandas.df({'MReportDrive.fCurrentZd'})
+    global_zenith = np.mean(df_zenith.values)
+    if global_zenith < zenith_upper_limit:
+        print(f'file {filename} has a Zenith of {global_zenith}, thus ok.')
+        return True
+    else:
+        print(f'file {filename} has a Zenith of {global_zenith}, thus not considering it.')
+        return False
+
+
 def stereo_interp_from_root_realdata(filenames):
     filenameM1 = filenames[0]
     filenameM2 = filenames[1]
@@ -986,9 +1037,16 @@ def stereo_interp_from_root_realdata(filenames):
     if os.stat(filenameM2).st_size == 0:
         print('Empty file: ' + filenameM2)
         return None
+
+    if not is_zenith_ok(filenameM1):
+        return None
+
+    if not is_zenith_ok(filenameM2):
+        return None
+
     bef = time.time()
-    df1, phe1, time1 = read_from_root_realdata(filenameM1)
-    df2, phe2, time2 = read_from_root_realdata(filenameM2)
+    df1, phe1, time1 = read_from_root_realdata(filenameM1, clean=True)
+    df2, phe2, time2 = read_from_root_realdata(filenameM2, clean=True)
     phe1, time1, phe2, time2 = screma_allinea(df1, phe1, time1, df2, phe2, time2)
     bef2 = time.time()
     interpolator = InterpolateMagic(15)
@@ -1005,10 +1063,11 @@ def stereo_interp_from_root_realdata(filenames):
 
     # result = {'M1_interp': m1_interp, 'M2_interp': m2_interp}
 
-    event_idx_list, labels = ROOT_dump_npy(m1=m1_interp, m2=m2_interp, filename=filenameM1[-42:-4])
+    event_idx_list, labels = ROOT_dump_npy(m1=m1_interp, m2=m2_interp, filename=filenameM1[-42:-4],
+                                           dump_folder='/data/magic_data/clean_6_3punto5/crab/npy_dump')
     #
     with open(
-            '/data/magic_data/magic_compl_comp/eventList_labels_' + filenameM1[-42:-4] + '.pkl',
+            '/data/magic_data/clean_6_3punto5/crab/complement/eventList_labels_' + filenameM1[-42:-4] + '.pkl',
             'wb') as f:
         pickle.dump((event_idx_list, labels), f, protocol=2)
     print(filenameM1[-40:-4])
@@ -1209,8 +1268,8 @@ def stereo_interp_from_root(filenames):
 # Load all the filenames
 
 
-fileM1 = glob.glob('/home/emariott/deepmagic/data_root/mc/diffuse/*M1*.root')
-fileM2 = glob.glob('/home/emariott/deepmagic/data_root/mc/diffuse/*M2*.root')
+fileM1 = glob.glob('/data/magic_data/crab/*M1*.root')
+fileM2 = glob.glob('/data/magic_data/crab/*M2*.root')
 
 
 def get_pair_match(a, b):
@@ -1242,7 +1301,7 @@ print('It\'s Bum-Bum time:')
 num_cpus = multiprocessing.cpu_count()
 print(f'start multiprocessing with {num_cpus} jobs')
 print(f'dumping {len(mFull)} files')
-imap_unordered_bar(stereo_interp_from_root, mFull, n_processes=num_cpus)
+imap_unordered_bar(stereo_interp_from_root_realdata, mFull, n_processes=num_cpus)
 # pool = multiprocessing.Pool(processes=num_cpus)
 # pool.map(stereo_interp_from_root, mFull)
 # pool.close()

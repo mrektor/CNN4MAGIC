@@ -24,6 +24,7 @@ def clean_missing_data(data, labels):
 
 def load_data_generators(batch_size=400,
                          want_energy=False, want_position=False, want_labels=False, want_point_test=False,
+                         want_log_energy=True,
                          folder_files='/data/magic_data/very_big_folder'):
     # load IDs
     print('Loading labels...')
@@ -74,7 +75,8 @@ def load_data_generators(batch_size=400,
         print(f'Training on {train_points} data points')
         print(f'Validating on {val_points} data points')
 
-        energy = {k: np.log10(v) for k, v in energy.items()}  # Convert energies in log10
+        if want_log_energy:
+            energy = {k: np.log10(v) for k, v in energy.items()}  # Convert energies in log10
 
         # %% Define the generators
         train_gn = MAGIC_Generator(list_IDs=data['train'],
@@ -193,7 +195,6 @@ def load_point_generator(batch_size=400,
 
     if want_energy:
         # %%
-
         log_energy = {k: np.log10(v) for k, v in energy_total.items()}  # Convert energies in log10
 
         # %% Define the generators
@@ -239,7 +240,7 @@ def load_point_generator(batch_size=400,
 def load_generators_diffuse_point(batch_size,
                                   machine='24cores',
                                   want_golden=False,
-                                  want_energy=False,
+                                  want_energy=False, want_log_energy=True,
                                   want_position=False,
                                   want_label=False,
                                   clean=False,
@@ -247,7 +248,7 @@ def load_generators_diffuse_point(batch_size,
                                   ):
     # % Load df and complement Diffuse
     # TODO: change when point will be available
-    folder_point = '/ssdraptor/magic_data/data_processed/point_like',
+    folder_point = '/data4T/data_processed/point_like'
 
     if clean:
         if machine == 'towerino':
@@ -321,7 +322,8 @@ def load_generators_diffuse_point(batch_size,
             f'Training on {int(num_files * frac_train)} Diffuse\n Validating on {num_files-int(num_files * frac_train)} Diffuse\nTesting on {len(ids_point)} Point-Like')
     # %
     if want_energy:
-        energy_diffuse = {k: np.log10(v) for k, v in energy_diffuse.items()}  # Convert energies in log10
+        if want_log_energy:
+            energy_diffuse = {k: np.log10(v) for k, v in energy_diffuse.items()}  # Convert energies in log10
 
         # % Define the generators
         train_gn = MAGIC_Generator(list_IDs=partition['train'],

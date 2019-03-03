@@ -47,6 +47,7 @@ class MAGIC_Generator(Sequence):
         for i, ID in enumerate(list_IDs_temp):
             # Store sample
             if self.include_time:
+                # print(self.folder + '/' + ID + '.npy')
                 X[i,] = np.load(self.folder + '/' + ID + '.npy')
             else:
                 X[i,] = np.load(self.folder + '/' + ID + '.npy')[:, :, self.select_phe]

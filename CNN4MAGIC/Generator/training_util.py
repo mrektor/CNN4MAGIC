@@ -92,17 +92,21 @@ def snapshot_training(model, train_gn, val_gn, net_name, max_lr=0.01, epochs=10,
     # Callbacks setup
     snapshot = SnapshotCallbackBuilder(epochs, snapshot_number, max_lr)
     callbacks = snapshot.get_callbacks(model_prefix=net_name_time)
+
+    if swa:
+        filename = f'output_data/swa_models/{net_name_time}_SWA.h5'
+        swa_callback = SWA(filename, 4)
+        callbacks.append(swa_callback)
+
+
+    logger = CSVLogger(f'output_data/csv_logs/{net_name_time}.csv')
+    callbacks.append(logger)
+
     if do_telegram:
         tg = get_telegram_callback(net_name, machine=machine)
         callbacks.append(tg)
 
-    if swa:
-        filename = f'output_data/swa_models/{net_name_time}.h5'
-        swa_callback = SWA(filename, snapshot_number)
-        callbacks.append(swa_callback)
 
-    logger = CSVLogger(f'output_data/csv_logs/{net_name_time}.csv')
-    callbacks.append(logger)
 
     # Training
     if machine == 'towerino':
