@@ -247,8 +247,6 @@ def load_generators_diffuse_point(batch_size,
                                   include_time=True
                                   ):
     # % Load df and complement Diffuse
-    # TODO: change when point will be available
-    folder_point = '/data4T/data_processed/point_like'
 
     if clean:
         if machine == 'towerino':
@@ -259,10 +257,28 @@ def load_generators_diffuse_point(batch_size,
             folder_diffuse = '/data/magic_data/clean_6_3punto5/montecarlo_diffuse/npy_dump'
             filepath_df_diffuse = '/data/magic_data/clean_6_3punto5/montecarlo_diffuse/big_df.pkl'
             filepath_complement_diffuse = '/data/magic_data/clean_6_3punto5/montecarlo_diffuse/diffuse_clean_complement.pkl'  # TODO: add here
+
+
     else:
-        folder_diffuse = '/ssdraptor/magic_data/data_processed/diffuse'
-        filepath_df_diffuse = '/home/emariott/deepmagic/data_interpolated/diffuse_complementary/diffuse_df.pkl'
-        filepath_complement_diffuse = '/home/emariott/deepmagic/data_interpolated/diffuse_complementary/diffuse_complement.pkl'
+        if machine == 'towerino':
+            folder_point = '/data4T/data_processed/point_like'
+            folder_diffuse = '/ssdraptor/magic_data/data_processed/diffuse'
+
+            filepath_df_diffuse = '/home/emariott/deepmagic/data_interpolated/diffuse_complementary/diffuse_df.pkl'
+            filepath_complement_diffuse = '/home/emariott/deepmagic/data_interpolated/diffuse_complementary/diffuse_complement.pkl'
+
+            filepath_df_point = '/home/emariott/deepmagic/data_interpolated/point_like_complementary/point_df.pkl'
+            filepath_complement_point = '/home/emariott/deepmagic/data_interpolated/point_like_complementary/point_complement.pkl'
+
+        elif machine == 'titanx':
+            folder_point = '/home/emariott/point_like'
+            folder_diffuse = '/home/emariott/diffuse'
+
+            filepath_df_diffuse = '/home/emariott/complement/diffuse_df.pkl'
+            filepath_complement_diffuse = '/home/emariott/complement/diffuse_complement.pkl'
+
+            filepath_df_point = '/home/emariott/complement/point_df.pkl'
+            filepath_complement_point = '/home/emariott/complement/point_complement.pkl'
 
     with open(filepath_df_diffuse, 'rb') as f:
         big_df_diffuse = pkl.load(f)
@@ -272,11 +288,11 @@ def load_generators_diffuse_point(batch_size,
 
     # % Load df and complement Point-Like
     if want_position or want_energy:
-        filepath_df_point = '/home/emariott/deepmagic/data_interpolated/point_like_complementary/point_df.pkl'
+        # filepath_df_point = '/home/emariott/deepmagic/data_interpolated/point_like_complementary/point_df.pkl'
         with open(filepath_df_point, 'rb') as f:
             big_df_point = pkl.load(f)
 
-        filepath_complement_point = '/home/emariott/deepmagic/data_interpolated/point_like_complementary/point_complement.pkl'
+        # filepath_complement_point = '/home/emariott/deepmagic/data_interpolated/point_like_complementary/point_complement.pkl'
         with open(filepath_complement_point, 'rb') as f:
             _, labels_point, energy_point, position_point = pkl.load(f)
 
@@ -324,6 +340,7 @@ def load_generators_diffuse_point(batch_size,
     if want_energy:
         if want_log_energy:
             energy_diffuse = {k: np.log10(v) for k, v in energy_diffuse.items()}  # Convert energies in log10
+            energy_point = {k: np.log10(v) for k, v in energy_point.items()}
 
         # % Define the generators
         train_gn = MAGIC_Generator(list_IDs=partition['train'],
@@ -353,8 +370,8 @@ def load_generators_diffuse_point(batch_size,
                                   )
         # %
         energy_vect = np.array([energy_point[event] for event in partition['test']])
-        energy_log = np.log10(energy_vect)
-        return train_gn, val_gn, test_gn, energy_log
+
+        return train_gn, val_gn, test_gn, energy_vect
     # %
     if want_position:
         # % Define the generators

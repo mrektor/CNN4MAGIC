@@ -15,6 +15,8 @@ def get_telegram_callback(net_name='', machine='towerino'):
         telegram_token = '705094604:AAG8zNsLbcpExd_Ezhhw5TcHmgnZ---5PqM'  # replace TOKEN with your bot's token
     elif machine == '24cores':
         telegram_token = '645822793:AAF3cL_mbfq-U1M2WnI5kDPYEt8Jy5kirsg'
+    elif machine == 'titanx':
+        telegram_token = '700102120:AAGygKUFB5lCj0X1zdIbLJXrp4WEbY2MgGA'
 
     telegram_user_id = 30723327  # replace None with your telegram user id (integer):
 
@@ -98,7 +100,6 @@ def snapshot_training(model, train_gn, val_gn, net_name, max_lr=0.01, epochs=10,
         swa_callback = SWA(filename, 4)
         callbacks.append(swa_callback)
 
-
     logger = CSVLogger(f'output_data/csv_logs/{net_name_time}.csv')
     callbacks.append(logger)
 
@@ -106,10 +107,8 @@ def snapshot_training(model, train_gn, val_gn, net_name, max_lr=0.01, epochs=10,
         tg = get_telegram_callback(net_name, machine=machine)
         callbacks.append(tg)
 
-
-
     # Training
-    if machine == 'towerino':
+    if machine == 'towerino' or machine == 'titanx':
         result = model.fit_generator(generator=train_gn,
                                      validation_data=val_gn,
                                      epochs=epochs,
