@@ -4,8 +4,8 @@
 from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
 from CNN4MAGIC.Generator.models import SEDenseNet121_energy
 
-BATCH_SIZE = 32
-machine = 'titanx'
+BATCH_SIZE = 128
+machine = 'towerino'
 
 # Load the data
 train_gn, val_gn, test_gn, energy_te = load_generators_diffuse_point(
@@ -15,14 +15,14 @@ train_gn, val_gn, test_gn, energy_te = load_generators_diffuse_point(
     want_energy=True, want_log_energy=True,
     clean=False)
 
-# %%
+# %
 # Load the model
 print('Loading the Neural Network...')
 model = SEDenseNet121_energy()
 model.load_weights(
-    '/home/emariott/software_magic/output_data/swa_models/SEDenseNet121_energy_noclean_Gold_mse_2019-03-02_14-24-30_SWA.h5')
+    '/home/emariott/deepmagic/output_data/snapshots/SEDenseNet121_energy_noclean_Gold_mse_from10epochs_2019-03-04_01-04-17-Best.h5')
 # %%
-net_name = 'SEDenseNet121_energy_noclean_Gold_mse_SWA'
+net_name = 'SEDenseNet121_energy_noclean_Gold_mse_from10_best_valloss0.2329'
 
 # %
 energy_te_limato = energy_te[:len(test_gn) * BATCH_SIZE]
@@ -45,12 +45,12 @@ import pickle
 
 #%
 file = f'output_data/reconstructions/energy_{net_name}.pkl'
-# with open(file, 'wb') as f:
-#     pickle.dump(y_pred, f)
+with open(file, 'wb') as f:
+    pickle.dump(y_pred, f)
 #
 #%
-with open(file, 'rb') as f:
-    y_pred = pickle.load(f)
+# with open(file, 'rb') as f:
+#     y_pred = pickle.load(f)
 
 # %%
 # net_name = 'MobileNetV2_2dense_energy_pretrained'
@@ -62,7 +62,7 @@ with open(file, 'rb') as f:
 # net_name = ''
 from CNN4MAGIC.CNN_Models.BigData.utils import plot_hist2D, plot_gaussian_error
 
-plot_hist2D(energy_te_limato, y_pred, net_name,
+plot_hist2D(energy_te_limato, y_pred, net_name + " no max 5",
             fig_folder='output_data/pictures/energy_reconstruction',
             num_bins=100)
 # %%
@@ -106,12 +106,17 @@ import numpy as np
 print(np.sum(y_pred[y_pred > 5]))
 # %%
 print(np.max(y_pred))
+
+# %%
+y_pred[y_pred > 5] = 5
 # %%
 import matplotlib.pyplot as plt
 
 plt.figure()
 plt.hist2d(energy_te_limato, y_pred.flatten(), bins=400)
-plt.savefig('/home/emariott/software_magic/output_data/pictures/hist2dtest.png')
+plt.savefig('output_data/pictures/hist2dtest.png')
 
 #%%
 plt.show()
+
+#%%

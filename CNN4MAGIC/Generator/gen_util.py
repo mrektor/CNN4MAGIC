@@ -261,7 +261,7 @@ def load_generators_diffuse_point(batch_size,
 
     else:
         if machine == 'towerino':
-            folder_point = '/data4T/data_processed/point_like'
+            folder_point = '/ssdraptor/magic_data/data_processed/point_like'
             folder_diffuse = '/ssdraptor/magic_data/data_processed/diffuse'
 
             filepath_df_diffuse = '/home/emariott/deepmagic/data_interpolated/diffuse_complementary/diffuse_df.pkl'

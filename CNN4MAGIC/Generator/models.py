@@ -179,6 +179,17 @@ def SEDenseNet121_position():
     return model1
 
 
+def SEDenseNet121_position_l2_drop02():
+    input_img = Input(shape=(67, 68, 4), name='m1')
+
+    model = SEDenseNetImageNet121(input_tensor=input_img, include_top=False, weights=None, dropout_rate=0.2)
+
+    x = model.layers[-1].output
+    x = Dense(2, name='position', kernel_regularizer='l2')(x)
+    model1 = Model(inputs=input_img, output=x)
+    return model1
+
+
 def SEDenseNet121_energy():
     input_img = Input(shape=(67, 68, 4), name='m1')
 
@@ -186,6 +197,17 @@ def SEDenseNet121_energy():
 
     x = model.layers[-1].output
     x = Dense(1, name='energy')(x)
+    model1 = Model(inputs=input_img, output=x)
+    return model1
+
+
+def SEDenseNet121_energy_dropout_l2(drop=0.2):
+    input_img = Input(shape=(67, 68, 4), name='m1')
+
+    model = SEDenseNetImageNet121(input_tensor=input_img, include_top=False, weights=None, dropout_rate=drop)
+
+    x = model.layers[-1].output
+    x = Dense(1, name='energy', kernel_regularizer='l2')(x)
     model1 = Model(inputs=input_img, output=x)
     return model1
 
@@ -325,9 +347,9 @@ def dummy_cnn():
 
     input_img = Input(shape=(67, 68, 2), name='m1m2')
 
-    x = Conv2D(80, (5, 5), strides=(2, 2))(input_img)
+    x = Conv2D(4, (20, 20), strides=(2, 2), use_bias=False)(input_img)
     # x = BatchNormalization()(x)
-    x = LeakyReLU()(x)
+    x = ReLU()(x)
 
     # x = Conv2D(50, (1, 1))(x)
     # x = BatchNormalization()(x)
@@ -353,11 +375,11 @@ def dummy_cnn():
     # x = LeakyReLU()(x)
 
     x = GlobalMaxPool2D()(x)
-    x = Dense(20)(x)
-    x = BatchNormalization()(x)
-    x = LeakyReLU()(x)
+    # x = Dense(20)(x)
+    # x = BatchNormalization()(x)
+    # x = LeakyReLU()(x)
 
-    out = Dense(1, activation='sigmoid')(x)
+    out = Dense(1, activation='sigmoid', use_bias=False)(x)
 
     model_dummy = Model(input_img, out)
 
