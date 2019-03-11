@@ -406,7 +406,7 @@ def load_generators_diffuse_point(batch_size,
 
     if want_label:
         folder_global = '/data/magic_data/clean_6_3punto5/very_big_npy_dump_clean'
-        folder_realdata = '/data/magic_data/clean_6_3punto5/cyn_1ES2037/npy_dump'
+        # folder_realdata = '/data/magic_data/clean_6_3punto5/cyn_1ES2037/npy_dump'
         filepath_complement_realdata = '/data/magic_data/clean_6_3punto5/cyn_1ES2037/cyn_1ES2037_6_3punto5_complement.pkl'
         with open(filepath_complement_realdata, 'rb') as f:
             eventList_realdata, labels_realdata, df_big = pkl.load(f)

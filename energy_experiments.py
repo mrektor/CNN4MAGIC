@@ -2,10 +2,10 @@ import matplotlib
 
 matplotlib.use('TkAgg')
 from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
-from CNN4MAGIC.Generator.models import SEDenseNet121_energy_dropout_l2
+from CNN4MAGIC.Generator.models import MobileNetV2_energy
 from CNN4MAGIC.Generator.training_util import snapshot_training
 
-BATCH_SIZE = 32
+BATCH_SIZE = 256
 machine = 'towerino'
 
 # Load the data
@@ -18,15 +18,19 @@ train_gn, val_gn, test_gn, energy = load_generators_diffuse_point(
 
 # Load the model
 print('Loading the Neural Network...')
-model = SEDenseNet121_energy_dropout_l2(drop=0)
+model = MobileNetV2_energy(alpha=2)
+net_name = 'MobileNetV2_energy_alpha2_l2'
+# model = SEDenseNet121_energy_dropout_l2(drop=0)
 # model.load_weights(
 #     'output_data/snapshots/SEDenseNet121_position_noclean_Gold_fromEpoch35_2019-03-04_17-03-30-Best.h5')
-net_name = 'SEDenseNet121_energy_dropout_l2'
+# net_name = 'SEDenseNet121_energy_dropout_l2'
+
+
 
 result = snapshot_training(model=model,
                            train_gn=train_gn, val_gn=val_gn, test_gn=test_gn,
                            net_name=net_name,
-                           max_lr=0.003,
+                           max_lr=0.0008,
                            epochs=20,
                            snapshot_number=15,
                            task='energy',

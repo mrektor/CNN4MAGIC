@@ -2,10 +2,10 @@ from __future__ import print_function
 
 from CNN4MAGIC.CNN_Models.BigData.clr import LRFinder
 from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
-from CNN4MAGIC.Generator.models import SEDenseNet121_energy_dropout_l2
+from CNN4MAGIC.Generator.models import MobileNetV2_energy
 
 # %%
-BATCH_SIZE = 16
+BATCH_SIZE = 512
 nb_epoch = 1  # Only finding lr
 machine = 'towerino'
 
@@ -29,7 +29,7 @@ num_samples = len(val_gn)*BATCH_SIZE
 # Exponential lr finder
 # USE THIS FOR A LARGE RANGE SEARCH
 # Uncomment the validation_data flag to reduce speed but get a better idea of the learning rate
-lr_finder = LRFinder(num_samples, BATCH_SIZE, minimum_lr=5e-5, maximum_lr=0.7,
+lr_finder = LRFinder(num_samples, BATCH_SIZE, minimum_lr=5e-5, maximum_lr=0.003,
                      lr_scale='exp',
                      # validation_data=({'m1': m1_val, 'm2': m2_val}, energy_val),  # use the validation data for losses
                      validation_sample_rate=5,
@@ -50,10 +50,10 @@ lr_finder = LRFinder(num_samples, BATCH_SIZE, minimum_lr=5e-5, maximum_lr=0.7,
 # For training, the auxilary branch must be used to correctly train NASNet
 
 # %%Load Model
-net_name = 'SEDenseNet121_energy_l2_drop0.3_batch16'
+net_name = 'MobileNetV2_energy_alpha2_batch512'
 
 print('Loading the Neural Network...')
-model = SEDenseNet121_energy_dropout_l2(drop=0.3)
+model = MobileNetV2_energy(alpha=2)
 # model.compile(optimizer='sgd', loss='mse')
 model.compile(optimizer='sgd', loss='mse')
 model.summary()

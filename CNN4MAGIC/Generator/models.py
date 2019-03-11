@@ -97,14 +97,14 @@ def MobileNetV2_position():
     return model1
 
 
-def MobileNetV2_energy():
+def MobileNetV2_energy(alpha=1):
     input_img = Input(shape=(67, 68, 4), name='m1')
 
-    model = MobileNetV2(alpha=1, depth_multiplier=1, include_top=False,
+    model = MobileNetV2(alpha=alpha, depth_multiplier=1, include_top=False,
                         weights=None, input_tensor=input_img, pooling='avg')
 
     x = model.layers[-1].output
-    x = Dense(1, name='energy')(x)
+    x = Dense(1, name='energy', kernel_regularizer='l2')(x)
     model1 = Model(inputs=input_img, output=x)
     return model1
 
