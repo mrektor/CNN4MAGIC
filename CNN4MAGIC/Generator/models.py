@@ -168,8 +168,11 @@ def DenseNet121_position():
     return model1
 
 
-def SEDenseNet121_position():
-    input_img = Input(shape=(67, 68, 4), name='m1')
+def SEDenseNet121_position(input=None):
+    if input is None:
+        input_img = Input(shape=(67, 68, 4), name='m1')
+    else:
+        input_img = input
 
     model = SEDenseNetImageNet121(input_tensor=input_img, include_top=False, weights=None)
 

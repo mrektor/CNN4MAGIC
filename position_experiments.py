@@ -20,8 +20,8 @@ train_gn, val_gn, test_gn, position = load_generators_diffuse_point(
 print('Loading the Neural Network...')
 model = SEDenseNet121_position_l2()
 model.load_weights(
-    '/home/emariott/software_magic/output_data/snapshots/SEDenseNet121_position_noclean_Gold_2019-02-25_01-37-25-15.h5')
-net_name = 'SEDenseNet121_position_l2_fromEpoch41'
+    '/home/emariott/software_magic/output_data/swa_models/SEDenseNet121_position_l2_fromEpoch41_2019-03-07_17-31-27_SWA.h5')
+net_name = 'SEDenseNet121_position_l2_fromEpoch41_SWA_15last'
 #%%
 # Train
 # result, y_pred = superconvergence_training(model=model, net_name=net_name,

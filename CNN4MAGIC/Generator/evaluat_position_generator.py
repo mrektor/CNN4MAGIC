@@ -4,7 +4,8 @@ from CNN4MAGIC.CNN_Models.BigData.utils import plot_angular_resolution
 from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
 from CNN4MAGIC.Generator.models import SEDenseNet121_position
 
-machine = 'titanx'
+# %%
+machine = 'towerino'
 
 BATCH_SIZE = 64
 train_gn, val_gn, test_gn, position_vect = load_generators_diffuse_point(
@@ -16,11 +17,14 @@ train_gn, val_gn, test_gn, position_vect = load_generators_diffuse_point(
     include_time=True)
 
 # %%
+print('Loading the Neural Network...')
 model = SEDenseNet121_position()
-print('Loading weights...')
+#%%
 model.load_weights(
-    '/home/emariott/deepmagic/output_data/snapshots/SEDenseNet121_position_noclean_Gold_2019-02-25_01-37-25-Best.h5')
-
+    'output_data/swa_models/SEDenseNet121_position_l2_fromEpoch41_2019-03-07_17-31-27_SWA.h5')
+print('Weight loaded')
+# %%
+net_name = 'SEDenseNet121_position_l2_fromEpoch41_SWA_15last'
 # model = load_model('/home/emariott/deepmagic/output_data/checkpoints/MV2-4D-30E-l2-EnsLast9_2019-02-20_11-28-13.hdf5')
 # print('start predictions...')
 
@@ -52,9 +56,10 @@ with open(f'/home/emariott/deepmagic/output_data/reconstructions/position_SE-Den
           'rb') as f:
     position_prediction = pickle.load(f)
 
+#%%
 position_te_limato = position_vect[:position_prediction.shape[0], :]
 energy_te_limato = energy[:position_prediction.shape[0]]
-# %
+# %%
 
 print(position_vect.shape, position_prediction.shape, position_te_limato.shape)
 print(energy.shape, energy_te_limato.shape)
@@ -69,7 +74,7 @@ print(energy.shape, energy_te_limato.shape)
 # with open(f'/home/emariott/deepmagic/output_data/reconstructions/pred_{net_name}_position.pkl', 'rb') as f:
 #     position_prediction = pickle.load(f)
 
-net_name = 'SE-DenseNet121_pos_gold_noclean_best'
+# net_name = 'SE-DenseNet121_pos_gold_noclean_best'
 plot_angular_resolution(position_te_limato, position_prediction, energy_te_limato, net_name=net_name,
                         fig_folder='/home/emariott/deepmagic/output_data/pictures/direction_reconstruction')
 
@@ -147,7 +152,7 @@ def plot_angular_resolution(position_true, position_prediction, energy_true,
 
     plt.xlabel('Energy')
     plt.ylabel('Angular Resolution')
-    plt.title('68% Containment Angular Resolution of SE-DenseNet121')
+    plt.title('68% Containment Angular Resolution of SWA SE-DenseNet121')
     plt.legend(['Neural Network', 'MAGIC Standard Analysis'])
     plt.grid(which='both')
     plt.savefig(fig_folder + '/angular_resolution' + net_name + '.png')
