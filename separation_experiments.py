@@ -2,7 +2,7 @@ import matplotlib
 
 matplotlib.use('TkAgg')
 from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
-from CNN4MAGIC.Generator.models import dummy_cnn
+from CNN4MAGIC.Generator.models import dummy_cnn_2filter5
 from CNN4MAGIC.Generator.training_util import snapshot_training
 
 BATCH_SIZE = 512
@@ -22,10 +22,10 @@ print('Loading the Neural Network...')
 # model = MobileNetV2_separation(alpha=0.2, include_time=False)
 
 # %%
-model = dummy_cnn()
+model = dummy_cnn_2filter5()
 # model.load_weights(
 #     '/data/new_magic/output_data/snapshots/MobileNetV2_separation_clean6_3punto5_Gold_2019-02-26_13-22-24-Best.h5')
-net_name = 'dummy_cnn_4filter_1dense_nobias'
+net_name = 'dummy_cnn_2filter5_1dense_nobias'
 #%%
 
 result = snapshot_training(model=model,
@@ -38,5 +38,3 @@ result = snapshot_training(model=model,
                            task='separation',
                            do_telegram=True
                            )
-
-#%%

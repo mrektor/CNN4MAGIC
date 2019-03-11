@@ -4,7 +4,7 @@ from CNN4MAGIC.CNN_Models.BigData.utils import plot_angular_resolution
 from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
 from CNN4MAGIC.Generator.models import SEDenseNet121_position
 
-machine = 'towerino'
+machine = 'titanx'
 
 BATCH_SIZE = 64
 train_gn, val_gn, test_gn, position_vect = load_generators_diffuse_point(

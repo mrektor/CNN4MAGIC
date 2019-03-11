@@ -179,10 +179,21 @@ def SEDenseNet121_position():
     return model1
 
 
-def SEDenseNet121_position_l2_drop02():
+def SEDenseNet121_position_l2():
     input_img = Input(shape=(67, 68, 4), name='m1')
 
-    model = SEDenseNetImageNet121(input_tensor=input_img, include_top=False, weights=None, dropout_rate=0.2)
+    model = SEDenseNetImageNet121(input_tensor=input_img, include_top=False, weights=None)
+
+    x = model.layers[-1].output
+    x = Dense(2, name='position', kernel_regularizer='l2')(x)
+    model1 = Model(inputs=input_img, output=x)
+    return model1
+
+
+def SEDenseNet121_position_l2_drop02(drop=0.2):
+    input_img = Input(shape=(67, 68, 4), name='m1')
+
+    model = SEDenseNetImageNet121(input_tensor=input_img, include_top=False, weights=None, dropout_rate=drop)
 
     x = model.layers[-1].output
     x = Dense(2, name='position', kernel_regularizer='l2')(x)
@@ -385,6 +396,19 @@ def dummy_cnn():
 
     return model_dummy
 
+
+def dummy_cnn_2filter5():
+    input_img = Input(shape=(67, 68, 2), name='m1m2')
+
+    x = Conv2D(2, (5, 5), strides=(2, 2), use_bias=False)(input_img)
+    x = ReLU()(x)
+    x = GlobalMaxPool2D()(x)
+
+    out = Dense(1, activation='sigmoid', use_bias=False)(x)
+
+    model_dummy = Model(input_img, out)
+
+    return model_dummy
 
 
 def MobileNetV2_separation(alpha=1.0, include_time=True):

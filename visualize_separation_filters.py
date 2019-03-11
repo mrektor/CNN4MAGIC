@@ -4,8 +4,10 @@ from CNN4MAGIC.Generator.models import dummy_cnn
 
 model = dummy_cnn()
 # %%
-filename = '/data/new_magic/output_data/dummy_cnn_4filter_1dense_nobias_2019-03-05_20-52-01-Best.h5'
+filename = '/data/new_magic/output_data/snapshots/dummy_cnn_4filter_1dense_nobias_2019-03-05_20-52-01-Best.h5'
 model.load_weights(filename)
+# %%
+folder_fig = '/data/new_magic/view_filters'
 
 # %%
 import matplotlib.pyplot as plt
@@ -65,7 +67,7 @@ for i in range(4):
     # cbar4 = plt.colorbar(axes[1, i], cax=cax4)
 
 plt.tight_layout()
-plt.savefig(f'{folder_fig}/all_kernels_colorbar.png')
+plt.savefig(f'{folder_fig}/all_kernels_no_colorbar.png')
 plt.close()
 
 # %%
@@ -82,9 +84,13 @@ plt.savefig(f'{folder_fig}/all_kernels.png')
 
 # %%
 plt.figure()
-ind = np.arange(1, 5)
+ind = np.arange(0, 4)
 plt.bar(ind, dense_values.flatten())
+plt.hlines(0, -0.5, 3.5, 'r')
 plt.title('Dense Values')
+plt.xticks([0, 1, 2, 3])
+plt.xlabel('Feature Map')
+plt.ylabel('Coefficient')
 plt.savefig(f'{folder_fig}/dense.png')
 plt.close()
 
@@ -99,7 +105,7 @@ intermediate_layer_model.compile('sgd', 'mse')
 # %%
 from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
 
-BATCH_SIZE = 10
+BATCH_SIZE = 50
 machine = '24cores'
 train_gn, val_gn = load_generators_diffuse_point(
     batch_size=BATCH_SIZE,
@@ -257,7 +263,8 @@ plot_event_featmap(el_idx, '/data/new_magic/view_filters/receptive_size')
 # plt.savefig(f'{folder_fig}/event_{el_idx}.png')
 # plt.close()
 # %%
+from tqdm import tqdm
 
-new_folder_pic = '/data/new_magic/view_filters/batch_val_1'
-for i in tqdm(range(10)):
+new_folder_pic = '/data/new_magic/view_filters/batch_validation_event_featmap'
+for i in tqdm(range(BATCH_SIZE)):
     plot_event_featmap(i, new_folder_pic)

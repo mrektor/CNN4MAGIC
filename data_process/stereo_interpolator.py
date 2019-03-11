@@ -875,8 +875,8 @@ def read_from_root(filename, want_extra=False, pruning=False, clean=False):
         for idx in range(phe.shape[0]):
             clean = tailcuts_clean(camera_MAGIC,
                                    phe.iloc[idx, :1039],
-                                   boundary_thresh=6,
-                                   picture_thresh=3.5,
+                                   boundary_thresh=10,
+                                   picture_thresh=5,
                                    min_number_picture_neighbors=2)
             phe.iloc[idx, :1039][~ clean] = 0.
             time.iloc[idx, :1039][~ clean] = 0.
@@ -954,8 +954,8 @@ def read_from_root_realdata(filename, want_extra=False, clean=False, pruning=Fal
         for idx in range(phe.shape[0]):
             clean = tailcuts_clean(camera_MAGIC,
                                    phe.iloc[idx, :1039],
-                                   boundary_thresh=6,
-                                   picture_thresh=3.5,
+                                   boundary_thresh=10,
+                                   picture_thresh=5,
                                    min_number_picture_neighbors=2)
             phe.iloc[idx, :1039][~ clean] = 0.
             time.iloc[idx, :1039][~ clean] = 0.
@@ -1064,10 +1064,10 @@ def stereo_interp_from_root_realdata(filenames):
     # result = {'M1_interp': m1_interp, 'M2_interp': m2_interp}
 
     event_idx_list, labels = ROOT_dump_npy(m1=m1_interp, m2=m2_interp, filename=filenameM1[-42:-4],
-                                           dump_folder='/data/magic_data/clean_6_3punto5/crab/npy_dump')
+                                           dump_folder='/data/magic_data/clean_10_5/cyn_1ES2037/npy_dump')
     #
     with open(
-            '/data/magic_data/clean_6_3punto5/crab/complement/eventList_labels_' + filenameM1[-42:-4] + '.pkl',
+            '/data/magic_data/clean_10_5/cyn_1ES2037/complement/eventList_labels_' + filenameM1[-42:-4] + '.pkl',
             'wb') as f:
         pickle.dump((event_idx_list, labels), f, protocol=2)
     print(filenameM1[-40:-4])
@@ -1203,8 +1203,8 @@ def stereo_interp_from_root(filenames):
         print('Empty file: ' + filenameM2)
         return None
 
-    df1, extra1, phe1, time1 = read_from_root(filenameM1, want_extra=True, pruning=False, clean=True)
-    df2, extra2, phe2, time2 = read_from_root(filenameM2, want_extra=True, pruning=False, clean=True)
+    df1, phe1, time1 = read_from_root(filenameM1, want_extra=False, pruning=False, clean=True)
+    df2, phe2, time2 = read_from_root(filenameM2, want_extra=False, pruning=False, clean=True)
 
     interpolator = InterpolateMagic(15)
     num_events = phe1.shape[0]
@@ -1241,11 +1241,11 @@ def stereo_interp_from_root(filenames):
                                                                              posX1=result['src_X1'],
                                                                              posY1=result['src_Y1'],
                                                                              filename=filenameM1[-27:-5],
-                                                                             dump_folder='/ssdraptor/magic_data/data_processed/diffuse_6_3punto5')
+                                                                             dump_folder='/data/magic_data/clean_10_5/diffuse_MC/npy_dump')
 
         with open(
-                '/ssdraptor/magic_data/complement/diffuse_clean_6_3punto5/' + filenameM1[-27:-5] + '.pkl', 'wb') as f:
-            pickle.dump((event_idx_list, labels, energy_labels, position_labels, df1, df2, extra1, extra2), f,
+                '/data/magic_data/clean_10_5/diffuse_MC/complement/' + filenameM1[-27:-5] + '.pkl', 'wb') as f:
+            pickle.dump((event_idx_list, labels, energy_labels, position_labels, df1, df2), f,
                         protocol=2)
 
         # print(f'Saved {filenameM1[-28:-5]}')
@@ -1268,8 +1268,8 @@ def stereo_interp_from_root(filenames):
 # Load all the filenames
 
 
-fileM1 = glob.glob('/data/magic_data/crab/*M1*.root')
-fileM2 = glob.glob('/data/magic_data/crab/*M2*.root')
+fileM1 = glob.glob('/data/magic_data/montecarlo_fresh/diffuse/*M1*.root')
+fileM2 = glob.glob('/data/magic_data/montecarlo_fresh/diffuse/*M2*.root')
 
 
 def get_pair_match(a, b):
