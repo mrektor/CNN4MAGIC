@@ -33,6 +33,46 @@ def MobileNetV2_slim():
 # model.fit(batch_size=64, epochs=3, x=x, y=y)
 
 # %%
+def energy_skrr(include_time=True):
+    if include_time:
+        input_img = Input(shape=(67, 68, 4), name='m1m2')
+    else:
+        input_img = Input(shape=(67, 68, 2), name='m1m2')
+
+    out = Conv2D(120, (5, 5))(input_img)
+    out = BatchNormalization()(out)
+    out = ELU(out)
+    out = AveragePooling2D((3, 3))(out)
+
+    out = Conv2D(80, (4, 4))(out)
+    out = BatchNormalization()(out)
+    out = ELU(out)
+    out = Conv2D(30, (1, 1))(out)
+    out = BatchNormalization()(out)
+    out = ELU(out)
+    out = AveragePooling2D((2, 2))(out)
+
+    out = Conv2D(60, (4, 4))(out)
+    out = BatchNormalization()(out)
+    out = ELU(out)
+    out = Conv2D(40, (1, 1))(out)
+    out = BatchNormalization()(out)
+    out = ELU(out)
+    out = Conv2D(25, (1, 1))(out)
+    out = BatchNormalization()(out)
+    out = ELU(out)
+    out = AveragePooling2D((2, 2))(out)
+
+    out = GlobalAveragePooling2D()(out)
+    out = Dense(1, kernel_regularizer='l2')(out)
+
+    model = Model(input_img, out)
+
+    return model
+
+
+energy_skrr().summary()
+
 
 
 # %%
@@ -168,9 +208,12 @@ def DenseNet121_position():
     return model1
 
 
-def SEDenseNet121_position(input=None):
+def SEDenseNet121_position(input=None, include_time=True):
     if input is None:
-        input_img = Input(shape=(67, 68, 4), name='m1')
+        if include_time:
+            input_img = Input(shape=(67, 68, 4), name='m1')
+        else:
+            input_img = Input(shape=(67, 68, 2), name='m1')
     else:
         input_img = input
 
@@ -182,9 +225,14 @@ def SEDenseNet121_position(input=None):
     return model1
 
 
-def SEDenseNet121_position_l2():
-    input_img = Input(shape=(67, 68, 4), name='m1')
-
+def SEDenseNet121_position_l2(input=None, include_time=True):
+    if input is None:
+        if include_time:
+            input_img = Input(shape=(67, 68, 4), name='m1')
+        else:
+            input_img = Input(shape=(67, 68, 2), name='m1')
+    else:
+        input_img = input
     model = SEDenseNetImageNet121(input_tensor=input_img, include_top=False, weights=None)
 
     x = model.layers[-1].output

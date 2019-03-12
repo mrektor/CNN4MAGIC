@@ -2,9 +2,9 @@
 #
 # matplotlib.use('TkAgg')
 from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
-from CNN4MAGIC.Generator.models import SEDenseNet121_energy
+from CNN4MAGIC.Generator.models import MobileNetV2_energy
 
-BATCH_SIZE = 128
+BATCH_SIZE = 256
 machine = 'towerino'
 
 # Load the data
@@ -18,11 +18,11 @@ train_gn, val_gn, test_gn, energy_te = load_generators_diffuse_point(
 # %%
 # Load the model
 print('Loading the Neural Network...')
-model = SEDenseNet121_energy()
+model = MobileNetV2_energy(alpha=2)
 model.load_weights(
-    '/home/emariott/deepmagic/output_data/swa_models/SEDenseNet121_energy_dropout03_l2_2019-03-05_14-52-57_SWA.h5')
+    '/home/emariott/deepmagic/output_data/swa_models/MobileNetV2_energy_alpha2_l2_2019-03-11_17-25-51_SWA.h5')
 # %%
-net_name = 'SEDenseNet121_energy_dropout03_l2_2019-03-05_14-52-57_SWA'
+net_name = 'MobileNetV2_energy_alpha2_SWA'
 
 # %
 energy_te_limato = energy_te[:len(test_gn) * BATCH_SIZE]

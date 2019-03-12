@@ -8,7 +8,7 @@ from CNN4MAGIC.Generator.training_util import snapshot_training
 BATCH_SIZE = 512
 machine = '24cores'
 
-# Load the data
+# Load the datatr
 train_gn, val_gn = load_generators_diffuse_point(
     batch_size=BATCH_SIZE,
     want_golden=False,
@@ -32,7 +32,7 @@ result = snapshot_training(model=model,
                            train_gn=train_gn, val_gn=val_gn,
                            net_name=net_name,
                            machine=machine,
-                           max_lr=0.05,
+                           max_lr=0.005,
                            epochs=7,
                            snapshot_number=5,
                            task='separation',

@@ -18,8 +18,8 @@ train_gn, val_gn, test_gn, energy = load_generators_diffuse_point(
 
 # Load the model
 print('Loading the Neural Network...')
-model = MobileNetV2_energy(alpha=2)
-net_name = 'MobileNetV2_energy_alpha2_l2'
+model = MobileNetV2_energy(alpha=4)
+net_name = 'MobileNetV2_energy_alpha4_l2'
 # model = SEDenseNet121_energy_dropout_l2(drop=0)
 # model.load_weights(
 #     'output_data/snapshots/SEDenseNet121_position_noclean_Gold_fromEpoch35_2019-03-04_17-03-30-Best.h5')
@@ -31,7 +31,7 @@ result = snapshot_training(model=model,
                            train_gn=train_gn, val_gn=val_gn, test_gn=test_gn,
                            net_name=net_name,
                            max_lr=0.0008,
-                           epochs=20,
+                           epochs=30,
                            snapshot_number=15,
                            task='energy',
                            machine=machine,

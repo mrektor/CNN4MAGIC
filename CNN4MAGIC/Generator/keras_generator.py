@@ -5,7 +5,7 @@ from keras.utils import Sequence
 class MAGIC_Generator(Sequence):
     def __init__(self, list_IDs, labels, batch_size=32, include_time=True,
                  position=False, separation=False, energy=False,
-                 shuffle=True,
+                 shuffle=True, apply_log_to_raw=False,
                  folder='/data2T/mariotti_data_2/npy_dump/all_npy'):
         'Initialization'
         self.include_time = include_time
@@ -22,6 +22,7 @@ class MAGIC_Generator(Sequence):
         self.folder = folder
         self.position = position
         self.on_epoch_end()
+        self.apply_log_to_raw = apply_log_to_raw
         self.select_phe = np.array([False, True, False, True])
 
     def on_epoch_end(self):
@@ -54,6 +55,9 @@ class MAGIC_Generator(Sequence):
 
             # Store class
             y[i] = self.labels[ID]
+
+            if self.apply_log_to_raw:
+                X = np.log10(X)
 
         return X, y
 
