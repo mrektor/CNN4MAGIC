@@ -57,7 +57,7 @@ class MAGIC_Generator(Sequence):
             y[i] = self.labels[ID]
 
             if self.apply_log_to_raw:
-                X = np.log10(X)
+                X = np.nan_to_num(np.log10(X))  # do it for avoidin -inf where is 0.
 
         return X, y
 

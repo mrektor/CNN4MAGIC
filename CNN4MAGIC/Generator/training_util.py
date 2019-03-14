@@ -114,8 +114,8 @@ def snapshot_training(model, train_gn, val_gn, net_name, max_lr=0.01, epochs=10,
                                      epochs=epochs,
                                      verbose=1,
                                      callbacks=callbacks,
-                                     use_multiprocessing=False,
-                                     workers=1)
+                                     use_multiprocessing=True,
+                                     workers=8)
         print('Training completed')
     elif machine == '24cores':
         result = model.fit_generator(generator=train_gn,

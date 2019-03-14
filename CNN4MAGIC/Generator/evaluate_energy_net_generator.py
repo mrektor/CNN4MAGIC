@@ -2,9 +2,9 @@
 #
 # matplotlib.use('TkAgg')
 from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
-from CNN4MAGIC.Generator.models import MobileNetV2_energy
+from CNN4MAGIC.Generator.models import energy_skrr
 
-BATCH_SIZE = 256
+BATCH_SIZE = 512
 machine = 'towerino'
 
 # Load the data
@@ -12,19 +12,19 @@ train_gn, val_gn, test_gn, energy_te = load_generators_diffuse_point(
     machine=machine,
     batch_size=BATCH_SIZE,
     want_golden=True,
-    want_energy=True, want_log_energy=True,
+    want_energy=True, want_log_energy=True, include_time=False,
     clean=False)
 
 # %%
 # Load the model
 print('Loading the Neural Network...')
-model = MobileNetV2_energy(alpha=2)
+model = energy_skrr(False)
 model.load_weights(
-    '/home/emariott/deepmagic/output_data/swa_models/MobileNetV2_energy_alpha2_l2_2019-03-11_17-25-51_SWA.h5')
+    '/home/emariott/deepmagic/output_data/snapshots/energy_skrr_fromEpoch30_2019-03-13_03-14-22-15.h5')
 # %%
-net_name = 'MobileNetV2_energy_alpha2_SWA'
+net_name = 'energy_skrr_60_best'
 
-# %
+# %%
 energy_te_limato = energy_te[:len(test_gn) * BATCH_SIZE]
 
 # %
@@ -39,7 +39,7 @@ print(energy_te_limato.shape)
 #
 # %%
 print('Making predictions on test set...')
-y_pred = model.predict_generator(generator=test_gn, verbose=1, use_multiprocessing=False, workers=3)
+y_pred = model.predict_generator(generator=test_gn, verbose=1, use_multiprocessing=True, workers=8)
 # %%
 import pickle
 
@@ -70,6 +70,10 @@ plot_gaussian_error(energy_te_limato, y_pred,
                     net_name=net_name,
                     fig_folder='output_data/pictures/energy_reconstruction', plot=False)
 # %%
+
+filename = '/home/emariott/deepmagic/output_data/reconstructions/energy_SEDenseNet121_energy_noclean_Gold_mse_from10_best_valloss0.2329.pkl'
+with open(filename, 'rb') as f:
+    y_pred = pickle.load(f)
 #
 #
 import matplotlib.pyplot as plt
@@ -112,6 +116,7 @@ y_pred[y_pred > 5] = 5
 # %%
 import matplotlib.pyplot as plt
 
+y_pred = y_pred[:len(energy_te_limato)]
 plt.figure()
 plt.hist2d(energy_te_limato, y_pred.flatten(), bins=400)
 plt.savefig('output_data/pictures/hist2dtest.png')

@@ -8,6 +8,35 @@ from CNN4MAGIC.CNN_Models.BigData.se_DenseNet import SEDenseNet, SEDenseNetImage
 from CNN4MAGIC.Generator.SqueezeExciteInceptionV3gencopy import SEInceptionV3
 
 
+# %%
+
+def squeeze_excite_block(input, ratio=16):
+    ''' Create a squeeze-excite block
+    Args:
+        input: input tensor
+        filters: number of output filters
+        k: width factor
+    Returns: a keras tensor
+    '''
+    init = input
+    channel_axis = 1 if K.image_data_format() == "channels_first" else -1
+    filters = init._keras_shape[channel_axis]
+    se_shape = (1, 1, filters)
+
+    se = GlobalAveragePooling2D()(init)
+    se = Reshape(se_shape)(se)
+    se = Dense(filters // ratio, activation='relu', kernel_initializer='he_normal', use_bias=False)(se)
+    se = Dense(filters, activation='sigmoid', kernel_initializer='he_normal', use_bias=False)(se)
+
+    if K.image_data_format() == 'channels_first':
+        se = Permute((3, 1, 2))(se)
+
+    x = multiply([init, se])
+    return x
+
+
+# %%
+
 def MobileNetV2_slim():
     input_img = Input(shape=(67, 68, 4), name='m1')
 
@@ -39,31 +68,37 @@ def energy_skrr(include_time=True):
     else:
         input_img = Input(shape=(67, 68, 2), name='m1m2')
 
-    out = Conv2D(120, (5, 5))(input_img)
+    out = Conv2D(250, (5, 5))(input_img)
     out = BatchNormalization()(out)
-    out = ELU(out)
+    out = ELU()(out)
     out = AveragePooling2D((3, 3))(out)
 
-    out = Conv2D(80, (4, 4))(out)
+    out = Conv2D(150, (4, 4))(out)
     out = BatchNormalization()(out)
-    out = ELU(out)
-    out = Conv2D(30, (1, 1))(out)
+    out = ELU()(out)
+    out = Conv2D(100, (1, 1))(out)
     out = BatchNormalization()(out)
-    out = ELU(out)
+    out = ELU()(out)
     out = AveragePooling2D((2, 2))(out)
 
-    out = Conv2D(60, (4, 4))(out)
+    out = Conv2D(100, (4, 4))(out)
     out = BatchNormalization()(out)
-    out = ELU(out)
-    out = Conv2D(40, (1, 1))(out)
+    out = ELU()(out)
+    out = Conv2D(80, (1, 1))(out)
     out = BatchNormalization()(out)
-    out = ELU(out)
-    out = Conv2D(25, (1, 1))(out)
+    out = ELU()(out)
+    out = Conv2D(60, (1, 1))(out)
     out = BatchNormalization()(out)
-    out = ELU(out)
+    out = ELU()(out)
     out = AveragePooling2D((2, 2))(out)
 
-    out = GlobalAveragePooling2D()(out)
+    out = Conv2D(40, (3, 3))(out)
+    out = BatchNormalization()(out)
+    out = ELU()(out)
+
+    out = Flatten()(out)
+
+    # out = GlobalAveragePooling2D()(out)
     out = Dense(1, kernel_regularizer='l2')(out)
 
     model = Model(input_img, out)
@@ -71,8 +106,79 @@ def energy_skrr(include_time=True):
     return model
 
 
-energy_skrr().summary()
+def energy_skrr_se(include_time=True):
+    if include_time:
+        input_img = Input(shape=(67, 68, 4), name='m1m2')
+    else:
+        input_img = Input(shape=(67, 68, 2), name='m1m2')
 
+    out = Conv2D(250, (5, 5))(input_img)
+    out = BatchNormalization()(out)
+    # out = squeeze_excite_block(out)
+    out = ELU()(out)
+    out = AveragePooling2D((3, 3))(out)
+    out = squeeze_excite_block(out)
+
+    out = Conv2D(150, (4, 4))(out)
+    # out = squeeze_excite_block(out)
+    out = BatchNormalization()(out)
+    out = ELU()(out)
+    out = Conv2D(100, (1, 1))(out)
+    # out = squeeze_excite_block(out)
+    out = BatchNormalization()(out)
+    out = ELU()(out)
+    out = Conv2D(150, (4, 4))(out)
+    # out = squeeze_excite_block(out)
+    out = BatchNormalization()(out)
+    out = ELU()(out)
+    out = Conv2D(100, (1, 1))(out)
+    # out = squeeze_excite_block(out)
+    out = BatchNormalization()(out)
+    out = ELU()(out)
+    out = AveragePooling2D((2, 2))(out)
+    out = squeeze_excite_block(out)
+
+    out = Conv2D(100, (4, 4))(out)
+    out = BatchNormalization()(out)
+    out = ELU()(out)
+    out = Conv2D(80, (1, 1))(out)
+    out = BatchNormalization()(out)
+    out = ELU()(out)
+    out = squeeze_excite_block(out)
+
+    out = Conv2D(100, (4, 4))(out)
+    # out = squeeze_excite_block(out)
+    out = BatchNormalization()(out)
+    out = ELU()(out)
+    out = Conv2D(80, (1, 1))(out)
+    # out = squeeze_excite_block(out)
+    out = BatchNormalization()(out)
+    out = ELU()(out)
+    out = Conv2D(60, (1, 1))(out)
+    out = BatchNormalization()(out)
+    out = ELU()(out)
+    out = squeeze_excite_block(out)
+
+    # out = AveragePooling2D((2, 2))(out)
+    out = Flatten()(out)
+
+    out = Conv2D(40, (3, 3))(out)
+    out = BatchNormalization()(out)
+    out = ELU()(out)
+
+    out = Flatten()(out)
+
+    # out = GlobalAveragePooling2D()(out)
+    out = Dense(1, kernel_regularizer='l2')(out)
+
+    model = Model(input_img, out)
+
+    return model
+
+
+# model = energy_skrr_v2(False)
+# model.compile('sgd', 'mse')
+# model.summary()
 
 
 # %%

@@ -415,25 +415,28 @@ class LRFinder(Callback):
             losses = losses[:clip_endding]
             lrs = lrs[:clip_endding]
 
+        plt.figure()
         plt.plot(lrs, losses)
         plt.title('Learning rate vs Loss')
         plt.xlabel('learning rate')
         plt.ylabel('loss')
         plt.grid()
-        plt.savefig('/home/emariott/deepmagic/output_data/lr_findings/' + net_name + '_lr_loss.png')
+        plt.savefig('/home/emariott/deepmagic/output_data/lr_findings/' + net_name + '_lr_loss_lin.png')
+        print('LIN Fig Saved')
+
         # plt.savefig('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/learning_rates_pics/' + net_name + '_lr_loss.eps')
 
-        plt.show()
-
+        # plt.show()
+        plt.figure()
         plt.semilogy(lrs, losses)
         plt.title('Learning rate vs Loss (LOG)')
         plt.xlabel('learning rate')
         plt.ylabel('loss on LOG')
         plt.grid()
-        plt.savefig('/home/emariott/deepmagic/output_data/lr_findings/' + net_name + '_lr_loss.png')
+        plt.savefig('/home/emariott/deepmagic/output_data/lr_findings/' + net_name + '_lr_loss_log.png')
         # plt.savefig('/data/mariotti_data/CNN4MAGIC/CNN_Models/BigData/learning_rates_pics/' + net_name + '_lr_loss.eps')
-
-        plt.show()
+        print('LOG Fig Saved')
+        # plt.show()
 
     @classmethod
     def restore_schedule_from_dir(cls, directory, clip_beginning=None, clip_endding=None):
