@@ -10,7 +10,7 @@ from CNN4MAGIC.Generator.SqueezeExciteInceptionV3gencopy import SEInceptionV3
 
 # %%
 
-def squeeze_excite_block(input, ratio=16):
+def squeeze_excite_block(input, ratio=10):
     ''' Create a squeeze-excite block
     Args:
         input: input tensor
@@ -106,6 +106,11 @@ def energy_skrr(include_time=True):
     return model
 
 
+# model = energy_skrr(True)
+# model.compile('sgd', 'mse')
+# model.summary()
+# %%
+
 def energy_skrr_se(include_time=True):
     if include_time:
         input_img = Input(shape=(67, 68, 4), name='m1m2')
@@ -176,11 +181,52 @@ def energy_skrr_se(include_time=True):
     return model
 
 
-# model = energy_skrr_v2(False)
+# model = energy_skrr_se(True)
 # model.compile('sgd', 'mse')
 # model.summary()
 
+# %%
+def easy_dense(include_time=True):
+    if include_time:
+        input_img = Input(shape=(67, 68, 4), name='m1m2')
+    else:
+        input_img = Input(shape=(67, 68, 2), name='m1m2')
 
+    out = Conv2D(150, (5, 5))(input_img)
+    out = BatchNormalization()(out)
+    out = LeakyReLU()(out)
+    out = Conv2D(150, (3, 3))(out)
+    out = BatchNormalization()(out)
+    out = LeakyReLU()(out)
+    out = Conv2D(150, (1, 1))(out)
+    out = BatchNormalization()(out)
+    out = LeakyReLU()(out)
+
+    dense_out = SEDenseNet(input_tensor=out,
+                           include_top=False,
+                           # depth=25,
+                           nb_dense_block=3,
+                           bottleneck=True,
+                           growth_rate=12,
+                           nb_filter=-1,
+                           nb_layers_per_block=6,
+                           dropout_rate=0,
+                           weight_decay=1e-4)
+
+    x = dense_out.layers[-1].output
+    out = Dense(30)(x)
+    out = BatchNormalization()(out)
+    out = LeakyReLU()(out)
+    final_out = Dense(1, kernel_regularizer='l2')(out)
+
+    model = Model(input_img, final_out)
+
+    return model
+
+
+# model = easy_dense(True)
+# model.compile('sgd', 'mse')
+# model.summary()
 # %%
 
 def SE_InceptionV3_DoubleDense_energy():
@@ -195,13 +241,13 @@ def SE_InceptionV3_DoubleDense_energy():
     x = dense_out.layers[-1].output
 
     x = BatchNormalization()(x)
-    x = Dense(64)(x)
+    x = Dense(64, kernel_regularizer='l1')(x)
     x = BatchNormalization()(x)
     x = LeakyReLU()(x)
-    x = Dense(32)(x)
+    x = Dense(32, kernel_regularizer='l2')(x)
     x = BatchNormalization()(x)
     x = LeakyReLU()(x)
-    x = Dense(1, name='energy')(x)
+    x = Dense(1, name='energy', kernel_regularizer='l2')(x)
     model1 = Model(inputs=input_img, output=x)
 
     return model1
@@ -413,13 +459,18 @@ def CBAM_DenseNet121_Energy():
     return model1
 
 
+#%%
 def single_DenseNet_25_3_doubleDense():
     input_img = Input(shape=(67, 68, 4), name='m1m2')
 
     # m1 = Input(shape=(67, 68, 2), name='m1')
     # m2 = Input(shape=(67, 68, 2), name='m2')
     # input_img = concatenate([m1, m2])
-    dense_out = SEDenseNet(input_tensor=input_img, include_top=False, depth=25, nb_dense_block=3, dropout_rate=0)
+    dense_out = SEDenseNet(input_tensor=input_img,
+                           include_top=False,
+                           depth=25,
+                           nb_dense_block=3,
+                           dropout_rate=0)
 
     x = dense_out.layers[-1].output
     x = BatchNormalization()(x)
@@ -433,6 +484,8 @@ def single_DenseNet_25_3_doubleDense():
     model1 = Model(inputs=input_img, output=x)
     return model1
 
+
+#%%
 
 def single_DenseNet_piccina():
     input_img = Input(shape=(67, 68, 4), name='m1m2')

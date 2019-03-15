@@ -1,13 +1,26 @@
 import pickle
 
+import matplotlib
+
+matplotlib.use('TkAgg')
+
 from CNN4MAGIC.Generator.keras_generator import MAGIC_Generator
 from CNN4MAGIC.Generator.models import MobileNetV2_separation
 
 # %%
 
-with open('/data/magic_data/clean_6_3punto5/crab/events_labels.pkl', 'rb') as f:
-    crabID, labels = pickle.load(f)
+# with open('/data/magic_data/clean_6_3punto5/crab/events_labels.pkl', 'rb') as f:
+#     crabID, labels = pickle.load(f)
 
+from glob import glob
+
+crabID_path = glob('/data/magic_data/clean_10_5/crab/npy_dump/*.npy')
+# %%
+crabID = [single_path[42:-4] for single_path in crabID_path]
+print(len(crabID))
+
+# %%
+labels = {ID: 1 for ID in crabID}
 # %%
 # Load the data
 BATCH_SIZE = 128
@@ -16,16 +29,17 @@ crab_generator = MAGIC_Generator(list_IDs=crabID,
                                  separation=True,
                                  shuffle=False,
                                  batch_size=BATCH_SIZE,
-                                 folder='/data/magic_data/clean_6_3punto5/crab/npy_dump',
+                                 folder='/data/magic_data/clean_10_5/crab/npy_dump',
                                  include_time=False
                                  )
 # %
-model = MobileNetV2_separation(alpha=0.2, include_time=False)
-weights_path = '/data/new_magic/output_data/snapshots/MobileNetV2_separation_PheOnly_clean6_3punto5_Gold_2019-02-27_17-10-41-Best.h5'
+model = MobileNetV2_separation(alpha=1, include_time=False)
+weights_path = '/data/new_magic/output_data/snapshots/MobileNetV2_separation_10_5_2019-03-11_22-00-11-Best.h5'
 model.load_weights(weights_path)
-y_pred_test = model.predict_generator(crab_generator, workers=24, verbose=1)
-net_name = 'MobileNetV2_separation_alpha0.2_notime'
-dump_name = f'output_data/reconstructions/separation_MC_{net_name}.pkl'
+y_pred_test = model.predict_generator(crab_generator, workers=24, verbose=1, use_multiprocessing=True)
+# %%
+net_name = 'MobileNetV2_separation_10_5_notime_alpha1'
+dump_name = f'output_data/reconstructions/crab_{net_name}.pkl'
 with open(dump_name, 'wb') as f:
     pickle.dump(y_pred_test, f)
 
@@ -54,8 +68,8 @@ gamma_like_id = list(compress(crabID, gamma_like))
 # %%
 from tqdm import tqdm
 
-crab_folder = '/data/magic_data/clean_6_3punto5/crab/npy_dump'
-for i in tqdm(range(len(gamma_like_id))):
+crab_folder = 'data/magic_data/clean_10_5/crab/npy_dump'
+for i in tqdm(range(150)):
     event_id = gamma_like_id[i]
     gammaness_id = y_pred_test[gamma_like][i]
     a = np.load(f'{crab_folder}/{event_id}.npy')
@@ -85,5 +99,5 @@ for i in tqdm(range(len(gamma_like_id))):
     # plt.tight_layout()
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     plt.suptitle(f'Gammaness: {gammaness_id}')
-    plt.savefig(f'/data/new_magic/output_data/pictures/crab_gamma_like/MV2_alpha0.2_notime/{event_id}.png')
+    plt.savefig(f'/data/new_magic/output_data/pictures/crab_gamma_like/MV2_alpha1_clean10_5/{event_id}.png')
     plt.close()
