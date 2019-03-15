@@ -2,12 +2,12 @@ from __future__ import print_function
 
 from CNN4MAGIC.CNN_Models.BigData.clr import LRFinder
 from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
-from CNN4MAGIC.Generator.models import energy_skrr
+from CNN4MAGIC.Generator.models import SE_InceptionV3_DoubleDense_energy
 
 # %
-BATCH_SIZE = 128
+BATCH_SIZE = 1024
 nb_epoch = 1  # Only finding lr
-machine = 'towerino'
+machine = 'titanx'
 
 # train_gn, val_gn, test_gn, energy = load_generators_diffuse_point(batch_size=BATCH_SIZE,
 #                                                                   want_golden=True,
@@ -20,17 +20,17 @@ train_gn, val_gn, test_gn, energy = load_generators_diffuse_point(
     want_golden=True,
     want_energy=True,
     want_log_energy=True,
-    apply_log_to_raw=False,
+    # apply_log_to_raw=False,
     machine=machine,
     clean=False,
-    include_time=False)
+    include_time=True)
 
 # %
 num_samples = len(val_gn)*BATCH_SIZE
 # Exponential lr finder
 # USE THIS FOR A LARGE RANGE SEARCH
 # Uncomment the validation_data flag to reduce speed but get a better idea of the learning rate
-lr_finder = LRFinder(num_samples, BATCH_SIZE, minimum_lr=5e-5, maximum_lr=1e-2,
+lr_finder = LRFinder(num_samples, BATCH_SIZE, minimum_lr=0.1, maximum_lr=50,
                      lr_scale='exp',
                      # validation_data=({'m1': m1_val, 'm2': m2_val}, energy_val),  # use the validation data for losses
                      validation_sample_rate=5,
@@ -51,12 +51,13 @@ lr_finder = LRFinder(num_samples, BATCH_SIZE, minimum_lr=5e-5, maximum_lr=1e-2,
 # For training, the auxilary branch must be used to correctly train NASNet
 
 # %Load Model
-net_name = 'energy_skrr_logene_includeTime_batch128_fromEpoch28'
-
 print('Loading the Neural Network...')
-model = energy_skrr(False)
-model.load_weights(
-    '/home/emariott/deepmagic/output_data/snapshots/energy_skrr_fromEpoch30_2019-03-13_03-14-22-15.h5')
+
+model = SE_InceptionV3_DoubleDense_energy()
+net_name = 'SE_InceptionV3_DoubleDense_energy'
+# model = energy_skrr(False)
+# model.load_weights(
+#     '/home/emariott/deepmagic/output_data/snapshots/energy_skrr_fromEpoch30_2019-03-13_03-14-22-15.h5')
 # %
 # net_name = 'energy_skrr_30_best'
 

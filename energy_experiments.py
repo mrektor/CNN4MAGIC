@@ -2,11 +2,11 @@ import matplotlib
 
 matplotlib.use('TkAgg')
 from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
-from CNN4MAGIC.Generator.models import easy_dense
+from CNN4MAGIC.Generator.models import SE_InceptionV3_DoubleDense_energy
 from CNN4MAGIC.Generator.training_util import snapshot_training
 
-BATCH_SIZE = 128
-machine = 'towerino'
+BATCH_SIZE = 64
+machine = 'titanx'
 
 # Load the data
 train_gn, val_gn, test_gn, energy = load_generators_diffuse_point(
@@ -19,8 +19,8 @@ train_gn, val_gn, test_gn, energy = load_generators_diffuse_point(
 
 # Load the model
 print('Loading the Neural Network...')
-model = easy_dense(True)
-net_name = 'easy_dense_se_time'
+model = SE_InceptionV3_DoubleDense_energy()
+net_name = 'SE_InceptionV3_DoubleDense_energy'
 # model = SEDenseNet121_energy_dropout_l2(drop=0)
 # model.load_weights(
 #     '/home/emariott/deepmagic/output_data/snapshots/energy_skrr_fromEpoch60_2019-03-13_12-36-30-Best.h5')
@@ -30,9 +30,9 @@ net_name = 'easy_dense_se_time'
 result = snapshot_training(model=model,
                            train_gn=train_gn, val_gn=val_gn, test_gn=test_gn,
                            net_name=net_name,
-                           max_lr=0.003,
-                           epochs=50,
-                           snapshot_number=15,
+                           max_lr=0.1,
+                           epochs=13,
+                           snapshot_number=5,
                            task='energy',
                            machine=machine,
                            swa=True
