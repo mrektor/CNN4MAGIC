@@ -413,6 +413,7 @@ def load_generators_diffuse_point(batch_size,
 
     if want_label:
         folder_global = '/data/magic_data/clean_10_5/all_npys/npy_dump'
+        folder_point = '/data/magic_data/clean_10_5/point_MC/npy_dump'
         # folder_realdata = '/data/magic_data/clean_6_3punto5/cyn_1ES2037/npy_dump'
         filepath_complement_realdata = '/data/magic_data/clean_10_5/cyn_1ES2037/events_labels.pkl'
         with open(filepath_complement_realdata, 'rb') as f:
@@ -421,6 +422,10 @@ def load_generators_diffuse_point(batch_size,
         filepath_complement_diffuse_clean = '/data/magic_data/clean_10_5/diffuse_MC/diffuse_clean_10_5_complement.pkl'
         with open(filepath_complement_diffuse_clean, 'rb') as f:
             eventList_diffuse, labels_diffuse, _, _ = pkl.load(f)
+
+        filepath_complement_point_clean = '/data/magic_data/clean_10_5/point_MC/point_clean_10_5_complement.pkl'
+        with open(filepath_complement_point_clean, 'rb') as f:
+            eventList_point, labels_point, _, _ = pkl.load(f)
 
         eventList_global = eventList_diffuse + eventList_realdata
         # eventList_global = glob.glob(f'{folder_global}/*.npy')
@@ -458,4 +463,14 @@ def load_generators_diffuse_point(batch_size,
                                  include_time=include_time
                                  )
 
-        return train_gn, val_gn
+        test_gn = MAGIC_Generator(list_IDs=eventList_point,
+                                  labels=labels_point,
+                                  separation=True,
+                                  shuffle=False,
+                                  batch_size=batch_size,
+                                  folder=folder_point,
+                                  apply_log_to_raw=apply_log_to_raw,
+                                  include_time=include_time
+                                  )
+
+        return train_gn, val_gn, test_gn

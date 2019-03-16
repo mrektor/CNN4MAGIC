@@ -2,27 +2,28 @@
 #
 # matplotlib.use('TkAgg')
 from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
-from CNN4MAGIC.Generator.models import energy_skrr
+from CNN4MAGIC.Generator.models import SE_InceptionV3_DoubleDense_energy
 
+# %
 BATCH_SIZE = 512
-machine = 'towerino'
+machine = 'titanx'
 
 # Load the data
 train_gn, val_gn, test_gn, energy_te = load_generators_diffuse_point(
     machine=machine,
     batch_size=BATCH_SIZE,
     want_golden=True,
-    want_energy=True, want_log_energy=True, include_time=False,
+    want_energy=True, want_log_energy=True, include_time=True,
     clean=False)
 
 # %%
 # Load the model
 print('Loading the Neural Network...')
-model = energy_skrr(False)
+model = SE_InceptionV3_DoubleDense_energy()
 model.load_weights(
-    '/home/emariott/deepmagic/output_data/snapshots/energy_skrr_fromEpoch30_2019-03-13_03-14-22-15.h5')
+    '/home/emariott/software_magic/output_data/swa_models/SE_InceptionV3_DoubleDense_energy_2019-03-15_01-15-55_SWA.h5')
 # %%
-net_name = 'energy_skrr_60_best'
+net_name = 'SE_InceptionV3_DoubleDense_energy_yestime_SWA'
 
 # %%
 energy_te_limato = energy_te[:len(test_gn) * BATCH_SIZE]

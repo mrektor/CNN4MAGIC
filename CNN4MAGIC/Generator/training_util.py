@@ -134,6 +134,7 @@ def snapshot_training(model, train_gn, val_gn, net_name, max_lr=0.01, epochs=10,
 
     # Perform Test
     if test_gn is not None:
+        print('Predicting test...')
         y_pred_test = model.predict_generator(generator=test_gn,
                                               verbose=1,
                                               use_multiprocessing=False,

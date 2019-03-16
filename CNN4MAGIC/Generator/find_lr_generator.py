@@ -5,9 +5,9 @@ from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
 from CNN4MAGIC.Generator.models import SE_InceptionV3_DoubleDense_energy
 
 # %
-BATCH_SIZE = 1024
+BATCH_SIZE = 512
 nb_epoch = 1  # Only finding lr
-machine = 'titanx'
+machine = 'towerino'
 
 # train_gn, val_gn, test_gn, energy = load_generators_diffuse_point(batch_size=BATCH_SIZE,
 #                                                                   want_golden=True,
@@ -23,9 +23,9 @@ train_gn, val_gn, test_gn, energy = load_generators_diffuse_point(
     # apply_log_to_raw=False,
     machine=machine,
     clean=False,
-    include_time=True)
+    include_time=False)
 
-# %
+# %%
 num_samples = len(val_gn)*BATCH_SIZE
 # Exponential lr finder
 # USE THIS FOR A LARGE RANGE SEARCH
@@ -53,8 +53,8 @@ lr_finder = LRFinder(num_samples, BATCH_SIZE, minimum_lr=0.1, maximum_lr=50,
 # %Load Model
 print('Loading the Neural Network...')
 
-model = SE_InceptionV3_DoubleDense_energy()
-net_name = 'SE_InceptionV3_DoubleDense_energy'
+model = SE_InceptionV3_DoubleDense_energy(False)
+net_name = 'SE_InceptionV3_DoubleDense_energy_notime'
 # model = energy_skrr(False)
 # model.load_weights(
 #     '/home/emariott/deepmagic/output_data/snapshots/energy_skrr_fromEpoch30_2019-03-13_03-14-22-15.h5')

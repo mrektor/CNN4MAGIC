@@ -5,7 +5,7 @@ from keras.utils import Sequence
 class MAGIC_Generator(Sequence):
     def __init__(self, list_IDs, labels, batch_size=32, include_time=True,
                  position=False, separation=False, energy=False,
-                 shuffle=True, apply_log_to_raw=False,
+                 shuffle=True, apply_log_to_raw=False, cast=False,
                  folder='/data2T/mariotti_data_2/npy_dump/all_npy'):
         'Initialization'
         self.include_time = include_time
@@ -16,6 +16,7 @@ class MAGIC_Generator(Sequence):
         self.batch_size = batch_size
         self.labels = labels
         self.list_IDs = list_IDs
+        self.cast = cast
         self.separation = separation
         self.energy = energy
         self.shuffle = shuffle
@@ -56,8 +57,13 @@ class MAGIC_Generator(Sequence):
             # Store class
             y[i] = self.labels[ID]
 
+
             if self.apply_log_to_raw:
                 X = np.nan_to_num(np.log10(X))  # do it for avoidin -inf where is 0.
+
+            if self.cast:
+                X = X.astype('float16')
+
 
         return X, y
 

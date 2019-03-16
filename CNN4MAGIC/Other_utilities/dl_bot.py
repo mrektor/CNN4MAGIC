@@ -6,9 +6,7 @@ https://eyalzk.github.io/
 """
 
 import logging
-from io import BytesIO
 
-import numpy as np
 from telegram import (ReplyKeyboardMarkup, ReplyKeyboardRemove)
 from telegram.ext import (Updater, CommandHandler, Filters, RegexHandler,
                           ConversationHandler)
@@ -225,27 +223,27 @@ class DLBot(object):
     def plot_loss(self, bot, update):
         """ Telegram bot callback for the /plot command. Replies with a convergence plot image"""
 
-        if not self.loss_hist or plt is None:
-            # First epoch wasn't finished or matplotlib isn't installed
-            return
-        loss_np = np.asarray(self.loss_hist)
-        # Check if training has a validation set
-        val_loss_np = np.asarray(self.val_loss_hist) if self.val_loss_hist else None
-        legend_keys = ['loss', 'val_loss'] if self.val_loss_hist else ['loss']
-
-        x = np.arange(len(loss_np))  # Epoch axes
-        fig = plt.figure()
-        ax = plt.axes()
-        ax.plot(x, loss_np, 'b')  # Plot training loss
-        if val_loss_np is not None:
-            ax.plot(x, val_loss_np, 'r')  # Plot val loss
-        plt.title(f'Loss Convergence of {self.net_name}')
-        plt.xlabel('Epoch')
-        plt.ylabel('Loss')
-        ax.legend(legend_keys)
-        buffer = BytesIO()
-        # fig.savefig(buffer, format='png')
-        plt.savefig(buffer, format='png')
-        buffer.seek(0)
-        update.message.reply_photo(buffer)  # Sent image to user
-        plt.close()
+        # if not self.loss_hist or plt is None:
+        #     # First epoch wasn't finished or matplotlib isn't installed
+        #     return
+        # loss_np = np.asarray(self.loss_hist)
+        # # Check if training has a validation set
+        # val_loss_np = np.asarray(self.val_loss_hist) if self.val_loss_hist else None
+        # legend_keys = ['loss', 'val_loss'] if self.val_loss_hist else ['loss']
+        #
+        # x = np.arange(len(loss_np))  # Epoch axes
+        # fig = plt.figure()
+        # ax = plt.axes()
+        # ax.plot(x, loss_np, 'b')  # Plot training loss
+        # if val_loss_np is not None:
+        #     ax.plot(x, val_loss_np, 'r')  # Plot val loss
+        # plt.title(f'Loss Convergence of {self.net_name}')
+        # plt.xlabel('Epoch')
+        # plt.ylabel('Loss')
+        # ax.legend(legend_keys)
+        # buffer = BytesIO()
+        # # fig.savefig(buffer, format='png')
+        # plt.savefig(buffer, format='png')
+        # buffer.seek(0)
+        # update.message.reply_photo(buffer)  # Sent image to user
+        # plt.close()

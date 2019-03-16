@@ -229,8 +229,11 @@ def easy_dense(include_time=True):
 # model.summary()
 # %%
 
-def SE_InceptionV3_DoubleDense_energy():
-    input_img = Input(shape=(67, 68, 4), name='m1')
+def SE_InceptionV3_DoubleDense_energy(include_time=True):
+    if include_time:
+        input_img = Input(shape=(67, 68, 4), name='m1m2')
+    else:
+        input_img = Input(shape=(67, 68, 2), name='m1m2')
 
     dense_out = SEInceptionV3(include_top=False,
                               weights=None,

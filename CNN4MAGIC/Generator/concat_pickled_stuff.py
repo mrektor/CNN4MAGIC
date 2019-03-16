@@ -4,7 +4,7 @@ import pickle
 from tqdm import tqdm
 
 # %
-filelist = glob.glob('/data/magic_data/clean_10_5/diffuse_MC/complement/*.pkl')
+filelist = glob.glob('/data/magic_data/clean_10_5/point_MC/*.pkl')
 
 # %
 print(len(filelist))
@@ -48,11 +48,11 @@ with open('/data/magic_data/clean_10_5/cyn_1ES2037/events_labels.pkl', 'wb') as 
 
 
 # %%
-with open('/data/magic_data/clean_10_5/diffuse_MC/diffuse_clean_10_5_complement.pkl', 'wb') as f:
+with open('/data/magic_data/clean_10_5/point_MC/point_clean_10_5_complement.pkl', 'wb') as f:
     pickle.dump((eventList_total, labels_total, energy_total, position_total), f)
 
 # %%
-with open('/data/magic_data/clean_10_5/diffuse_MC/df_big_10_5.pkl', 'wb') as f:
+with open('/data/magic_data/clean_10_5/point_MC/df_big_10_5.pkl', 'wb') as f:
     pickle.dump(df_big, f)
 
 # %%
