@@ -5,6 +5,7 @@ from keras.models import load_model
 
 from CNN4MAGIC.CNN_Models.BigData.cbam_DenseNet import *
 from CNN4MAGIC.CNN_Models.BigData.se_DenseNet import SEDenseNet, SEDenseNetImageNet121
+from CNN4MAGIC.CNN_Models.BigData.se_resinc import SEInceptionResNetV2
 from CNN4MAGIC.Generator.SqueezeExciteInceptionV3gencopy import SEInceptionV3
 
 
@@ -256,6 +257,60 @@ def SE_InceptionV3_DoubleDense_energy(include_time=True):
     return model1
 
 
+def SE_InceptionV3_SingleDense_energy(include_time=True):
+    if include_time:
+        input_img = Input(shape=(67, 68, 4), name='m1m2')
+    else:
+        input_img = Input(shape=(67, 68, 2), name='m1m2')
+
+    dense_out = SEInceptionV3(include_top=False,
+                              weights=None,
+                              input_tensor=input_img,
+                              input_shape=None,
+                              pooling='avg'
+                              )
+    x = dense_out.layers[-1].output
+
+    x = BatchNormalization()(x)
+    x = Dense(64)(x)
+    x = BatchNormalization()(x)
+    x = LeakyReLU()(x)
+    # x = Dense(32, kernel_regularizer='l2')(x)
+    # x = BatchNormalization()(x)
+    # x = LeakyReLU()(x)
+    x = Dense(1, name='energy', kernel_regularizer='l2')(x)
+    model1 = Model(inputs=input_img, output=x)
+
+    return model1
+
+
+def SE_incres_SingleDense_energy(include_time=True):
+    if include_time:
+        input_img = Input(shape=(67, 68, 4), name='m1m2')
+    else:
+        input_img = Input(shape=(67, 68, 2), name='m1m2')
+
+    dense_out = SEInceptionResNetV2(include_top=False,
+                                    weights=None,
+                                    input_tensor=input_img,
+                                    input_shape=None,
+                                    pooling='avg'
+                                    )
+    x = dense_out.layers[-1].output
+
+    x = BatchNormalization()(x)
+    x = Dense(64)(x)
+    x = BatchNormalization()(x)
+    x = ReLU()(x)
+    # x = Dense(32, kernel_regularizer='l2')(x)
+    # x = BatchNormalization()(x)
+    # x = LeakyReLU()(x)
+    x = Dense(1, name='energy', kernel_regularizer='l2')(x)
+    model1 = Model(inputs=input_img, output=x)
+
+    return model1
+
+
 def MobileNetV2_slim_energy():
     input_img = Input(shape=(67, 68, 4), name='m1')
 
@@ -351,6 +406,7 @@ def NASNet_mobile_energy():
     model1 = Model(inputs=input_img, output=x)
     return model1
 
+
 def DenseNet121_position():
     input_img = Input(shape=(67, 68, 4), name='m1')
 
@@ -440,6 +496,7 @@ def InceptionV3_position():
     model1 = Model(inputs=input_img, output=x)
     return model1
 
+
 def CBAM_DenseNet161_Energy():
     input_img = Input(shape=(67, 68, 4), name='m1m2')
 
@@ -462,7 +519,7 @@ def CBAM_DenseNet121_Energy():
     return model1
 
 
-#%%
+# %%
 def single_DenseNet_25_3_doubleDense():
     input_img = Input(shape=(67, 68, 4), name='m1m2')
 
@@ -488,7 +545,7 @@ def single_DenseNet_25_3_doubleDense():
     return model1
 
 
-#%%
+# %%
 
 def single_DenseNet_piccina():
     input_img = Input(shape=(67, 68, 4), name='m1m2')
@@ -530,6 +587,38 @@ def MobileNetV2_4dense_position(input=None):
     x = LeakyReLU()(x)
 
     x = Dense(2, name='position')(x)
+    model1 = Model(inputs=input_img, output=x)
+    return model1
+
+
+def MobileNetV2_4dense_energy_desperacion(input=None):
+    if input is None:
+        input_img = Input(shape=(67, 68, 4), name='m1')
+    else:
+        input_img = input
+
+    model = MobileNetV2(alpha=3, depth_multiplier=1, include_top=False,
+                        weights=None, input_tensor=input_img, pooling='avg')
+
+    x = model.layers[-1].output
+    x = BatchNormalization()(x)
+    x = Dense(256, kernel_regularizer='l1')(x)
+    x = BatchNormalization()(x)
+    x = LeakyReLU()(x)
+
+    x = Dense(128, kernel_regularizer='l1')(x)
+    x = BatchNormalization()(x)
+    x = LeakyReLU()(x)
+
+    x = Dense(64, kernel_regularizer='l2')(x)
+    x = BatchNormalization()(x)
+    x = LeakyReLU()(x)
+
+    x = Dense(32, kernel_regularizer='l2')(x)
+    x = BatchNormalization()(x)
+    x = LeakyReLU()(x)
+
+    x = Dense(1, name='energy', kernel_regularizer='l2')(x)
     model1 = Model(inputs=input_img, output=x)
     return model1
 
@@ -687,7 +776,6 @@ def MobileNetV2_2dense_energy(pretrained=False, drop=False, freeze_cnn=False):
         model = MobileNetV2(alpha=0.3, depth_multiplier=0.3, include_top=False,
                             weights=None, input_tensor=input_img, pooling='avg')
 
-
         x = model.layers[-1].output
 
     x = BatchNormalization()(x)
@@ -780,8 +868,6 @@ def MobileNetV2_4dense_energy(pretrained=False, drop=False, freeze_cnn=False, in
 #     x = Dense(1, name='energy')(x)
 #     model1 = Model(inputs=input_img, output=x)
 #     return model1
-
-
 
 
 # def MobileNetV2_2dense_energy(pretrained=False, drop=False):

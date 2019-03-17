@@ -2,10 +2,10 @@ from __future__ import print_function
 
 from CNN4MAGIC.CNN_Models.BigData.clr import LRFinder
 from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
-from CNN4MAGIC.Generator.models import SE_InceptionV3_DoubleDense_energy
+from CNN4MAGIC.Generator.models import MobileNetV2_4dense_energy_desperacion
 
 # %
-BATCH_SIZE = 512
+BATCH_SIZE = 128
 nb_epoch = 1  # Only finding lr
 machine = 'towerino'
 
@@ -23,14 +23,14 @@ train_gn, val_gn, test_gn, energy = load_generators_diffuse_point(
     # apply_log_to_raw=False,
     machine=machine,
     clean=False,
-    include_time=False)
+    include_time=True)
 
 # %%
 num_samples = len(val_gn)*BATCH_SIZE
 # Exponential lr finder
 # USE THIS FOR A LARGE RANGE SEARCH
 # Uncomment the validation_data flag to reduce speed but get a better idea of the learning rate
-lr_finder = LRFinder(num_samples, BATCH_SIZE, minimum_lr=0.1, maximum_lr=50,
+lr_finder = LRFinder(num_samples, BATCH_SIZE, minimum_lr=0.0001, maximum_lr=50,
                      lr_scale='exp',
                      # validation_data=({'m1': m1_val, 'm2': m2_val}, energy_val),  # use the validation data for losses
                      validation_sample_rate=5,
@@ -53,8 +53,8 @@ lr_finder = LRFinder(num_samples, BATCH_SIZE, minimum_lr=0.1, maximum_lr=50,
 # %Load Model
 print('Loading the Neural Network...')
 
-model = SE_InceptionV3_DoubleDense_energy(False)
-net_name = 'SE_InceptionV3_DoubleDense_energy_notime'
+model = MobileNetV2_4dense_energy_desperacion()
+net_name = 'MobileNetV2_4dense_energy_desperacion'
 # model = energy_skrr(False)
 # model.load_weights(
 #     '/home/emariott/deepmagic/output_data/snapshots/energy_skrr_fromEpoch30_2019-03-13_03-14-22-15.h5')

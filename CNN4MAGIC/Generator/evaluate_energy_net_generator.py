@@ -5,8 +5,8 @@ from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
 from CNN4MAGIC.Generator.models import SE_InceptionV3_DoubleDense_energy
 
 # %
-BATCH_SIZE = 512
-machine = 'titanx'
+BATCH_SIZE = 128
+machine = 'towerino'
 
 # Load the data
 train_gn, val_gn, test_gn, energy_te = load_generators_diffuse_point(
@@ -54,10 +54,12 @@ with open(file, 'wb') as f:
 #     y_pred = pickle.load(f)
 
 # %%
-# net_name = 'MobileNetV2_2dense_energy_pretrained'
-# file = f'/home/emariott/deepmagic/CNN4MAGIC/Generator/energy_gen_stuff/pred_{net_name}.pkl'
-# with open(file, 'rb') as f:
-#     y_pred = pickle.load(f)
+import pickle
+
+net_name = 'SE_InceptionV3_SingleDense_energy_yesTime'
+file = f'/home/emariott/deepmagic/output_data/reconstructions/SE_InceptionV3_SingleDense_energy_yesTime_2019-03-16_19-49-37.pkl'
+with open(file, 'rb') as f:
+    y_pred = pickle.load(f)
 
 # %%
 # net_name = ''
