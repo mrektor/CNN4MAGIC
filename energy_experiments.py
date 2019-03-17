@@ -20,7 +20,9 @@ train_gn, val_gn, test_gn, energy = load_generators_diffuse_point(
 # Load the model
 print('Loading the Neural Network...')
 model = SE_InceptionV3_SingleDense_energy(True)
-net_name = 'SE_InceptionV3_SingleDense_energy_yesTime'
+model.load_weights(
+    '/home/emariott/deepmagic/output_data/snapshots/SE_InceptionV3_SingleDense_energy_yesTime_2019-03-16_19-49-37-Best.h5')
+net_name = 'SE_InceptionV3_SingleDense_energy_yesTime_from40'
 # model = SEDenseNet121_energy_dropout_l2(drop=0)
 # %%
 # model.load_weights(
@@ -31,9 +33,9 @@ net_name = 'SE_InceptionV3_SingleDense_energy_yesTime'
 result = snapshot_training(model=model,
                            train_gn=train_gn, val_gn=val_gn, test_gn=test_gn,
                            net_name=net_name,
-                           max_lr=0.05,
-                           epochs=40,
-                           snapshot_number=15,
+                           max_lr=0.045,
+                           epochs=20,
+                           snapshot_number=10,
                            task='energy',
                            machine=machine,
                            swa=True

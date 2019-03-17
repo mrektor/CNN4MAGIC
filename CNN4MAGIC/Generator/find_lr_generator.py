@@ -2,7 +2,7 @@ from __future__ import print_function
 
 from CNN4MAGIC.CNN_Models.BigData.clr import LRFinder
 from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
-from CNN4MAGIC.Generator.models import MobileNetV2_4dense_energy_desperacion
+from CNN4MAGIC.Generator.models import SE_incres_energy
 
 # %
 BATCH_SIZE = 128
@@ -53,8 +53,8 @@ lr_finder = LRFinder(num_samples, BATCH_SIZE, minimum_lr=0.0001, maximum_lr=50,
 # %Load Model
 print('Loading the Neural Network...')
 
-model = MobileNetV2_4dense_energy_desperacion()
-net_name = 'MobileNetV2_4dense_energy_desperacion'
+model = SE_incres_energy()
+net_name = 'SE_incre_energy'
 # model = energy_skrr(False)
 # model.load_weights(
 #     '/home/emariott/deepmagic/output_data/snapshots/energy_skrr_fromEpoch30_2019-03-13_03-14-22-15.h5')
@@ -74,7 +74,7 @@ result = model.fit_generator(generator=val_gn,
                              epochs=1,
                              verbose=1,
                              callbacks=[lr_finder],
-                             use_multiprocessing=True,
+                             use_multiprocessing=False,
                              workers=8
                              )
 

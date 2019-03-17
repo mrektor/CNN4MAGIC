@@ -284,7 +284,9 @@ def SE_InceptionV3_SingleDense_energy(include_time=True):
     return model1
 
 
-def SE_incres_SingleDense_energy(include_time=True):
+# %%
+
+def SE_incres_TripleDense_energy(include_time=True):
     if include_time:
         input_img = Input(shape=(67, 68, 4), name='m1m2')
     else:
@@ -299,7 +301,15 @@ def SE_incres_SingleDense_energy(include_time=True):
     x = dense_out.layers[-1].output
 
     x = BatchNormalization()(x)
-    x = Dense(64)(x)
+    x = Dense(312)(x)
+    x = BatchNormalization()(x)
+    x = LeakyReLU()(x)
+
+    x = Dense(128)(x)
+    x = BatchNormalization()(x)
+    x = LeakyReLU()(x)
+
+    x = Dense(32)(x)
     x = BatchNormalization()(x)
     x = ReLU()(x)
     # x = Dense(32, kernel_regularizer='l2')(x)
@@ -311,6 +321,45 @@ def SE_incres_SingleDense_energy(include_time=True):
     return model1
 
 
+def SE_incres_energy(include_time=True):
+    if include_time:
+        input_img = Input(shape=(67, 68, 4), name='m1m2')
+    else:
+        input_img = Input(shape=(67, 68, 2), name='m1m2')
+
+    dense_out = SEInceptionResNetV2(include_top=False,
+                                    weights=None,
+                                    input_tensor=input_img,
+                                    input_shape=None,
+                                    pooling='avg'
+                                    )
+    x = dense_out.layers[-1].output
+
+    x = BatchNormalization()(x)
+    # x = Dense(312)(x)
+    # x = BatchNormalization()(x)
+    # x = LeakyReLU()(x)
+    #
+    # x = Dense(128)(x)
+    # x = BatchNormalization()(x)
+    # x = LeakyReLU()(x)
+    #
+    # x = Dense(32)(x)
+    # x = BatchNormalization()(x)
+    # x = ReLU()(x)
+    # x = Dense(32, kernel_regularizer='l2')(x)
+    # x = BatchNormalization()(x)
+    # x = LeakyReLU()(x)
+    x = Dense(1, name='energy')(x)
+    model1 = Model(inputs=input_img, output=x)
+
+    return model1
+
+
+# m = SE_incres_SingleDense_energy()
+# m.summary()
+
+#%%
 def MobileNetV2_slim_energy():
     input_img = Input(shape=(67, 68, 4), name='m1')
 

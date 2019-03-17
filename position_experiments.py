@@ -14,17 +14,17 @@ train_gn, val_gn, test_gn, position = load_generators_diffuse_point(
     batch_size=BATCH_SIZE,
     want_golden=True,
     want_position=True,
-    include_time=False,
+    include_time=True,
     clean=False)
 #%%
 # Load the model
 print('Loading the Neural Network...')
-model = SEDenseNet121_position_l2(include_time=False)
+model = SEDenseNet121_position_l2(include_time=True)
 # model = load_model(
 #     '/home/emariott/software_magic/output_data/checkpoints/SE-121-Position-TransferEnsemble5-from59to63.hdf5')
-# model.load_weights(
-#     '/home/emariott/software_magic/output_data/swa_models/SEDenseNet121_position_l2_fromEpoch41_2019-03-07_17-31-27_SWA.h5')
-net_name = 'SE-121-Position-l2-notime'
+model.load_weights(
+    '/home/emariott/software_magic/output_data/snapshots/SEDenseNet121_position_l2_fromEpoch41_2019-03-07_17-31-27-Best.h5')
+net_name = 'SE-121-Position-l2-fromepoch80'
 #%%
 # Train
 # result, y_pred = superconvergence_training(model=model, net_name=net_name,
@@ -39,8 +39,10 @@ result = snapshot_training(model=model,
                            train_gn=train_gn, val_gn=val_gn, test_gn=test_gn,
                            net_name=net_name,
                            max_lr=0.00075,
-                           epochs=20,
-                           snapshot_number=15
+                           epochs=7,
+                           snapshot_number=7,
+                           task='direction',
+                           swa=1
                            )
 
 # Evaluate

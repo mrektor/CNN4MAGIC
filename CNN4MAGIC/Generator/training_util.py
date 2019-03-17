@@ -75,7 +75,7 @@ def superconvergence_training(model, train_gn, val_gn, test_gn, net_name,
 
 
 def snapshot_training(model, train_gn, val_gn, net_name, max_lr=0.01, epochs=10, snapshot_number=5, task='direction',
-                      do_telegram=True, machine='towerino', test_gn=None, swa=True):
+                      do_telegram=True, machine='towerino', test_gn=None, swa=1):
     # Compile accordingly
     if task == 'direction':
         model.compile(optimizer='sgd', loss='mse')
@@ -95,9 +95,9 @@ def snapshot_training(model, train_gn, val_gn, net_name, max_lr=0.01, epochs=10,
     snapshot = SnapshotCallbackBuilder(epochs, snapshot_number, max_lr)
     callbacks = snapshot.get_callbacks(model_prefix=net_name_time)
 
-    if swa:
+    if swa > -1:
         filename = f'output_data/swa_models/{net_name_time}_SWA.h5'
-        swa_callback = SWA(filename, 4)
+        swa_callback = SWA(filename, swa)
         callbacks.append(swa_callback)
 
     logger = CSVLogger(f'output_data/csv_logs/{net_name_time}.csv')
@@ -115,7 +115,7 @@ def snapshot_training(model, train_gn, val_gn, net_name, max_lr=0.01, epochs=10,
                                      verbose=1,
                                      callbacks=callbacks,
                                      use_multiprocessing=False,
-                                     workers=0)
+                                     workers=8)
         print('Training completed')
     elif machine == '24cores':
         result = model.fit_generator(generator=train_gn,

@@ -2,7 +2,7 @@
 #
 # matplotlib.use('TkAgg')
 from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
-from CNN4MAGIC.Generator.models import SE_InceptionV3_DoubleDense_energy
+from CNN4MAGIC.Generator.models import SE_InceptionV3_SingleDense_energy
 
 # %
 BATCH_SIZE = 128
@@ -19,11 +19,11 @@ train_gn, val_gn, test_gn, energy_te = load_generators_diffuse_point(
 # %%
 # Load the model
 print('Loading the Neural Network...')
-model = SE_InceptionV3_DoubleDense_energy()
+model = SE_InceptionV3_SingleDense_energy()
 model.load_weights(
-    '/home/emariott/software_magic/output_data/swa_models/SE_InceptionV3_DoubleDense_energy_2019-03-15_01-15-55_SWA.h5')
-# %%
-net_name = 'SE_InceptionV3_DoubleDense_energy_yestime_SWA'
+    '/home/emariott/deepmagic/output_data/snapshots/SE_InceptionV3_SingleDense_energy_yesTime_2019-03-16_19-49-37-Best.h5')
+# %
+net_name = 'SE_InceptionV3_SingleDense_energy_yestime_Best'
 
 # %%
 energy_te_limato = energy_te[:len(test_gn) * BATCH_SIZE]
@@ -54,12 +54,12 @@ with open(file, 'wb') as f:
 #     y_pred = pickle.load(f)
 
 # %%
-import pickle
-
-net_name = 'SE_InceptionV3_SingleDense_energy_yesTime'
-file = f'/home/emariott/deepmagic/output_data/reconstructions/SE_InceptionV3_SingleDense_energy_yesTime_2019-03-16_19-49-37.pkl'
-with open(file, 'rb') as f:
-    y_pred = pickle.load(f)
+# import pickle
+#
+# net_name = 'SE_InceptionV3_SingleDense_energy_yesTime'
+# file = f'/home/emariott/deepmagic/output_data/reconstructions/SE_InceptionV3_SingleDense_energy_yesTime_2019-03-16_19-49-37.pkl'
+# with open(file, 'rb') as f:
+#     y_pred = pickle.load(f)
 
 # %%
 # net_name = ''
