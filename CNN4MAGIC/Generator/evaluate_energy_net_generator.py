@@ -32,6 +32,7 @@ energy_te_limato = energy_te[:len(test_gn) * BATCH_SIZE]
 print(len(test_gn) * BATCH_SIZE)
 print(energy_te.shape)
 print(energy_te_limato.shape)
+# print(y_pred.shape)
 # %
 
 # net_name = 'single_DenseNet_piccina_Gold'
@@ -54,12 +55,12 @@ with open(file, 'wb') as f:
 #     y_pred = pickle.load(f)
 
 # %%
-# import pickle
-#
-# net_name = 'SE_InceptionV3_SingleDense_energy_yesTime'
-# file = f'/home/emariott/deepmagic/output_data/reconstructions/SE_InceptionV3_SingleDense_energy_yesTime_2019-03-16_19-49-37.pkl'
-# with open(file, 'rb') as f:
-#     y_pred = pickle.load(f)
+import pickle
+
+net_name = 'SE_InceptionV3_SingleDense_energy_yesTime_from60_SWA10'
+file = f'/home/emariott/deepmagic/output_data/reconstructions/SE_InceptionV3_SingleDense_energy_yesTime_from60_2019-03-18_00-36-09.pkl'
+with open(file, 'rb') as f:
+    y_pred = pickle.load(f)
 
 # %%
 # net_name = ''
