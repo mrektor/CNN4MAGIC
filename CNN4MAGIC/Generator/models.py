@@ -257,11 +257,14 @@ def SE_InceptionV3_DoubleDense_energy(include_time=True):
     return model1
 
 
-def SE_InceptionV3_SingleDense_energy(include_time=True):
-    if include_time:
-        input_img = Input(shape=(67, 68, 4), name='m1m2')
+def SE_InceptionV3_SingleDense_energy(include_time=True, input=None):
+    if input == None:
+        if include_time:
+            input_img = Input(shape=(67, 68, 4), name='m1m2')
+        else:
+            input_img = Input(shape=(67, 68, 2), name='m1m2')
     else:
-        input_img = Input(shape=(67, 68, 2), name='m1m2')
+        input_img = input
 
     dense_out = SEInceptionV3(include_top=False,
                               weights=None,
