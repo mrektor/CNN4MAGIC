@@ -287,6 +287,35 @@ def SE_InceptionV3_SingleDense_energy(include_time=True, input=None):
     return model1
 
 
+def SE_InceptionV3_SingleDense_direction(include_time=True, input=None):
+    if input == None:
+        if include_time:
+            input_img = Input(shape=(67, 68, 4), name='m1m2')
+        else:
+            input_img = Input(shape=(67, 68, 2), name='m1m2')
+    else:
+        input_img = input
+
+    dense_out = SEInceptionV3(include_top=False,
+                              weights=None,
+                              input_tensor=input_img,
+                              input_shape=None,
+                              pooling='avg'
+                              )
+    x = dense_out.layers[-1].output
+
+    x = BatchNormalization()(x)
+    x = Dense(64)(x)
+    x = BatchNormalization()(x)
+    x = LeakyReLU()(x)
+    # x = Dense(32, kernel_regularizer='l2')(x)
+    # x = BatchNormalization()(x)
+    # x = LeakyReLU()(x)
+    x = Dense(2, name='direction', kernel_regularizer='l2')(x)
+    model1 = Model(inputs=input_img, output=x)
+
+    return model1
+
 # %%
 
 def SE_incres_TripleDense_energy(include_time=True):

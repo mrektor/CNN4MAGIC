@@ -3,10 +3,10 @@ import matplotlib
 matplotlib.use('TkAgg')
 from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
 from CNN4MAGIC.Generator.training_util import snapshot_training
-from CNN4MAGIC.Generator.models import SEDenseNet121_position_l2
+from CNN4MAGIC.Generator.models import SE_InceptionV3_SingleDense_direction
 
 # %%
-BATCH_SIZE = 32
+BATCH_SIZE = 64
 machine = 'titanx'
 # Load the data
 train_gn, val_gn, test_gn, position = load_generators_diffuse_point(
@@ -19,12 +19,12 @@ train_gn, val_gn, test_gn, position = load_generators_diffuse_point(
 #%%
 # Load the model
 print('Loading the Neural Network...')
-model = SEDenseNet121_position_l2(include_time=True)
+model = SE_InceptionV3_SingleDense_direction(include_time=True)
 # model = load_model(
 #     '/home/emariott/software_magic/output_data/checkpoints/SE-121-Position-TransferEnsemble5-from59to63.hdf5')
-model.load_weights(
-    '/home/emariott/software_magic/output_data/snapshots/SEDenseNet121_position_l2_fromEpoch41_2019-03-07_17-31-27-Best.h5')
-net_name = 'SE-121-Position-l2-fromepoch80'
+# model.load_weights(
+#     '/home/emariott/software_magic/output_data/snapshots/SEDenseNet121_position_l2_fromEpoch41_2019-03-07_17-31-27-Best.h5')
+net_name = 'SE_InceptionV3_SingleDense_direction'
 #%%
 # Train
 # result, y_pred = superconvergence_training(model=model, net_name=net_name,
@@ -38,11 +38,11 @@ result = snapshot_training(model=model,
                            machine=machine,
                            train_gn=train_gn, val_gn=val_gn, test_gn=test_gn,
                            net_name=net_name,
-                           max_lr=0.00075,
-                           epochs=7,
-                           snapshot_number=7,
+                           max_lr=0.0035,
+                           epochs=40,
+                           snapshot_number=40,
                            task='direction',
-                           swa=1
+                           swa=15
                            )
 
 # Evaluate
