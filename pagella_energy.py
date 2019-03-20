@@ -29,10 +29,14 @@ train_gn, val_gn, test_gn, energy_te = load_generators_diffuse_point(
 # %%
 energy_reco_filepath = glob.glob('/home/emariott/deepmagic/output_data/reconstructions/*InceptionV3*energy*.pkl')
 
-# %%
+# %
 networks = [path[53:-4] for path in energy_reco_filepath]
+# %%
 print(networks)
-
+# %%
+energy_reco_filepath.append(
+    '/home/emariott/deepmagic/output_data/reconstructions/transfer-SE-inc-v3-snap_2019-03-19_10-57-34.pkl')
+networks.append('transfer ens snap')
 # %%
 appello = {net: pkl_load(net_path) for net_path, net in zip(energy_reco_filepath, networks)}
 
@@ -56,6 +60,7 @@ def compute_loss(y_pred):
 # print(a)
 # %%
 losses_dict = {net: compute_loss(appello[net]) for net in networks}
+print(losses_dict)
 # %%
 losses_list = [compute_loss(appello[net]) for net in networks]
 # %%
@@ -201,9 +206,10 @@ plt.savefig(f'{fold_fig}/training_ensembles_no_searborn_global_onlytrain.eps')
 # %%
 
 plt.figure()
-plt.bar(['Best Sanpshot', 'SWA of last 10 Snapshots'],
+plt.bar(['Best Sanpshot', 'SWA of last 10 Snapshots', 'Transfer Energy Snap'],
         [losses_dict['energy_SE_InceptionV3_SingleDense_energy_yestime_Best'],
-         losses_dict['SE_InceptionV3_SingleDense_energy_yesTime_from60_2019-03-18_00-36-09']],
+         losses_dict['SE_InceptionV3_SingleDense_energy_yesTime_from60_2019-03-18_00-36-09'],
+         losses_dict['transfer ens snap']],
         width=0.3)
 # plt.ylim((0.150,0.20))
 plt.title('Test Losses of SE-Inception-v3 Single Dense models')

@@ -1,12 +1,14 @@
 import keras
 from keras.applications.inception_v3 import InceptionV3
 from keras.applications.mobilenetv2 import MobileNetV2
-from keras.models import load_model
+from keras.layers import *
+from keras.models import load_model, Model
 
-from CNN4MAGIC.CNN_Models.BigData.cbam_DenseNet import *
-from CNN4MAGIC.CNN_Models.BigData.se_DenseNet import SEDenseNet, SEDenseNetImageNet121
-from CNN4MAGIC.CNN_Models.BigData.se_resinc import SEInceptionResNetV2
-from CNN4MAGIC.Generator.SqueezeExciteInceptionV3gencopy import SEInceptionV3
+
+# from CNN4MAGIC.CNN_Models.BigData.cbam_DenseNet import *
+# from CNN4MAGIC.CNN_Models.BigData.se_DenseNet import SEDenseNet, SEDenseNetImageNet121
+# from CNN4MAGIC.CNN_Models.BigData.se_resinc import SEInceptionResNetV2
+# from CNN4MAGIC.Generator.SqueezeExciteInceptionV3gencopy import SEInceptionV3
 
 
 # %%

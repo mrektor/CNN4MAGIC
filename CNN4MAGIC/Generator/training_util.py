@@ -126,11 +126,7 @@ def snapshot_training(model, train_gn, val_gn, net_name, max_lr=0.01, epochs=10,
                                      use_multiprocessing=True,
                                      workers=24)
 
-    # Save the result
-    result_path = f'output_data/loss_history/{net_name_time}.pkl'
-    with open(result_path, 'wb') as f:
-        pickle.dump(result, f)
-    print('Result saved')
+
 
     # Perform Test
     if test_gn is not None:
@@ -145,5 +141,11 @@ def snapshot_training(model, train_gn, val_gn, net_name, max_lr=0.01, epochs=10,
         with open(reconstructions_path, 'wb') as f:
             pickle.dump(y_pred_test, f)
         print('saved')
+
+        # Save the result
+        result_path = f'output_data/loss_history/{net_name_time}.pkl'
+        with open(result_path, 'wb') as f:
+            pickle.dump(result, f)
+        print('Result saved')
 
     return result, y_pred_test

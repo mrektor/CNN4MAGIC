@@ -5,7 +5,7 @@ from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
 from CNN4MAGIC.Generator.training_util import snapshot_training
 from keras.models import load_model
 
-BATCH_SIZE = 128
+BATCH_SIZE = 256
 machine = 'towerino'
 
 # Load the data
@@ -29,20 +29,20 @@ model = load_model(
 # net_name = 'SE_InceptionV3_SingleDense_energy_yesTime_from60'
 # model = SEDenseNet121_energy_dropout_l2(drop=0)
 # %%
-# model.load_weights(
-#     'output_data/snapshots/SE_InceptionV3_DoubleDense_energy_2019-03-15_01-15-55-6.h5')
-net_name = 'transfer-SE-inc-v3-snap'
+model.load_weights(
+    '/home/emariott/deepmagic/output_data/snapshots/transfer-SE-inc-v3-snap_2019-03-19_10-57-34-10.h5')
+net_name = 'transfer-SE-inc-v3-snap-LR_0_05HIGH'
 
 #%%
 result = snapshot_training(model=model,
                            train_gn=train_gn, val_gn=val_gn, test_gn=test_gn,
                            net_name=net_name,
-                           max_lr=0.004,
-                           epochs=10,
-                           snapshot_number=10,
+                           max_lr=0.05,
+                           epochs=12,
+                           snapshot_number=12,
                            task='energy',
                            machine=machine,
-                           swa=5
+                           swa=2
                            )
 
 # res = model.evaluate_generator(val_gn, verbose=1, use_multiprocessing=True, workers=8)

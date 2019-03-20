@@ -63,12 +63,14 @@ with open(file, 'rb') as f:
     y_pred = pickle.load(f)
 
 # %%
+y_pred = appello['transfer ens snap']
 # net_name = ''
 from CNN4MAGIC.CNN_Models.BigData.utils import plot_hist2D, plot_gaussian_error
 
+net_name = 'transfer_ens_snap_swa'
 plot_hist2D(energy_te_limato, y_pred, net_name,
             fig_folder='output_data/pictures/energy_reconstruction',
-            num_bins=100)
+            num_bins=250)
 # %%
 plot_gaussian_error(energy_te_limato, y_pred,
                     net_name=net_name,
