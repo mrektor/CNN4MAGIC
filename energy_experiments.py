@@ -31,7 +31,7 @@ model = load_model(
 # %%
 model.load_weights(
     '/home/emariott/deepmagic/output_data/snapshots/transfer-SE-inc-v3-snap_2019-03-19_10-57-34-10.h5')
-net_name = 'transfer-SE-inc-v3-snap-LR_0_05HIGH'
+net_name = 'transfer-SE-inc-v3-snap-LR_0_05HIGH_SWA'
 
 #%%
 result = snapshot_training(model=model,

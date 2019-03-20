@@ -24,7 +24,7 @@ print('Loading the Neural Network...')
 # %%
 model = dummy_cnn()
 # model.load_weights(
-#     '/data/new_magic/output_data/snapshots/MobileNetV2_separation_clean6_3punto5_Gold_2019-02-26_13-22-24-Best.h5')
+#     '/data/new_magic/output_data/snapshots/SimplicioNet_2019-03-20_10-38-16-Best.h5')
 net_name = 'SimplicioNet'
 #%%
 
@@ -32,9 +32,10 @@ result = snapshot_training(model=model,
                            train_gn=train_gn, val_gn=val_gn,
                            net_name=net_name,
                            machine=machine,
-                           max_lr=0.5,
+                           max_lr=0.06,
                            epochs=10,
-                           snapshot_number=5,
+                           snapshot_number=10,
+                           swa=5,
                            task='separation',
                            do_telegram=True
                            )

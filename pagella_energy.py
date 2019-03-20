@@ -12,7 +12,7 @@ def pkl_load(path):
     return res
 
 
-# %%
+# %
 
 BATCH_SIZE = 128
 machine = 'towerino'
@@ -37,6 +37,14 @@ print(networks)
 energy_reco_filepath.append(
     '/home/emariott/deepmagic/output_data/reconstructions/transfer-SE-inc-v3-snap_2019-03-19_10-57-34.pkl')
 networks.append('transfer ens snap')
+
+energy_reco_filepath.append(
+    '/home/emariott/deepmagic/output_data/reconstructions/transfer-SE-inc-v3-snap-LR_0_05HIGH_2019-03-20_01-50-12.pkl')
+networks.append('transfer ens snap HIGHLR SWA')
+
+energy_reco_filepath.append(
+    '/home/emariott/deepmagic/output_data/reconstructions/energy_transfer-SE-inc-v3-snap-LR_0_05HIGH_Best.pkl')
+networks.append('transfer ens snap HIGHLR BEST')
 # %%
 appello = {net: pkl_load(net_path) for net_path, net in zip(energy_reco_filepath, networks)}
 
@@ -56,11 +64,25 @@ def compute_loss(y_pred):
     return mse
 
 
+def compute_loss_mean_absolute_linear_error(y_pred):
+    # print(len(y_pred), len(energy))
+    energy_limato = energy_te.flatten()[:len(y_pred)]
+    y_lin = np.power(10, y_pred).flatten()
+    energy_limato_lin = np.power(10, energy_limato).flatten()
+    error = (y_lin - energy_limato_lin) / energy_limato_lin
+    mean_absolute_linear_error = np.mean(np.abs(error))
+    # mse = np.mean((energy_limato - y_pred.flatten()) ** 2)
+    return mean_absolute_linear_error
+
+
 # a = compute_loss(appello['energy_energy_skrr_30_best'])
 # print(a)
 # %%
 losses_dict = {net: compute_loss(appello[net]) for net in networks}
+losses_dict_male = {net: compute_loss_mean_absolute_linear_error(appello[net]) for net in networks}
+
 print(losses_dict)
+print(losses_dict_male)
 # %%
 losses_list = [compute_loss(appello[net]) for net in networks]
 # %%
@@ -204,16 +226,25 @@ plt.title('Optimization Results of SE-Inception-v3 Single Dense')
 plt.savefig(f'{fold_fig}/training_ensembles_no_searborn_global_onlytrain.eps')
 
 # %%
-
+fold_fig = '/home/emariott/deepmagic/output_data/pictures/for_paper'
 plt.figure()
-plt.bar(['Best Sanpshot', 'SWA of last 10 Snapshots', 'Transfer Energy Snap'],
-        [losses_dict['energy_SE_InceptionV3_SingleDense_energy_yestime_Best'],
-         losses_dict['SE_InceptionV3_SingleDense_energy_yesTime_from60_2019-03-18_00-36-09'],
-         losses_dict['transfer ens snap']],
-        width=0.3)
+plt.barh(['Best Sanpshot', 'SWA of last 10 Snapshots', 'TSE-SWA (low LR)', 'TSE-SWA (high LR)', 'TSE Best (high LR)'],
+         [losses_dict_male['energy_SE_InceptionV3_SingleDense_energy_yestime_Best'],
+          losses_dict_male['SE_InceptionV3_SingleDense_energy_yesTime_from60_2019-03-18_00-36-09'],
+          losses_dict_male['transfer ens snap'],
+          losses_dict_male['transfer ens snap HIGHLR SWA'],
+          losses_dict_male['transfer ens snap HIGHLR BEST']
+          ]
+         )
 # plt.ylim((0.150,0.20))
+plt.tight_layout(rect=[0, 0.03, 1, 0.92])
+# plt.grid()
+plt.xlim([0.185, 0.25])
+plt.xlabel('Mean Absolute Linear Error')
 plt.title('Test Losses of SE-Inception-v3 Single Dense models')
 plt.savefig(f'{fold_fig}/ensemble_results.png')
+plt.savefig(f'{fold_fig}/ensemble_results.pdf')
+
 
 # %%
 ens_loss = [losses_dict['energy_SE_InceptionV3_SingleDense_energy_yestime_Best'],
