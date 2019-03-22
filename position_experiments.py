@@ -3,11 +3,11 @@ import matplotlib
 matplotlib.use('TkAgg')
 from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
 from CNN4MAGIC.Generator.training_util import snapshot_training
-from CNN4MAGIC.Generator.models import SE_InceptionV3_SingleDense_direction
+from CNN4MAGIC.Generator.models import SEDenseNet121_position_l2
 
 # %%
-BATCH_SIZE = 64
-machine = 'titanx'
+BATCH_SIZE = 32
+machine = 'towerino'
 # Load the data
 train_gn, val_gn, test_gn, position = load_generators_diffuse_point(
     machine=machine,
@@ -19,12 +19,13 @@ train_gn, val_gn, test_gn, position = load_generators_diffuse_point(
 #%%
 # Load the model
 print('Loading the Neural Network...')
-model = SE_InceptionV3_SingleDense_direction(include_time=True)
+model = SEDenseNet121_position_l2(include_time=True)
+net_name = 'SEDenseNet121_position_l2_fromEpoch60'
 # model = load_model(
 #     '/home/emariott/software_magic/output_data/checkpoints/SE-121-Position-TransferEnsemble5-from59to63.hdf5')
-# model.load_weights(
-#     '/home/emariott/software_magic/output_data/snapshots/SEDenseNet121_position_l2_fromEpoch41_2019-03-07_17-31-27-Best.h5')
-net_name = 'SE_InceptionV3_SingleDense_direction'
+model.load_weights(
+    'output_data/snapshots/SEDenseNet121_position_l2_fromEpoch41_2019-03-07_17-31-27-Best.h5')
+# net_name = 'SE_InceptionV3_SingleDense_direction'
 #%%
 # Train
 # result, y_pred = superconvergence_training(model=model, net_name=net_name,
@@ -38,11 +39,11 @@ result = snapshot_training(model=model,
                            machine=machine,
                            train_gn=train_gn, val_gn=val_gn, test_gn=test_gn,
                            net_name=net_name,
-                           max_lr=0.0035,
-                           epochs=40,
-                           snapshot_number=40,
+                           max_lr=0.0015,
+                           epochs=10,
+                           snapshot_number=10,
                            task='direction',
-                           swa=15
+                           swa=3
                            )
 
 # Evaluate

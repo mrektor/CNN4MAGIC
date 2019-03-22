@@ -1064,10 +1064,10 @@ def stereo_interp_from_root_realdata(filenames):
     # result = {'M1_interp': m1_interp, 'M2_interp': m2_interp}
 
     event_idx_list, labels = ROOT_dump_npy(m1=m1_interp, m2=m2_interp, filename=filenameM1[-42:-4],
-                                           dump_folder='/data/magic_data/clean_6_3punto5/SS433/npy_dump')
+                                           dump_folder='/data/magic_data/clean_10_5/crab/missing/npy_dump')
     #
     with open(
-            '/data/magic_data/clean_6_3punto5/SS433/complement/eventList_labels_' + filenameM1[-42:-4] + '.pkl',
+            '/data/magic_data/clean_10_5/crab/missing/complement/eventList_labels_' + filenameM1[-42:-4] + '.pkl',
             'wb') as f:
         pickle.dump((event_idx_list, labels), f, protocol=2)
     print(filenameM1[-40:-4])
@@ -1268,8 +1268,8 @@ def stereo_interp_from_root(filenames):
 # Load all the filenames
 
 
-fileM1 = glob.glob('/data/magic_data/raw_files/*M1*.root')
-fileM2 = glob.glob('/data/magic_data/raw_files/*M2*.root')
+fileM1 = glob.glob('/data/magic_data/crab/*M1*05075237.011_Y_CrabNebula-W0.40+035.root')
+fileM2 = glob.glob('/data/magic_data/crab/*M2*05075237.011_Y_CrabNebula-W0.40+035.root')
 
 
 # %%
@@ -1277,7 +1277,7 @@ def get_pair_match(a, b):
     result = []
     for i in a:
         for j in b:
-            if i[-42:-5] == j[-42:-5]:  # -28:-5 for MC. -42:-6 for ROOT. -40:-5 for Crab
+            if i[-40 - 5] == j[-40:-5]:  # -28:-5 for MC. -42:-6 for ROOT. -40:-5 for Crab
                 result.append((i, j))
     return result
 
@@ -1305,7 +1305,10 @@ print('It\'s Bum-Bum time:')
 num_cpus = multiprocessing.cpu_count()
 print(f'start multiprocessing with {num_cpus} jobs')
 print(f'dumping {len(mFull)} files')
-imap_unordered_bar(stereo_interp_from_root_realdata, mFull, n_processes=num_cpus)
+# imap_unordered_bar(stereo_interp_from_root_realdata, mFull, n_processes=num_cpus)
+print(fileM1)
+imap_unordered_bar(stereo_interp_from_root_realdata, [(fileM1[0], fileM2[0])], n_processes=num_cpus)
+
 # pool = multiprocessing.Pool(processes=num_cpus)
 # pool.map(stereo_interp_from_root, mFull)
 # pool.close()

@@ -4,17 +4,17 @@ from CNN4MAGIC.Generator.models import dummy_cnn
 
 model = dummy_cnn()
 # %%
-filename = '/data/new_magic/output_data/snapshots/dummy_cnn_4filter_1dense_nobias_2019-03-05_20-52-01-Best.h5'
+filename = '/data/new_magic/output_data/snapshots/SimplicioNet_2019-03-20_14-15-34-Best.h5'
 model.load_weights(filename)
 # %%
-folder_fig = '/data/new_magic/view_filters'
+folder_fig = '/data/new_magic/view_filters_10_5'
 
 # %%
 import matplotlib.pyplot as plt
 
 
 def plot_filer(filter_number):
-    folder_fig = '/data/new_magic/view_filters'
+    # folder_fig = '/data/new_magic/view_filters'
 
     # filter_number = 0
     kernels = model.layers[1].get_weights()[0]
@@ -72,7 +72,7 @@ plt.close()
 
 # %%
 fig, axes = plt.subplots(5, 5, figsize=(10, 10))
-kernels, bias = model.layers[1].get_weights()
+kernels = model.layers[1].get_weights()
 i = 0
 for ax in axes:
     for subax in ax:
@@ -107,7 +107,7 @@ from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
 
 BATCH_SIZE = 50
 machine = '24cores'
-train_gn, val_gn = load_generators_diffuse_point(
+train_gn, val_gn, test_gn = load_generators_diffuse_point(
     batch_size=BATCH_SIZE,
     want_golden=False,
     want_label=True,
@@ -161,7 +161,7 @@ def plot_output_conv_relu(el_idx, folder_fig):
 # %%
 from tqdm import tqdm
 
-new_folder_pic = '/data/new_magic/view_filters/experiment'
+new_folder_pic = '/data/new_magic/view_filters_10_5/experiment'
 for i in tqdm(range(10)):
     plot_event(i, new_folder_pic)
     plot_output_conv_relu(i, new_folder_pic)
@@ -258,13 +258,13 @@ def plot_event_featmap(el_idx, folder_fig, do_text=True):
     plt.close()
 
 
-plot_event_featmap(el_idx, '/data/new_magic/view_filters/receptive_size')
+plot_event_featmap(el_idx, '/data/new_magic/view_filters_10_5/receptive_size')
 # plt.tight_layout()
 # plt.savefig(f'{folder_fig}/event_{el_idx}.png')
 # plt.close()
 # %%
 from tqdm import tqdm
 
-new_folder_pic = '/data/new_magic/view_filters/batch_validation_event_featmap'
+new_folder_pic = '/data/new_magic/view_filters_10_5/detected_feats_val_acc_0.83'
 for i in tqdm(range(BATCH_SIZE)):
     plot_event_featmap(i, new_folder_pic)

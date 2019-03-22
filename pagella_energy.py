@@ -227,15 +227,18 @@ plt.savefig(f'{fold_fig}/training_ensembles_no_searborn_global_onlytrain.eps')
 
 # %%
 fold_fig = '/home/emariott/deepmagic/output_data/pictures/for_paper'
+
+prop_cycle = plt.rcParams['axes.prop_cycle']
+colors = prop_cycle.by_key()['color']
 plt.figure()
-plt.barh(['Best Sanpshot', 'SWA of last 10 Snapshots', 'TSE-SWA (low LR)', 'TSE-SWA (high LR)', 'TSE Best (high LR)'],
+plt.barh(['Minimum Validation Snapshot', 'SWA of last 10 Snapshots', 'TSE-SWA (low LR)', 'TSE-SWA (high LR)',
+          'TSE Best (high LR)'],
          [losses_dict_male['energy_SE_InceptionV3_SingleDense_energy_yestime_Best'],
           losses_dict_male['SE_InceptionV3_SingleDense_energy_yesTime_from60_2019-03-18_00-36-09'],
           losses_dict_male['transfer ens snap'],
           losses_dict_male['transfer ens snap HIGHLR SWA'],
           losses_dict_male['transfer ens snap HIGHLR BEST']
-          ]
-         )
+          ], color=colors[:5])
 # plt.ylim((0.150,0.20))
 plt.tight_layout(rect=[0, 0.03, 1, 0.92])
 # plt.grid()
