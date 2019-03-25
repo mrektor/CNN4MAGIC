@@ -20,6 +20,8 @@ train_gn, val_gn, test_gn = load_generators_diffuse_point(
 # Load the model
 print('Loading the Neural Network...')
 # model = MobileNetV2_separation(alpha=0.2, include_time=False)
+# %%
+print(len(test_gn) * BATCH_SIZE)
 
 # %%
 import pickle
@@ -27,10 +29,10 @@ import pickle
 model = MobileNetV2_separation(alpha=1, include_time=False)
 weights_path = '/data/new_magic/output_data/snapshots/MobileNetV2_separation_10_5_2019-03-11_22-00-11-Best.h5'
 model.load_weights(weights_path)
-y_pred_test = model.predict_generator(val_gn, workers=24, verbose=1, use_multiprocessing=True)
+y_pred_test = model.predict_generator(test_gn, workers=24, verbose=1, use_multiprocessing=True)
 
 # %%
-net_name = 'MobileNetV2_separation_10_5_notime_alpha1'
+net_name = 'MobileNetV2_separation_10_5_notime_alpha1_DIOKKA_2'
 dump_name = f'output_data/reconstructions/point_{net_name}.pkl'
 with open(dump_name, 'wb') as f:
     pickle.dump(y_pred_test, f)

@@ -2,10 +2,9 @@
 
 from CNN4MAGIC.CNN_Models.BigData.utils import plot_angular_resolution
 from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
-from CNN4MAGIC.Generator.models import SEDenseNet121_position
 
 # %%
-machine = 'towerino'
+machine = 'titanx'
 
 BATCH_SIZE = 64
 train_gn, val_gn, test_gn, position_vect = load_generators_diffuse_point(
@@ -16,19 +15,24 @@ train_gn, val_gn, test_gn, position_vect = load_generators_diffuse_point(
     clean=False,
     include_time=True)
 
-# %%
+# %
 print('Loading the Neural Network...')
-model = SEDenseNet121_position()
-#%%
-model.load_weights(
-    'output_data/swa_models/SEDenseNet121_position_l2_fromEpoch41_2019-03-07_17-31-27_SWA.h5')
+model = swa_model  # load_model('/home/emariott/software_magic/output_data/checkpoints/SeDense121_position_from41_SWA_from10to19.hdf5')
+# model = SEDenseNet121_position(include_time=False)
+# #%
+# model.load_weights(
+#     '/home/emariott/software_magic/output_data/swa_models/SE-121-Position-l2-notime_2019-03-11_22-48-50_SWA.h5')
 print('Weight loaded')
-# %%
-net_name = 'SEDenseNet121_position_l2_fromEpoch41_SWA_15last'
+# %
+net_name = 'SeDense121_position_from41_SWA_from10to19'
 # model = load_model('/home/emariott/deepmagic/output_data/checkpoints/MV2-4D-30E-l2-EnsLast9_2019-02-20_11-28-13.hdf5')
 # print('start predictions...')
 
-position_prediction = model.predict_generator(test_gn, verbose=1)
+position_prediction_3 = model.predict_generator(test_gn, verbose=1, use_multiprocessing=True, workers=8)
+import pickle
+
+with open(f'output_data/reconstructions/position_{net_name}.pkl', 'wb') as f:
+    pickle.dump(position_prediction_3, f)
 
 #%%
 train_gn, val_gn, test_gn, energy = load_generators_diffuse_point(
@@ -81,7 +85,6 @@ plot_angular_resolution(position_te_limato, position_prediction, energy_te_limat
 # %%
 import numpy as np
 import matplotlib.pyplot as plt
-
 
 def bin_data_mask(data, num_bins, bins=None):
     if bins is None:

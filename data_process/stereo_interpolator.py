@@ -1,4 +1,3 @@
-import glob
 import multiprocessing
 import os
 import pickle
@@ -1241,10 +1240,10 @@ def stereo_interp_from_root(filenames):
                                                                              posX1=result['src_X1'],
                                                                              posY1=result['src_Y1'],
                                                                              filename=filenameM1[-27:-5],
-                                                                             dump_folder='/data/magic_data/clean_10_5/point_MC/npy_dump')
+                                                                             dump_folder='/second_data/missing_point/npy_dump')
 
         with open(
-                '/data/magic_data/clean_10_5/point_MC/complement' + filenameM1[-27:-5] + '.pkl', 'wb') as f:
+                '/second_data/missing_point/complementary/complement' + filenameM1[-27:-5] + '.pkl', 'wb') as f:
             pickle.dump((event_idx_list, labels, energy_labels, position_labels, df1, df2), f,
                         protocol=2)
 
@@ -1268,16 +1267,32 @@ def stereo_interp_from_root(filenames):
 # Load all the filenames
 
 
-fileM1 = glob.glob('/data/magic_data/crab/*M1*05075237.011_Y_CrabNebula-W0.40+035.root')
-fileM2 = glob.glob('/data/magic_data/crab/*M2*05075237.011_Y_CrabNebula-W0.40+035.root')
+# fileM1 = glob.glob('/data/magic_data/crab/*M1*05075237.011_Y_CrabNebula-W0.40+035.root')
+# fileM2 = glob.glob('/data/magic_data/crab/*M2*05075237.011_Y_CrabNebula-W0.40+035.root')
 
+#### OPERAZIONE RECUPERO POINT-LIKE
+from glob import glob
+
+complement_list = glob('/data/magic_data/clean_10_5/point_MC/complement/*pkl')
+root_list = glob('/second_data/point_like_root/*M1*.root')
+
+complement_id = [id_file[58:-4] for id_file in complement_list]
+root_id = [id_file[35:-5] for id_file in root_list]
+
+res = set(root_id) - set(complement_id)
+
+missing_files_m1 = [glob(f'/second_data/point_like_root/*M1*{single_id}.root')[0] for single_id in res]
+missing_files_m2 = [glob(f'/second_data/point_like_root/*M2*{single_id}.root')[0] for single_id in res]
+
+fileM1 = missing_files_m1
+fileM2 = missing_files_m2
 
 # %%
 def get_pair_match(a, b):
     result = []
     for i in a:
         for j in b:
-            if i[-40 - 5] == j[-40:-5]:  # -28:-5 for MC. -42:-6 for ROOT. -40:-5 for Crab
+            if i[35:-5] == j[35:-5]:  # -28:-5 for MC. -42:-6 for ROOT. -40:-5 for Crab. 35,-5 for MC MISSING
                 result.append((i, j))
     return result
 
@@ -1307,7 +1322,7 @@ print(f'start multiprocessing with {num_cpus} jobs')
 print(f'dumping {len(mFull)} files')
 # imap_unordered_bar(stereo_interp_from_root_realdata, mFull, n_processes=num_cpus)
 print(fileM1)
-imap_unordered_bar(stereo_interp_from_root_realdata, [(fileM1[0], fileM2[0])], n_processes=num_cpus)
+imap_unordered_bar(stereo_interp_from_root, mFull, n_processes=num_cpus)
 
 # pool = multiprocessing.Pool(processes=num_cpus)
 # pool.map(stereo_interp_from_root, mFull)

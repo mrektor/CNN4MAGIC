@@ -18,71 +18,76 @@ BATCH_SIZE = 128
 machine = 'titanx'
 
 # Load the data
-train_gn, val_gn, test_gn, energy_te = load_generators_diffuse_point(
+train_gn, val_gn, test_gn, position_te = load_generators_diffuse_point(
     machine=machine,
     batch_size=BATCH_SIZE,
     want_golden=True,
-    want_energy=True, want_log_energy=True,
+    want_position=True,
     include_time=True,
     clean=False)
 
 # %%
-energy_reco_filepath = glob.glob('output_data/reconstructions/*transfer*2019*.pkl')
-
+direction_reco_filepath = glob.glob('output_data/reconstructions/*position*.pkl')
+print(direction_reco_filepath)
 # %
-networks = [path[28:-4] for path in energy_reco_filepath]
-# %%
+networks = [path[28:-4] for path in direction_reco_filepath]
+# %
 print(networks)
+
 # %%
-energy_reco_filepath.append(
-    '/home/emariott/deepmagic/output_data/reconstructions/transfer-SE-inc-v3-snap_2019-03-19_10-57-34.pkl')
-networks.append('transfer ens snap')
+direction_reco_filepath = ['output_data/reconstructions/position_SEDenseNet121_position_l2_fromEpoch41_SWA_15last.pkl',
+                           # '/home/emariott/deepmagic/output_data/reconstructions/SE-121-Position-l2-fromepoch80_2019-03-17_23-13-18.pkl',
+                           # 'output_data/reconstructions/pos_predMobileNetV2_4dense_position-big-2.pkl',
+                           'output_data/reconstructions/SEDenseNet121_position_l2_fromEpoch60_2019-03-20_19-32-10.pkl',
+                           # 'output_data/reconstructions/pred_MV2-4D-30E-l2-EnsLast9_position.pkl',
+                           'output_data/reconstructions/position_SE-DenseNet121_pos_gold_noclean_best.pkl']
+networks = ['position_SEDenseNet121_position_l2_fromEpoch41_SWA_15last',
+            # 'SE-121-Position-l2-fromepoch80_2019-03-17_23-13-18',
+            # 'pos_predMobileNetV2_4dense_position-big-2',
+            'SEDenseNet121_position_l2_fromEpoch60_2019-03-20_19-32-10',
+            # 'pred_MV2-4D-30E-l2-EnsLast9_position',
+            'position_SE-DenseNet121_pos_gold_noclean_best']
 
-energy_reco_filepath.append(
-    '/home/emariott/deepmagic/output_data/reconstructions/transfer-SE-inc-v3-snap-LR_0_05HIGH_2019-03-20_01-50-12.pkl')
-networks.append('transfer ens snap HIGHLR SWA')
-
-energy_reco_filepath.append(
-    '/home/emariott/deepmagic/output_data/reconstructions/energy_transfer-SE-inc-v3-snap-LR_0_05HIGH_Best.pkl')
-networks.append('transfer ens snap HIGHLR BEST')
+# direction_reco_filepath = ['/home/emariott/software_magic/output_data/reconstructions/SE-121-Position-l2-fromepoch80_2019-03-17_23-13-18.pkl']
+# networks = [' fromepoch80, forse SWA']
 # %%
-appello = {net: pkl_load(net_path) for net_path, net in zip(energy_reco_filepath, networks)}
-
+# direction_reco_filepath.append(
+#     '/home/emariott/deepmagic/output_data/reconstructions/transfer-SE-inc-v3-snap_2019-03-19_10-57-34.pkl')
+# networks.append('transfer ens snap')
+#
+# direction_reco_filepath.append(
+#     '/home/emariott/deepmagic/output_data/reconstructions/transfer-SE-inc-v3-snap-LR_0_05HIGH_2019-03-20_01-50-12.pkl')
+# networks.append('transfer ens snap HIGHLR SWA')
+#
+# direction_reco_filepath.append(
+#     '/home/emariott/deepmagic/output_data/reconstructions/energy_transfer-SE-inc-v3-snap-LR_0_05HIGH_Best.pkl')
+# networks.append('transfer ens snap HIGHLR BEST')
+# %%
+appello = {net: pkl_load(net_path) for net_path, net in zip(direction_reco_filepath, networks)}
+appello_list = [pkl_load(net_path) for net_path in direction_reco_filepath]
 # %%
 print(appello)
 
 # %%
-lengths = [len(pred) for pred in appello.values()]
+lengths = [pred.shape for pred in appello.values()]
 print(lengths)
+print(position_te.shape)
 
 
 # %%
 def compute_loss(y_pred):
     # print(len(y_pred), len(energy))
-    energy_limato = energy_te.flatten()[:len(y_pred)]
-    mse = np.mean((energy_limato - y_pred.flatten()) ** 2)
+    direction_limato = position_te[:y_pred.shape[0], :]
+    mse = np.mean((direction_limato - y_pred) ** 2)
     return mse
 
 
-def compute_loss_mean_absolute_linear_error(y_pred):
-    # print(len(y_pred), len(energy))
-    energy_limato = energy_te.flatten()[:len(y_pred)]
-    y_lin = np.power(10, y_pred).flatten()
-    energy_limato_lin = np.power(10, energy_limato).flatten()
-    error = (y_lin - energy_limato_lin) / energy_limato_lin
-    mean_absolute_linear_error = np.mean(np.abs(error))
-    # mse = np.mean((energy_limato - y_pred.flatten()) ** 2)
-    return mean_absolute_linear_error
-
-
-# a = compute_loss(appello['energy_energy_skrr_30_best'])
-# print(a)
+# %%
+print(compute_loss(position_prediction_3))
 # %%
 losses_dict = {net: compute_loss(appello[net]) for net in networks}
-losses_dict_male = {net: compute_loss_mean_absolute_linear_error(appello[net]) for net in networks}
 
 print(losses_dict)
-print(losses_dict_male)
 # %%
 losses_list = [compute_loss(appello[net]) for net in networks]
 # %%
@@ -248,7 +253,6 @@ plt.xlabel('Mean Absolute Linear Error')
 plt.title('Test Losses of SE-Inception-v3 Single Dense models')
 plt.savefig(f'{fold_fig}/ensemble_results.png')
 plt.savefig(f'{fold_fig}/ensemble_results.pdf')
-
 
 # %%
 ens_loss = [losses_dict['energy_SE_InceptionV3_SingleDense_energy_yestime_Best'],

@@ -126,8 +126,8 @@ def snapshot_training(model, train_gn, val_gn, net_name, max_lr=0.01, epochs=10,
                                      use_multiprocessing=True,
                                      workers=24)
 
-
-
+    print('Saving the model...')
+    model.save_model(f'/home/emariott/deepmagic/output_data/checkpoints/{net_name_time}.hdf5')
     # Perform Test
     if test_gn is not None:
         print('Predicting test...')

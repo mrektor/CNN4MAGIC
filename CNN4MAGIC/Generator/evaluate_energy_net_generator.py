@@ -1,7 +1,6 @@
 # import matplotlib
 #
 # matplotlib.use('TkAgg')
-# from CNN4MAGIC.Generator.models import SE_InceptionV3_SingleDense_energy
 from keras.models import load_model
 
 from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
@@ -49,6 +48,7 @@ y_pred = model.predict_generator(generator=test_gn, verbose=1, use_multiprocessi
 # %
 import pickle
 
+
 #%
 file = f'output_data/reconstructions/energy_titanx_{net_name}.pkl'
 with open(file, 'wb') as f:
@@ -57,6 +57,8 @@ with open(file, 'wb') as f:
 #%
 # with open(file, 'rb') as f:
 #     y_pred = pickle.load(f)
+# %%
+print(y_pred.shape)
 
 # %%
 # import pickle
@@ -67,15 +69,17 @@ with open(file, 'rb') as f:
     y_pred = pickle.load(f)
 
 # %%
-y_pred = appello['transfer ens snap HIGHLR BEST']
+
+
+y_pred = appello['energy_SE_InceptionV3_SingleDense_energy_yestime_Best']
 energy_te_limato = energy_te[:y_pred.shape[0]]
-net_name = 'transfer ens snap HIGHLR_12bins'
-# from CNN4MAGIC.CNN_Models.BigData.utils import plot_hist2D, plot_gaussian_error
+net_name = 'energy_SE_InceptionV3_SingleDense_energy_yestime_Best_150bin'
+from CNN4MAGIC.CNN_Models.BigData.utils import plot_hist2D, plot_gaussian_error
 
 # net_name = 'transfer_ens_snap_HIGHLR_SWA'
 plot_hist2D(energy_te_limato, y_pred, net_name,
             fig_folder='output_data/pictures/energy_reconstruction',
-            num_bins=12)
+            num_bins=150)
 # %%
 plot_gaussian_error(energy_te_limato, y_pred,
                     net_name=net_name,
@@ -129,8 +133,12 @@ import matplotlib.pyplot as plt
 
 from matplotlib.colors import PowerNorm
 
+#%%
 net_name = 'transfer_snap_se_inc_v3_HighLr_best'
-y_pred = y_pred[:len(energy_te_limato)]
+
+y_pred = appello['energy_SE_InceptionV3_SingleDense_energy_yestime_Best']
+energy_te_limato = energy_te[:y_pred.shape[0]]
+
 plt.figure()
 plt.hist2d(energy_te_limato, y_pred.flatten(), bins=300, cmap='inferno', norm=PowerNorm(0.55))
 plt.plot([1, 10], [1, 10], 'w-')
@@ -142,8 +150,28 @@ plt.legend(['Ideal Line'])
 plt.xlim(1.45, 4.4)
 plt.ylim(1.45, 4.4)
 # plt.suptitle('Model: Transfer Snapshot Ensemble of SE-Inception V3')
-plt.savefig(f'output_data/pictures/for_paper/hist_{net_name}.pdf')
+plt.savefig(f'/home/emariott/deepmagic/output_data/pictures/for_paper/hist2D/hist_{net_name}.pdf')
 plt.close()
+
+# %%
+for net_name in appello.keys():
+    y_pred = appello[net_name]
+    energy_te_limato = energy_te[:y_pred.shape[0]]
+
+    plt.figure()
+    plt.hist2d(energy_te_limato, y_pred.flatten(), bins=300, cmap='inferno', norm=PowerNorm(0.55))
+    plt.plot([1, 10], [1, 10], 'w-')
+    plt.xlabel('True Energy ($\log_{10}$)')
+    plt.ylabel('Predicted Energy ($\log_{10}$)')
+    plt.colorbar()
+    plt.title(f'Regression Performances of Energy Estimation')
+    plt.legend(['Ideal Line'])
+    plt.xlim(1.6, 4.4)
+    plt.ylim(1.6, 4.4)
+    # plt.suptitle('Model: Transfer Snapshot Ensemble of SE-Inception V3')
+    plt.savefig(f'/home/emariott/deepmagic/output_data/pictures/for_paper/hist2D/hist_{net_name}.pdf')
+    plt.close()
+
 #%%
 plt.show()
 

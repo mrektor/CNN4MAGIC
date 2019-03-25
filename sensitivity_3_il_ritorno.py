@@ -20,7 +20,9 @@ def read_pkl(filename):
     return y_pred
 
 
-sp_gm = '/home/emariott/software_magic/output_data/reconstructions/point_MobileNetV2_separation_10_5_notime_alpha1.pkl'
+pos_in_mm = True
+
+sp_gm = '/home/emariott/software_magic/output_data/reconstructions/point_MobileNetV2_separation_10_5_notime_alpha1_DIOKKA_2.pkl'
 separation_gamma = read_pkl(sp_gm)
 
 energy_gamma_filename = '/home/emariott/software_magic/output_data/reconstructions/energy_titanx_transfer-SE-inc-v3-snap-lowLR_SWA.pkl'
@@ -46,14 +48,14 @@ energy_sim = read_pkl('/home/emariott/software_magic/output_data/for_sensitivity
 BATCH_SIZE = 128
 train_gn, val_gn, test_gn, energy_test = load_generators_diffuse_point(batch_size=BATCH_SIZE,
                                                                        machine='titanx',
-                                                                       want_golden=False,
+                                                                       want_golden=True,
                                                                        want_energy=True)
 
 # Load the data
 BATCH_SIZE = 128
 train_gn, val_gn, test_gn, position_test = load_generators_diffuse_point(batch_size=BATCH_SIZE,
                                                                          machine='titanx',
-                                                                         want_golden=False,
+                                                                         want_golden=True,
                                                                          want_position=True)
 
 # %%
@@ -61,11 +63,19 @@ train_gn, val_gn, test_gn, position_test = load_generators_diffuse_point(batch_s
 position_test_trimmed = position_test[:position_gamm.shape[0]]
 energy_test_trimmed = energy_test[:energy_gamma.shape[0]]
 gammaness_trimmed = separation_gamma[:energy_gamma.shape[0]]
-# %%
+# %
 print(len(energy_test_trimmed) - len(gammaness_trimmed))
 # %% Select hadrons from crab
-
-# condition_hadron_distant_from_crab =
+position_crab_mm = np.transpose(np.array([big_df_crab['xcoord_crab'].values, big_df_crab['ycoord_crab'].values]))
+position_crab_mm_limato = position_crab_mm[:position_hadrons.shape[0], :]
+if pos_in_mm:
+    position_crab_deg = position_crab_mm_limato * 0.00337  # in deg
+    position_hadrons_deg_tmp = position_hadrons * 0.00337  # in deg
+    # position_test_trimmed = position_test_trimmed * 0.00337
+    # position_gamm = position_gamm * 0.00337
+    pos_in_mm = False
+# %%
+condition_hadron_distant_from_crab = np.sqrt(np.sum((position_hadrons_deg_tmp - position_crab_deg) ** 2, axis=1)) > 0.5
 
 # %%
 chi_gammas = -np.log10(1 - gammaness_trimmed)
@@ -244,9 +254,10 @@ if pos_in_mm:
     pos_hadron_deg = position_hadrons * 0.00337  # in deg
 theta_2_h = np.sum((pos_hadron_deg - np.zeros(pos_hadron_deg.shape)) ** 2, axis=1)
 
-ring_condition = np.logical_and(theta_2_h > (0.3) ** 2, theta_2_h < (0.48) ** 2)
+ring_condition_1 = np.logical_and(theta_2_h > (0.15) ** 2, theta_2_h < (0.545) ** 2)  # small ring: 0.3, 0.48
+ring_condition = np.logical_and(ring_condition_1, condition_hadron_distant_from_crab)
 theta_selected_hardon_in_sector = theta_2_h[ring_condition]
-
+print(theta_selected_hardon_in_sector.shape)
 
 def compute_N_tot_h(cut_g, cut_energy_low, cut_energy_high):
     gammaness_h_cut = gammaness_hadrons[ring_condition].flatten() >= cut_g
@@ -278,33 +289,41 @@ print(np.sum(num_tot))
 
 # %%
 # Cut optimization for gammas and hadrons
-e_estimated = np.power(10, energy_test_trimmed.flatten())
+e_estimated = np.power(10, energy_test_trimmed.flatten())  # TODO: ???? non ci andrebbe l'enrgia ricostruita?
 # gammaness_trig_trimmed = gammaness_trig[]
+
+# e_estimated = np.power(10, energy_gamma.flatten())
+# e_estimated = e_estimated[:len(gammaness_trig)]
+# %%
+from tqdm import tqdm
 final_gamma = np.ndarray(shape=(ebins, gammaness_bins, theta2_bins))
 final_hadrons = np.ndarray(shape=(ebins, gammaness_bins, theta2_bins))
 
 n_gamma_no_weight = np.ndarray(shape=(ebins, gammaness_bins, theta2_bins))
 n_hadrons_no_weight = np.ndarray(shape=(ebins, gammaness_bins, theta2_bins))
-
+theta2_trig_limato = theta2_trig[:gammaness_trig.shape[0]]
 # E = np.logspace(math.log10(emin), math.log10(emax), eedges)
-for i, energy_bin in enumerate(np.linspace(emin, emax, ebins)):
-    for g_idx, gammaness_loop in enumerate(np.logspace(-7, -1, gammaness_bins)):
-        for t_idx, theta2_loop in enumerate(np.linspace(0.005, 0.05, theta2_bins)):
+for i, energy_bin in enumerate(tqdm(np.linspace(emin, emax, ebins))):
+    # for g_idx, gammaness_loop in enumerate(np.logspace(-7, -1, gammaness_bins)):
+    for g_idx, gammaness_loop in enumerate(np.linspace(0.9, 0.99, gammaness_bins)):
+        for t_idx, theta2_loop in enumerate(np.linspace(0.0005, 0.05, theta2_bins)):
             e_trig_w_sum = np.sum(e_trig_w[(e_estimated < E[i + 1]) & (e_estimated > E[i]) \
-                                           & (gammaness_trig.flatten() > gammaness_loop) & (theta2_trig < theta2_loop)])
+                                           & (gammaness_trig.flatten() > gammaness_loop) & (
+                                                       theta2_trig_limato < theta2_loop)])
 
             e_trig_sum = np.size(e_trig[(e_trig < E[i + 1]) & (e_trig > E[i]) \
-                                        & (gammaness_trig.flatten() > gammaness_loop) & (theta2_trig < theta2_loop)])
+                                        & (gammaness_trig.flatten() > gammaness_loop) & (
+                                                    theta2_trig_limato < theta2_loop)])
 
             n_gamma_no_weight[i][g_idx][t_idx] = e_trig_sum
 
             final_gamma[i][g_idx][t_idx] = e_trig_w_sum * obstime
             # TODO: Compute final_hadrons in my way
             N_tot_h = compute_N_tot_h(cut_g=gammaness_loop, cut_energy_low=E[i], cut_energy_high=E[i + 1])
-            print(
-                f'N_tot_h: {N_tot_h}.\t cut gammaness > {gammaness_loop}.\t cut theta < {theta2_loop}\t energy bin: {np.sqrt(E[i]*E[i+1])}')
+            # print(
+            #     f'N_tot_h: {N_tot_h}.\t cut gammaness > {gammaness_loop}.\t cut theta < {theta2_loop}\t energy bin: {np.sqrt(E[i]*E[i+1])}')
             theta2_tmp = theta2_loop
-            N_h = theta2_tmp / ((0.48) ** 2 - (0.3) ** 2) * N_tot_h * (
+            N_h = theta2_tmp / ((0.545) ** 2 - (0.15) ** 2) * N_tot_h * (
                     50 * 3600) / time_obs_h  # TODO: check if thet2 = t
             final_hadrons[i][g_idx][t_idx] = N_h
             # final_hadrons[i][g][t] = ep_w_sum * obstime
@@ -382,7 +401,10 @@ def Calculate_sensitivity(Ng, Nh, alpha):
 
 sens = Calculate_sensitivity(final_gamma, final_hadrons, 1)
 
+print(sens)
 
+
+# print(sens.shape)
 # %% plotting fz
 
 def fill_bin_content(ax, energy_bin):
@@ -457,6 +479,7 @@ for ebin in range(0, ebins):
     # gammaness/theta2 indices where the minimum in sensitivity is reached
     ind = np.unravel_index(np.argmin(sens[ebin], axis=None), sens[ebin].shape)
     indices.append(ind)
+    print(ind)
     sensitivity[ebin] = sens[ebin][ind]
     print(
         "Between %.1f GeV and %.1f GeV, gamma rate: %.3f/min (%i original gammas), hadron rate: %.3f/min (%i original hadrons)"
@@ -469,41 +492,41 @@ plt.savefig(f'{pic_folder}/sensitivity_full_maybe.png')
 
 
 # %%
-sensitivity = np.ones(shape=ebins) * 1e9
-g_sens_min = np.ones(shape=ebins) * 1e9
-t_sense_min = np.ones(shape=ebins) * 1e9
-from tqdm import tqdm
-
-bkg_rate_paper = [2.41, 0.54, 0.066, 0.027, 0.0133, 0.0059, 0.0027, 0.020, 0.0014, 0.0046]
-e_bins_min_paper = [100, 158, 251, 398, 631, 1000, 1585, 2512, 3981, 6310]
-
-t_sens = []
-all_rates = []
-for ebin in tqdm(range(ebins)):
-    if ebins != len(e_bins_min_paper):
-        print('Not the same number of energy bins')
-        raise ValueError
-    for g in range(gammaness_bins):
-
-        for t in range(theta2_bins):
-            if (sens[ebin][g][t] < sensitivity[ebin]):
-                # ind = np.unravel_index(np.argmin(sens[ebin], axis=None), sens[ebin].shape)
-                # print(n_hadrons_no_weight[ebin][g][t])
-                # if (n_hadrons_no_weight[ebin][g][t] > 10):
-                rate = final_hadrons[ebin][int(g)][int(t)] / obstime * 60
-                all_rates.append(rate)
-
-                # TODO: fai un if in cui entra se il rate è + o - il 20% del nominale dalla tabella colonna bkg-rate
-                reasonable = (rate < (bkg_rate_paper[ebin] * 1.2)) & (rate > (bkg_rate_paper[ebin] * 0.8))
-                if rate is reasonable:
-                    print('ok')
-                    sensitivity[ebin] = sens[ebin][g][t]
-                    g_sens_min[ebin] = g
-                    t_sense_min[ebin] = t
-
-print(sensitivity)
-print(g_sens_min)
-print(t_sense_min)
+# sensitivity = np.ones(shape=ebins) * 1e9
+# g_sens_min = np.ones(shape=ebins) * 1e9
+# t_sense_min = np.ones(shape=ebins) * 1e9
+# from tqdm import tqdm
+#
+# bkg_rate_paper = [2.41, 0.54, 0.066, 0.027, 0.0133, 0.0059, 0.0027, 0.020, 0.0014, 0.0046]
+# e_bins_min_paper = [100, 158, 251, 398, 631, 1000, 1585, 2512, 3981, 6310]
+#
+# t_sens = []
+# all_rates = []
+# for ebin in tqdm(range(ebins)):
+#     if ebins != len(e_bins_min_paper):
+#         print('Not the same number of energy bins')
+#         raise ValueError
+#     for g in range(gammaness_bins):
+#
+#         for t in range(theta2_bins):
+#             if (sens[ebin][g][t] < sensitivity[ebin]):
+#                 # ind = np.unravel_index(np.argmin(sens[ebin], axis=None), sens[ebin].shape)
+#                 # print(n_hadrons_no_weight[ebin][g][t])
+#                 # if (n_hadrons_no_weight[ebin][g][t] > 10):
+#                 rate = final_hadrons[ebin][int(g)][int(t)] / obstime * 60
+#                 all_rates.append(rate)
+#
+#                 # TODO: fai un if in cui entra se il rate è + o - il 20% del nominale dalla tabella colonna bkg-rate
+#                 reasonable = (rate < (bkg_rate_paper[ebin] * 1.2)) & (rate > (bkg_rate_paper[ebin] * 0.8))
+#                 if rate is reasonable:
+#                     print('ok')
+#                     sensitivity[ebin] = sens[ebin][g][t]
+#                     g_sens_min[ebin] = g
+#                     t_sense_min[ebin] = t
+#
+# print(sensitivity)
+# print(g_sens_min)
+# print(t_sense_min)
 
 # %%
 np.max(np.array(all_rates))
