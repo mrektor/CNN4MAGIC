@@ -6,8 +6,8 @@ from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
 
 # %%
 
-folder_fig = '/home/emariott/software_magic/output_data/pictures/for_direction'
-
+folder_fig = '/home/emariott/software_magic/output_data/pictures/for_direction_2'
+# %%
 df_0 = pd.read_csv(
     '/home/emariott/software_magic/output_data/csv_logs/SEDenseNet121_position_noclean_Gold_2019-02-25_01-37-25.csv')
 # df_1 = pd.read_csv('/home/emariott/software_magic/output_data/csv_logs/SEDenseNet121_position_noclean_Gold_fromEpoch35_2019-03-04_17-03-30.csv')
@@ -67,7 +67,7 @@ train_gn, val_gn, test_gn, position_te = load_generators_diffuse_point(
     want_position=True,
     include_time=True,
     clean=False)
-
+# %%
 train_gn, val_gn, test_gn, energy_te = load_generators_diffuse_point(
     machine=machine,
     batch_size=BATCH_SIZE,
@@ -125,9 +125,9 @@ def compute_theta(pos_true, pos_pred, en_bin, pos_in_mm=True, folder='', net_nam
 def plot_angular_resolution(position_true_list, position_prediction_list, energy_true,
                             fig_folder='/home/emariott/deepmagic/output_data/pictures/direction_reconstruction',
                             net_name='', makefigure=True):
-    fig_width = 8
-    plt.figure(figsize=(fig_width, fig_width * 0.618))
-    marker_set = ['<', '>', 'v', '^', 's']
+    fig, [ax1, ax2] = plt.subplots(2, 1, figsize=(8 * 1.118, 8), sharex=True, gridspec_kw={'height_ratios': [1.618, 1]})
+    # gs = gridspec.GridSpec(1, 2, height_ratios=[3, 1])
+    marker_set = ['P', 'X', 'D', 'o', 's']
     for j, position_prediction in enumerate(position_prediction_list):
 
         binned_values, bins, bins_masks = bin_data_mask(energy_true[j], 11)
@@ -142,37 +142,49 @@ def plot_angular_resolution(position_true_list, position_prediction_list, energy
                                 folder='/home/emariott/deepmagic/output_data/pictures/direction_reconstruction/histograms')
             resolutions.append(res)
             bin_medians.append(bin_value)
-        plt.semilogx(10 ** np.array(bin_medians[2:]), resolutions[2:], '-', marker=marker_set[j])
 
-    state_of_the_art_theta = np.array([0.157, 0.135, 0.108, 0.095, 0.081, 0.073, 0.071, 0.067, 0.065, 0.062, 0.056])
-    state_of_the_art_energy = np.array([95, 150, 230, 378, 599, 949, 1504, 2383, 3777, 5986, 9487])
+        ax1.semilogx(10 ** np.array(bin_medians[2:]), resolutions[2:], '--', marker=marker_set[j])
+        ax1.grid(which='both', linestyle='--')
 
-    plt.semilogx(state_of_the_art_energy, state_of_the_art_theta, '--*')
+        state_of_the_art_theta = np.array([0.157, 0.135, 0.108, 0.095, 0.081, 0.073, 0.071, 0.067, 0.065, 0.062, 0.056])
+        state_of_the_art_energy = np.array([95, 150, 230, 378, 599, 949, 1504, 2383, 3777, 5986, 9487])
+
+        res_interp = np.interp(state_of_the_art_energy, 10 ** np.array(bin_medians), resolutions)
+        enhancement = 100 * (state_of_the_art_theta - res_interp) / state_of_the_art_theta
+        ax2.semilogx(np.array(state_of_the_art_energy), enhancement, '--', marker=marker_set[j])
+        ax2.grid(which='both', linestyle='--')
+
+    ax1.semilogx(state_of_the_art_energy, state_of_the_art_theta, '-*k', linewidth=3, markersize=10)
+    ax2.semilogx([95, 9487], [0, 0], '-k', linewidth=3)
     # plt.xlim([100, 10000])
     # plt.ylim([0, 0.175])
 
-    plt.xlabel('Energy (GeV)')
-    plt.ylabel('Angular Resolution')
-    plt.title('68% Containment Angular Resolution of SE-DenseNet121')
-    plt.legend(['SWA Taining II', 'SWA Training III', 'Minimum Validation', 'Minimum Validation No Time', 'SWA No Time',
-                'MAGIC Standard Analysis'])
-    plt.grid(which='both', linestyle='--')
-    plt.savefig(fig_folder + '/angular_resolution_TOTALE_4.pdf')
-    # plt.savefig(fig_folder + '/angular_resolution' + net_name + '.eps')
+    # ax1.set_xlabel('Energy (GeV)')
+    ax1.set_ylabel('Angular Resolution')
+
+    ax2.set_xlabel('Energy (GeV)')
+    ax2.set_ylabel('Improvement (%)')
+
+    ax1.set_title('68% Containment Angular Resolution of SE DenseNet-121', fontsize=18)
+    ax1.legend(['SWA Taining II', 'SWA Training III', 'Minimum Validation', 'Minimum Validation No Time',
+                'MAGIC Aleksic (2015)'])
+    plt.tight_layout()
+    fig.subplots_adjust(hspace=0)
+
+    # plt.grid(which='both', linestyle='--')
+    plt.savefig(f'{fig_folder}/angular_resolution_TOTALE_4.png')
+    plt.savefig(f'{fig_folder}/angular_resolution_TOTALE_4.pdf')
+
+    plt.close()
     # plt.show()
 
 
-# %%
-# plt.figure()
-appello_list.append(position_prediction)
-appello_list.append(position_prediction_2)
-
-# %%
-
+# %
+net_name = 'Boh'
 position_te_limato_list = [position_te[:pred.shape[0], :] for pred in appello_list]
 energy_te_limato_list = [energy_te[:pred.shape[0]] for pred in appello_list]
 # net_name = 'SE DenseNet-121 III SWA'
-plot_angular_resolution(position_te_limato_list, appello_list, energy_te_limato_list, net_name=net_name,
+plot_angular_resolution(position_te_limato_list[:-1], appello_list[:-1], energy_te_limato_list, net_name=net_name,
                         fig_folder=folder_fig, makefigure=False)
 
 # %%

@@ -3,7 +3,6 @@ import pickle
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.colors import LogNorm
 
 # %%
 pic_folder = '/home/emariott/software_magic/output_data/sensitivity'
@@ -75,12 +74,40 @@ if pos_in_mm:
     # position_gamm = position_gamm * 0.00337
     pos_in_mm = False
 # %%
-condition_hadron_distant_from_crab = np.sqrt(np.sum((position_hadrons_deg_tmp - position_crab_deg) ** 2, axis=1)) > 0.5
+condition_hadron_distant_from_crab = np.sqrt(
+    np.sum((position_hadrons_deg_tmp - position_crab_deg) ** 2, axis=1)) > 0.5656
+print(np.sum(condition_hadron_distant_from_crab))
+# %%
+chi_gammas = -np.log10(1 - gammaness_trimmed + 1e-6)
+chi_hadrons = -np.log10(1 - gammaness_hadrons + 1e-6)
+# %%
+plt.figure()
+plt.hist(chi_gammas, log=True, bins=150)
+plt.xlabel('$\chi$')
+plt.ylabel('#')
+plt.title('Gammaness of MC Point-Like cleaned 10-5')
+plt.savefig(f'{pic_folder}/chi_gammas.png')
 
 # %%
-chi_gammas = -np.log10(1 - gammaness_trimmed)
-chi_hadrons = -np.log10(1 - gammaness_hadrons)
 
+plt.figure()
+plt.hist(separation_gamma, log=True, bins=150, alpha=0.5)
+plt.hist(gammaness_hadrons, log=True, bins=150, alpha=0.5)
+plt.legend(['Gamma MC', 'Crab Data'])
+plt.xlabel('gammaness')
+plt.ylabel('#')
+plt.title('Gammaness of MC Point-Like and Crab data cleaned 10-5')
+plt.savefig(f'{pic_folder}/gammaness_MC_crab.png')
+# %%
+
+plt.figure()
+plt.hist(chi_gammas, log=True, bins=150, alpha=0.5)
+plt.hist(chi_hadrons, log=True, bins=150, alpha=0.5)
+plt.legend(['Gamma MC', 'Crab Data'])
+plt.xlabel('$\chi$')
+plt.ylabel('#')
+plt.title('Gammaness of MC Point-Like and Crab data cleaned 10-5')
+plt.savefig(f'{pic_folder}/gammaness_MC_crab_chi.png')
 # %%
 print(np.max(chi_hadrons), np.min(chi_hadrons))
 print(np.max(chi_gammas), np.min(chi_gammas))
@@ -128,7 +155,6 @@ Index_Crab = -2.62
 # Only applicable for the simulation of diffuse gamma or protons
 cone = 0.
 
-
 # %%
 
 ##### Collection area calculation ######
@@ -175,10 +201,10 @@ pos_true = position_test_trimmed
 pos_pred = position_gamm
 pos_in_mm = True
 if pos_in_mm:
-    pos_true = pos_true * 0.00337  # in deg
-    pos_pred = pos_pred * 0.00337  # in deg
+    pos_true_deg = pos_true * 0.00337  # in deg
+    pos_pred_deg = pos_pred * 0.00337  # in deg
 
-theta2_trig = np.sum((pos_true - pos_pred) ** 2, axis=1)
+theta2_trig = np.sum((pos_true_deg - pos_pred_deg) ** 2, axis=1)
 
 # Same for hadrons
 gammaness_trig_h = gammaness_hadrons
@@ -254,7 +280,7 @@ if pos_in_mm:
     pos_hadron_deg = position_hadrons * 0.00337  # in deg
 theta_2_h = np.sum((pos_hadron_deg - np.zeros(pos_hadron_deg.shape)) ** 2, axis=1)
 
-ring_condition_1 = np.logical_and(theta_2_h > (0.15) ** 2, theta_2_h < (0.545) ** 2)  # small ring: 0.3, 0.48
+ring_condition_1 = np.logical_and(theta_2_h > (0.3) ** 2, theta_2_h < (0.48) ** 2)  # small ring: 0.3, 0.48
 ring_condition = np.logical_and(ring_condition_1, condition_hadron_distant_from_crab)
 theta_selected_hardon_in_sector = theta_2_h[ring_condition]
 print(theta_selected_hardon_in_sector.shape)
@@ -289,7 +315,7 @@ print(np.sum(num_tot))
 
 # %%
 # Cut optimization for gammas and hadrons
-e_estimated = np.power(10, energy_test_trimmed.flatten())  # TODO: ???? non ci andrebbe l'enrgia ricostruita?
+e_estimated = np.power(10, energy_gamma.flatten())  # TODO: ???? non ci andrebbe l'enrgia ricostruita?
 # gammaness_trig_trimmed = gammaness_trig[]
 
 # e_estimated = np.power(10, energy_gamma.flatten())
@@ -306,7 +332,7 @@ theta2_trig_limato = theta2_trig[:gammaness_trig.shape[0]]
 for i, energy_bin in enumerate(tqdm(np.linspace(emin, emax, ebins))):
     # for g_idx, gammaness_loop in enumerate(np.logspace(-7, -1, gammaness_bins)):
     for g_idx, gammaness_loop in enumerate(np.linspace(0.9, 0.99, gammaness_bins)):
-        for t_idx, theta2_loop in enumerate(np.linspace(0.0005, 0.05, theta2_bins)):
+        for t_idx, theta2_loop in enumerate(np.linspace(0.005, 0.05, theta2_bins)):
             e_trig_w_sum = np.sum(e_trig_w[(e_estimated < E[i + 1]) & (e_estimated > E[i]) \
                                            & (gammaness_trig.flatten() > gammaness_loop) & (
                                                        theta2_trig_limato < theta2_loop)])
@@ -320,15 +346,16 @@ for i, energy_bin in enumerate(tqdm(np.linspace(emin, emax, ebins))):
             final_gamma[i][g_idx][t_idx] = e_trig_w_sum * obstime
             # TODO: Compute final_hadrons in my way
             N_tot_h = compute_N_tot_h(cut_g=gammaness_loop, cut_energy_low=E[i], cut_energy_high=E[i + 1])
-            # print(
-            #     f'N_tot_h: {N_tot_h}.\t cut gammaness > {gammaness_loop}.\t cut theta < {theta2_loop}\t energy bin: {np.sqrt(E[i]*E[i+1])}')
+            print(
+                f'N_tot_h: {N_tot_h}.\t N_tot_g: {e_trig_w_sum*obstime}\t cut gammaness > {gammaness_loop}.\t cut theta < {theta2_loop}\t energy bin: {np.sqrt(E[i]*E[i+1])}')
             theta2_tmp = theta2_loop
-            N_h = theta2_tmp / ((0.545) ** 2 - (0.15) ** 2) * N_tot_h * (
-                    50 * 3600) / time_obs_h  # TODO: check if thet2 = t
+            N_h = theta2_tmp / (((0.48) ** 2 - (0.3) ** 2) / 2) * N_tot_h * (
+                        50 * 3600) / time_obs_h  # TODO: check if thet2 = t
             final_hadrons[i][g_idx][t_idx] = N_h
             # final_hadrons[i][g][t] = ep_w_sum * obstime
 
             n_hadrons_no_weight[i][g_idx][t_idx] = N_tot_h
+
 
 
 # for i in range(0, eedges - 1):  # binning in energy
@@ -356,6 +383,7 @@ for i, energy_bin in enumerate(tqdm(np.linspace(emin, emax, ebins))):
 #             # final_hadrons[i][g][t] = ep_w_sum * obstime
 #
 #             n_hadrons_no_weight[i][g][t] = N_tot_h
+#%%
 
 
 # %%
@@ -472,8 +500,8 @@ for ebin in range(0, ebins):
     arr_i = int(ebin / 3)
     arr_j = ebin - int(ebin / 3) * 3
     pl = axarr[arr_i, arr_j].imshow(sens[ebin], cmap='viridis_r', extent=[0., 0.5, 1., 0.],
-                                    # vmin=sens_LiMa.min(), vmax=sens_LiMa.max())
-                                    norm=LogNorm(vmin=sens.min(), vmax=sens.max()))
+                                    vmin=sens.min(), vmax=sens.max())
+    #norm=LogNorm(vmin=sens.min(), vmax=sens.max()))
     format_axes_array(axarr[arr_i, arr_j], arr_i, arr_j)
 
     # gammaness/theta2 indices where the minimum in sensitivity is reached

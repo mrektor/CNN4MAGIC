@@ -31,7 +31,7 @@ energy_reco_filepath = glob.glob('output_data/reconstructions/*transfer*2019*.pk
 
 # %
 networks = [path[28:-4] for path in energy_reco_filepath]
-# %%
+# %
 print(networks)
 # %%
 energy_reco_filepath.append(

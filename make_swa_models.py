@@ -24,24 +24,39 @@ def compute_SWA(weights, model):
 
 
 # %%
+snap_folder = '/home/emariott/deepmagic/output_data/snapshots'
 
-snap_list = glob(
-    '/home/emariott/software_magic/output_data/snapshots/SEDenseNet121_position_l2_fromEpoch41_2019-03-07_17-31-27-1*.h5')
-print(len(snap_list))
-snap_sort = sorted(snap_list)
-print(snap_sort)
+snapshots = glob(f'{snap_folder}/SEDenseNet121_position_noclean_Gold_2019-02-25_01-37-25-*.h5')
+snapshots_sort = sorted(snapshots)
+
+# %%
+print(snapshots_sort)
+print(len(snapshots_sort))
+
+# %%
+snap_to_ensemble = snapshots_sort[-5:-1] + snapshots_sort[1:4]
+print(snap_to_ensemble)
+
+# %%
+snap_to_ensemble_best = [snapshots_sort[-5]] + [snapshots_sort[1]] + [snapshots_sort[3]]
+print(snap_to_ensemble)
+
+# %%
+snap_to_ensemble_best_more = [snapshots_sort[-5]] + [snapshots_sort[1]] + [snapshots_sort[3]] + [snapshots_sort[5]] + [
+    snapshots_sort[-4]]
+print(snap_to_ensemble_best_more)
 
 # %%
 model_list_sedense = []
 model = SEDenseNet121_position_l2()
 all_weights = []
-for snap in tqdm(snap_sort):
+for snap in tqdm(snap_to_ensemble_best_more):
     model.load_weights(snap)
     weghts_single_model = model.get_weights()
     all_weights.append(weghts_single_model)
 
 # %%
-swa_model = compute_SWA(all_weights, model)
+swa_model_best_more = compute_SWA(all_weights, model)
 print('saving the swa...')
 # %%
 swa_model.save_weights(

@@ -40,13 +40,18 @@ direction_reco_filepath = ['output_data/reconstructions/position_SEDenseNet121_p
                            # 'output_data/reconstructions/pos_predMobileNetV2_4dense_position-big-2.pkl',
                            'output_data/reconstructions/SEDenseNet121_position_l2_fromEpoch60_2019-03-20_19-32-10.pkl',
                            # 'output_data/reconstructions/pred_MV2-4D-30E-l2-EnsLast9_position.pkl',
-                           'output_data/reconstructions/position_SE-DenseNet121_pos_gold_noclean_best.pkl']
+                           'output_data/reconstructions/position_SE-DenseNet121_pos_gold_noclean_best.pkl',
+                           'output_data/reconstructions/position_SEDenseNet121_position_l2_NOTIME-Best.pkl',
+                           'output_data/reconstructions/position_SEDenseNet121_position_l2_NOTIME-SWA.pkl']
 networks = ['position_SEDenseNet121_position_l2_fromEpoch41_SWA_15last',
             # 'SE-121-Position-l2-fromepoch80_2019-03-17_23-13-18',
             # 'pos_predMobileNetV2_4dense_position-big-2',
             'SEDenseNet121_position_l2_fromEpoch60_2019-03-20_19-32-10',
             # 'pred_MV2-4D-30E-l2-EnsLast9_position',
-            'position_SE-DenseNet121_pos_gold_noclean_best']
+            'position_SE-DenseNet121_pos_gold_noclean_best',
+            'no time best',
+            'no time swa'
+            ]
 
 # direction_reco_filepath = ['/home/emariott/software_magic/output_data/reconstructions/SE-121-Position-l2-fromepoch80_2019-03-17_23-13-18.pkl']
 # networks = [' fromepoch80, forse SWA']

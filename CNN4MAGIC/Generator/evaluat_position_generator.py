@@ -4,7 +4,7 @@ from CNN4MAGIC.CNN_Models.BigData.utils import plot_angular_resolution
 from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
 
 # %%
-machine = 'titanx'
+machine = 'towerino'
 
 BATCH_SIZE = 64
 train_gn, val_gn, test_gn, position_vect = load_generators_diffuse_point(
@@ -15,24 +15,37 @@ train_gn, val_gn, test_gn, position_vect = load_generators_diffuse_point(
     clean=False,
     include_time=True)
 
-# %
+# %%
 print('Loading the Neural Network...')
-model = swa_model  # load_model('/home/emariott/software_magic/output_data/checkpoints/SeDense121_position_from41_SWA_from10to19.hdf5')
+model = swa_model_best_more  # .load_weights(snap_to_ensemble[1])  # load_model('/home/emariott/software_magic/output_data/checkpoints/SeDense121_position_from41_SWA_from10to19.hdf5')
 # model = SEDenseNet121_position(include_time=False)
 # #%
 # model.load_weights(
 #     '/home/emariott/software_magic/output_data/swa_models/SE-121-Position-l2-notime_2019-03-11_22-48-50_SWA.h5')
 print('Weight loaded')
 # %
-net_name = 'SeDense121_position_from41_SWA_from10to19'
+net_name = 'SeDense121_position_trainingI_SWA_6-7-10-12-14'
 # model = load_model('/home/emariott/deepmagic/output_data/checkpoints/MV2-4D-30E-l2-EnsLast9_2019-02-20_11-28-13.hdf5')
 # print('start predictions...')
 
-position_prediction_3 = model.predict_generator(test_gn, verbose=1, use_multiprocessing=True, workers=8)
+position_prediction_6 = model.predict_generator(test_gn, verbose=1, use_multiprocessing=False, workers=7)
+#%%
 import pickle
 
+print(f'Saving predictions for {net_name}...')
 with open(f'output_data/reconstructions/position_{net_name}.pkl', 'wb') as f:
-    pickle.dump(position_prediction_3, f)
+    pickle.dump(position_prediction_6, f)
+
+
+# %%
+def compute_loss(y_pred):
+    # print(len(y_pred), len(energy))
+    direction_limato = position_vect[:y_pred.shape[0], :]
+    mse = np.mean((direction_limato - y_pred) ** 2)
+    return mse
+
+
+print(f'Test loss for {net_name}: {compute_loss(position_prediction_6)}')
 
 #%%
 train_gn, val_gn, test_gn, energy = load_generators_diffuse_point(
