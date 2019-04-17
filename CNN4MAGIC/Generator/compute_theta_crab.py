@@ -21,7 +21,7 @@ with open('/home/emariott/magic_data/crab/crab_position_dataframe/big_df_complem
           'rb') as f:
     big_df, evt_list = pickle.load(f)
 
-# %
+# %%
 labels = {ID: 1 for ID in evt_list}
 # %
 # Load the data

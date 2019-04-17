@@ -175,8 +175,8 @@ def plot_angular_resolution(position_true_list, position_prediction_list, energy
     plt.savefig(f'{fig_folder}/angular_resolution_TOTALE_4.png')
     plt.savefig(f'{fig_folder}/angular_resolution_TOTALE_4.pdf')
 
-    plt.close()
     # plt.show()
+    plt.close()
 
 
 # %

@@ -1,8 +1,9 @@
-'''DenseNet models for Keras.
+'''Implementations of DenseNet models for Keras.
 # Reference
 - [Densely Connected Convolutional Networks](https://arxiv.org/pdf/1608.06993.pdf)
 - [The One Hundred Layers Tiramisu: Fully Convolutional DenseNets for Semantic Segmentation](https://arxiv.org/pdf/1611.09326.pdf)
 '''
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function

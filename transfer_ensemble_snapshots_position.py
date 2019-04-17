@@ -3,7 +3,7 @@ import matplotlib
 matplotlib.use('TkAgg')
 from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
 from CNN4MAGIC.Generator.models import SEDenseNet121_position_l2
-from keras.layers import Input, Dense, concatenate, BatchNormalization, ReLU, Dropout
+from keras.layers import Input, Dense, concatenate
 from CNN4MAGIC.Generator.training_util import snapshot_training
 
 from keras.models import Model
@@ -50,22 +50,22 @@ for idx, snap in enumerate(tqdm(snap_to_ensemble)):
         for single_layer in model.layers:
             single_layer.trainable = False
     model.load_weights(snap)
-    feature_layers.append(model.layers[-2].output)
+    feature_layers.append(model.layers[-1].output)
 
 one_layer = concatenate(feature_layers)
-out_ens = BatchNormalization()(one_layer)
+# out_ens = BatchNormalization()(one_layer)
 # %%
-out_ens = Dropout(0.5)(out_ens)
-out_ens = Dense(256)(out_ens)
-out_ens = BatchNormalization()(out_ens)
-out_ens = ReLU()(out_ens)
+# out_ens = Dropout(0.5)(out_ens)
+# out_ens = Dense(256)(out_ens)
+# out_ens = BatchNormalization()(out_ens)
+# out_ens = ReLU()(out_ens)
 
 # out_ens = Dropout(0.2)(out_ens)
 # out_ens = Dense(64, kernel_regularizer='l2')(out_ens)
 # out_ens = BatchNormalization()(out_ens)
 # out_ens = LeakyReLU()(out_ens)
 
-out_ens = Dense(2, kernel_regularizer='l2')(out_ens)
+out_ens = Dense(2, kernel_regularizer='l2')(one_layer)
 
 ensemble_model = Model(input_img, out_ens)
 
@@ -85,7 +85,7 @@ net_name = 'tranfer-SeDense121-position-bestSnaps_6_10_12_LR5e-3_Single256Dense_
 result, y_pred_test = snapshot_training(model=ensemble_model,
                                         train_gn=train_gn, val_gn=val_gn, test_gn=test_gn,
                                         net_name=net_name,
-                                        max_lr=5e-3,
+                                        max_lr=1e-5,
                                         epochs=10,
                                         snapshot_number=10,
                                         swa=4

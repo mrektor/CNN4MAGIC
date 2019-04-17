@@ -26,7 +26,7 @@ filenames = get_pair_match(diffuse_files_M1, diffuse_files_M2)
 print(len(filenames))
 
 # %%
-folder_pic = '/home/emariott/deepmagic/data_process/visualisation_pics'
+folder_pic = '/home/emariott/deepmagic/output_data/pictures/visualize_true_position'
 df, phe, time = read_from_root(point_files[0])
 
 
@@ -63,6 +63,7 @@ def magic_plot_time(filename, idx):
 # %%
 m1, m2 = filenames[0]
 print(m1, m2)
+# %%
 res = stereo_interp_from_root((m1, m2))
 
 # %%
@@ -86,9 +87,11 @@ for idx in range(i1.shape[0]):
 i12_vect = np.array(i12)
 print(i12_vect.shape)
 # %%
-from keras.models import load_model
+from CNN4MAGIC.Generator.models import SEDenseNet121_position_l2
 
-model = load_model('/home/emariott/deepmagic/CNN4MAGIC/Generator/checkpoints/MobileNetV2_4dense_position-big-2.hdf5')
+model = SEDenseNet121_position_l2()
+model.load_weights(
+    '/home/emariott/deepmagic/output_data/snapshots/SEDenseNet121_position_noclean_Gold_2019-02-25_01-37-25-Best.h5')
 pos_pred = model.predict_on_batch(i12_vect)
 
 # %%
@@ -111,42 +114,60 @@ secondo_bin_theta = (theta2 > 0.01) & (theta2 < 0.04)
 
 
 # %%
-df, phe, time = read_from_root(m1)
+
+print(diffuse_files_M2[0])
+
+# %%
+df1, phe1, time1 = read_from_root(m1)
+df2, phe2, time2 = read_from_root(m2)
 
 
 # %%
 def magic_plot_phe_pos(idx, pos_true_x, pos_true_y, pos_reco_x, pos_reco_y, highlight=False):
-    phe_to_view = phe.iloc[idx, :1039]
-    camera_MAGIC = CameraGeometry.from_name('MAGICCamMars')
-    plt.figure()
-    display = CameraDisplay(camera_MAGIC)
+    phe_to_view1 = phe1.iloc[idx, :1039]
+    phe_to_view2 = phe2.iloc[idx, :1039]
 
-    display.image = phe_to_view
-    display.add_colorbar()
-    plt.plot(pos_true_x * 0.001, pos_true_y * 0.001, 'xr', markersize=15)
-    plt.plot(pos_reco_x * 0.001, pos_reco_y * 0.001, 'xw', markersize=15)
+    camera_MAGIC = CameraGeometry.from_name('MAGICCamMars')
+
+    fig, [ax1, ax2] = plt.subplots(1, 2, figsize=(10, 5))
+    display1 = CameraDisplay(camera_MAGIC, ax=ax1)
+    display1.image = phe_to_view1
+    # display1.add_colorbar()
+    ax1.plot(pos_true_x * 0.001, pos_true_y * 0.001, 'xr', markersize=15)
+    ax1.plot(pos_reco_x * 0.001, pos_reco_y * 0.001, 'xw', markersize=15)
+    ax1.set_title('MAGIC I')
+
+    display2 = CameraDisplay(camera_MAGIC, ax=ax2)
+    display2.image = phe_to_view2
+    # display2.add_colorbar()
+    ax2.plot(pos_true_x * 0.001, pos_true_y * 0.001, 'xr', markersize=15, label='True')
+    ax2.plot(pos_reco_x * 0.001, pos_reco_y * 0.001, 'xw', markersize=15, label='Reco')
+    leg = ax2.legend(facecolor='k')
+    ax2.set_title('MAGIC II')
+    for text in leg.get_texts():
+        plt.setp(text, color='w')
+
 
     if highlight:
-        display.highlight_pixels([i for i in range(len(phe_to_view.values))])
-    plt.title(f'MAGIC cam Phe signal of event {idx}')
+        display1.highlight_pixels([i for i in range(len(phe_to_view1.values))])
+        display2.highlight_pixels([i for i in range(len(phe_to_view1.values))])
 
-    plt.savefig(f'/home/emariott/deepmagic/data_process/visualisation_pics/pos_04_highlight/magic_camera_{idx}_phe.png')
+    plt.tight_layout()
+    plt.savefig(f'{folder_pic}/magic_camera_{idx}_phe.png')
     plt.close()
 
 
-# %%
+# %
 def get_index_from_bool(bool_idx):
     a = np.array([i for i in range(len(bool_idx))])[bool_idx]
     return a
 
 
 # %%
-t001 = get_index_from_bool(quali_theta_2_piccoli)
-t004 = get_index_from_bool(secondo_bin_theta)
 from tqdm import tqdm
 
-for idx in tqdm(t004):
-    magic_plot_phe_pos(idx, posx_true[idx], posy_true[idx], pos_pred[idx, 0], pos_pred[idx, 1], highlight=True)
+for idx in tqdm(range(50)):
+    magic_plot_phe_pos(idx, posx_true[idx], posy_true[idx], pos_pred[idx, 0], pos_pred[idx, 1], highlight=False)
 
 
 # %%

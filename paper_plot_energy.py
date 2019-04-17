@@ -43,7 +43,7 @@ energy_reco_filepath = []
 networks = []
 
 energy_reco_filepath.append(
-    'output_data/reconstructions/SE_InceptionV3_SingleDense_energy_yesTime_from40_2019-03-17_15-35-17.pkl')
+    'output_data/reconstructions/SE_InceptionV3_SingleDense_energy_yesTime_from60_2019-03-19_02-21-35.pkl')
 networks.append('Minimum Validation')
 
 energy_reco_filepath.append(
@@ -60,9 +60,9 @@ networks.append('TSE-SWA (high LR)')
 
 energy_reco_filepath.append(
     'output_data/reconstructions/energy_transfer-SE-inc-v3-snap-LR_0_05HIGH_Best.pkl')
-networks.append('TSE-SWA Minimum Validation (low LR)')
+networks.append('TSE-SWA Minimum Validation (high LR)')
 
-# %%
+# %
 reconstructions = [pkl_load(reco_path) for reco_path in energy_reco_filepath]
 losses_list = [compute_loss_mean_absolute_linear_error(reco) for reco in reconstructions]
 print(losses_list)
@@ -410,11 +410,11 @@ net_name = ''
 
 fig_folder = '/home/emariott/software_magic/output_data/pictures/for_energy'
 
-fig = plt.figure(constrained_layout=True, figsize=(13, 8))
-gs = fig.add_gridspec(nrows=2, ncols=2, height_ratios=[1.618, 1],
+fig = plt.figure(constrained_layout=True, figsize=(10, 10))
+gs = fig.add_gridspec(nrows=3, ncols=2, height_ratios=[2, 1.5, 1],
                       hspace=0)  # , height_ratios=[1.618, 1]  # left=0.55, right=0.98,
 
-f_ax1 = fig.add_subplot(gs[:, 0])
+f_ax1 = fig.add_subplot(gs[:2, 0])
 # f_ax1.set_title('AX1')
 
 
@@ -424,8 +424,8 @@ f_ax2 = fig.add_subplot(gs[0, 1])
 f_ax3 = fig.add_subplot(gs[1, 1], sharex=f_ax1)
 f_ax3.set_title('$\sigma$ Improvement')
 
-# f_ax4 = fig.add_subplot(gs[2, :])
-# f_ax4.set_title('Mean absolute linear error on Test Set')
+f_ax4 = fig.add_subplot(gs[2, :])
+f_ax4.set_title('Mean absolute linear error on Test Set')
 
 marker_set = ['P', 'X', 'D', 'o', 's']
 
@@ -468,7 +468,7 @@ for i, pred in enumerate(y_pred):
 f_ax1.semilogx(cutting_edge_magic_bins_median, cutting_edge_magic_bias, '-ok', linewidth=3)
 f_ax1.grid(which='both', linestyle='--')
 f_ax1.legend(legend_list)
-# f_ax1.set_xlabel('Energy (GeV)')
+f_ax1.set_xlabel('Energy (GeV)')
 f_ax1.set_ylabel('$\mu$ of linear prediction error')
 f_ax1.set_title('$\mu$ distribution for each bin')
 # plt.savefig('pics/bins_mu.jpg')
@@ -497,7 +497,7 @@ f_ax2.semilogx(cutting_edge_magic_bins_median, cutting_edge_magic_sigma, '-ok', 
 # plt.semilogx([min(bins_median_value), max(bins_median_value)], [np.mean(bins_sigma), np.mean(bins_sigma)], 'r--')
 f_ax2.grid(which='both', linestyle='--')
 f_ax2.set_ylabel('$\sigma$ of linear prediction error')
-f_ax2.set_xlabel('Energy (GeV)')
+# f_ax2.set_xlabel('Energy (GeV)')
 f_ax2.set_title('$\sigma$ distribution for each bin')
 # f_ax3.legend(legend_list)
 # plt.tight_layout()
@@ -506,15 +506,15 @@ f_ax2.set_title('$\sigma$ distribution for each bin')
 # plt.close()
 
 
-# prop_cycle = plt.rcParams['axes.prop_cycle']
-# colors = prop_cycle.by_key()['color']
-# short_labels =['MV', 'SWA', 'TSE-SWA lowLR', 'TSE-SWA high-LR', 'TSE-SWA MV']
-# f_ax4.barh(short_labels, losses_list, color=colors[:5])
-# f_ax4.set_xlim([0.17, 0.33])
+prop_cycle = plt.rcParams['axes.prop_cycle']
+colors = prop_cycle.by_key()['color']
+short_labels = ['MV', 'SWA', 'TSE-SWA lowLR', 'TSE-SWA highLR', 'TSE MV highLR']
+f_ax4.barh(short_labels, losses_list, color=colors[:5])
+f_ax4.set_xlim([0.19, 0.255])
 
 # fig.subplots_adjust(hspace=0)
-plt.savefig(f'{fig_folder}/glorious_plot_3.png')
-plt.savefig(f'{fig_folder}/glorious_plot_3.pdf')
+plt.savefig(f'{fig_folder}/glorious_plot_5.png')
+plt.savefig(f'{fig_folder}/glorious_plot_5.pdf')
 plt.close()
 
 # %%

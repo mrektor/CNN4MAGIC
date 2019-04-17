@@ -1,4 +1,5 @@
-"""Squeeze and Excite Inception V3 model
+"""
+An implementation of Squeeze and Excite Inception V3 model
 Major portions of this code is adapted from the applications folder of Keras.
 Note that the input image format for this model is different than for
 the VGG16 and ResNet models (299x299 instead of 224x224),
@@ -390,6 +391,7 @@ def SEInceptionV3(include_top=True,
     return model
 
 
+# Do not preprocess input for IACT images, as they are not RGB with values in [0, 255]
 def preprocess_input(x):
     # x /= 255.
     # x -= 0.5
