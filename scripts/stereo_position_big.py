@@ -1,9 +1,7 @@
 import pickle
 
-from keras.callbacks import ModelCheckpoint, EarlyStopping
 from keras.models import load_model
 
-from CNN4MAGIC.CNN_Models.BigData.clr import OneCycleLR
 from CNN4MAGIC.CNN_Models.BigData.snapshot import SnapshotCallbackBuilder
 from CNN4MAGIC.Generator.gen_util import load_generators_diffuse_point
 
