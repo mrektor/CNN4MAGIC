@@ -2,7 +2,7 @@
 
 This is the repository of the code used for my Master Thesis "MAGIC Deep Learning: a Performance Evaluation for Very High Energy Gamma-Ray Astrophysics", where I apply convolutional neural networks for the full analyisis of IACT MAGIC telescopes.
 
-## Topic covered
+## Topics covered
 The repository solves the problems of:
 1) Energy Reconstruction
 2) Direction Reconstruction
