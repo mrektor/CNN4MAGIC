@@ -1,6 +1,6 @@
 import keras
 from keras.applications.inception_v3 import InceptionV3
-from keras.applications.mobilenetv2 import MobileNetV2
+from keras.applications.mobilenet_v2 import MobileNetV2
 from keras.layers import *
 from keras.models import load_model, Model
 
@@ -801,7 +801,7 @@ def MobileNetV2_separation(alpha=1.0, include_time=True):
     else:
         input_img = Input(shape=(67, 68, 2), name='m1m2')
 
-    model = keras.applications.mobilenet_v2.MobileNetV2(alpha=alpha, depth_multiplier=1, include_top=False,
+    model = keras.applications.mobilenet_v2.MobileNetV2(alpha=alpha, include_top=False,
                                                         weights=None, input_tensor=input_img, pooling='max')
 
     x = model.layers[-1].output
