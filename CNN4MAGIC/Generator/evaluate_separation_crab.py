@@ -11,9 +11,9 @@ from CNN4MAGIC.Generator.models import MobileNetV2_separation
 # with open('/data/magic_data/clean_6_3punto5/crab/events_labels.pkl', 'rb') as f:
 #     crabID, labels = pickle.load(f)
 
-crab_npy_path = glob('/home/emariott/magic_data/crab_clean10_5/npy_dump/*.npy')
+crab_npy_path = glob('/ssdraptor/magic_data/crab/crab_data/crab_npy/*.npy')
 # %%
-with open('/home/emariott/magic_data/crab/crab_position_dataframe/big_df_complement_position_interpolated_nan.pkl',
+with open('/ssdraptor/magic_data/crab/crab_data/crab_position_dataframe/big_df_complement_position_interpolated_nan.pkl',
           'rb') as f:
     big_df, evt_list = pickle.load(f)
 
@@ -28,7 +28,7 @@ crab_generator = MAGIC_Generator(list_IDs=evt_list,
                                  separation=True,
                                  shuffle=False,
                                  batch_size=BATCH_SIZE,
-                                 folder='/home/emariott/magic_data/crab_clean10_5/npy_dump',
+                                 folder='/ssdraptor/magic_data/crab/crab_data/crab_npy',
                                  include_time=False)
 
 # %%
@@ -37,22 +37,26 @@ from tqdm import tqdm
 
 absent = []
 
-for ID in tqdm(evt_list):
+for ID in tqdm(evt_list[:10]):
     try:
-        a = np.load(f'/home/emariott/magic_data/crab_clean10_5/npy_dump/{ID}.npy')
+        a = np.load(f'/ssdraptor/magic_data/crab/crab_data/crab_npy/{ID}.npy')
     except FileNotFoundError:
         absent.append(ID)
 
 # %%
-print(absent)
 print(len(absent))
+#%%
+print(absent)
 
 # %%
-model = MobileNetV2_separation(alpha=1, include_time=False)
-weights_path = 'output_data/snapshots/MobileNetV2_separation_10_5_2019-03-11_22-00-11-Best.h5'
-model.load_weights(weights_path)
+# model = MobileNetV2_separation(alpha=1, include_time=False)
+# weights_path = 'output_data/snapshots/MobileNetV2_separation_10_5_2019-03-11_22-00-11-Best.h5'
+# model.load_weights(weights_path)
+from keras.models import load_model
+model = load_model('/data4T/CNN4MAGIC/results/MC_classification/computed_data/one-epoch-MV2.h5')
+
 # %%
-y_pred_test = model.predict_generator(crab_generator, workers=8, verbose=1, use_multiprocessing=True)
+y_pred_test = model.predict_generator(crab_generator, verbose=1)
 # %
 # net_name = 'MobileNetV2_separation_10_5_notime_alpha1'
 # dump_name = f'output_data/reconstructions/crab_separation_{net_name}.pkl'
