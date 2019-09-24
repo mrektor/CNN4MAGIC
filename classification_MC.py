@@ -140,7 +140,7 @@ result = model.fit_generator(generator=train_gn,
                              use_multiprocessing=False,
                              workers=8)
 
-# %
+# %%
 hadron_test_gn = MAGIC_Generator(list_IDs=list(ids_protons_test),
                                  labels=global_lookup_labels,
                                  separation=True,
@@ -148,9 +148,9 @@ hadron_test_gn = MAGIC_Generator(list_IDs=list(ids_protons_test),
                                  batch_size=BATCH_SIZE,
                                  folder=npy_folder,
                                  apply_log_to_raw=False,
-                                 include_time=False
+                                 include_time=True
                                  )
-
+#%%
 diffuse_test_gn = MAGIC_Generator(list_IDs=list(ids_diffuse_te),
                                   labels=global_lookup_labels,
                                   separation=True,
@@ -158,9 +158,9 @@ diffuse_test_gn = MAGIC_Generator(list_IDs=list(ids_diffuse_te),
                                   batch_size=BATCH_SIZE,
                                   folder=npy_folder,
                                   apply_log_to_raw=False,
-                                  include_time=False
+                                  include_time=True
                                   )
-
+#%%
 point_test_gn = MAGIC_Generator(list_IDs=list(ids_point_te),
                                 labels=global_lookup_labels,
                                 separation=True,
@@ -171,7 +171,7 @@ point_test_gn = MAGIC_Generator(list_IDs=list(ids_point_te),
                                 include_time=False
                                 )
 
-# %
+# %%
 prediction_hadron_test = model.predict_generator(hadron_test_gn, verbose=1, workers=8, max_queue_size=50)
 prediction_diffuse_test = model.predict_generator(diffuse_test_gn, verbose=1, workers=8, max_queue_size=50)
 prediction_point_test = model.predict_generator(point_test_gn, verbose=1, workers=8, max_queue_size=50)

@@ -29,7 +29,7 @@ crab_generator = MAGIC_Generator(list_IDs=evt_list,
                                  shuffle=False,
                                  batch_size=BATCH_SIZE,
                                  folder='/ssdraptor/magic_data/crab/crab_data/crab_npy',
-                                 include_time=False)
+                                 include_time=True)
 
 # %%
 import numpy as np
@@ -57,18 +57,18 @@ model = load_model('/data4T/CNN4MAGIC/results/MC_classification/computed_data/on
 
 # %%
 y_pred_test = model.predict_generator(crab_generator, verbose=1)
-# %
+# %%
+net_name = 'one-epoch-MV2'
+dump_name = f'/data4T/CNN4MAGIC/results/MC_classification/computed_data/crab_separation_{net_name}.pkl'
+with open(dump_name, 'wb') as f:
+    pickle.dump(y_pred_test, f)
+# %%
 # net_name = 'MobileNetV2_separation_10_5_notime_alpha1'
 # dump_name = f'output_data/reconstructions/crab_separation_{net_name}.pkl'
-# with open(dump_name, 'wb') as f:
-#     pickle.dump(y_pred_test, f)
-# %%
-net_name = 'MobileNetV2_separation_10_5_notime_alpha1'
-dump_name = f'output_data/reconstructions/crab_separation_{net_name}.pkl'
-with open(dump_name, 'rb') as f:
-    separation_gammaness = pickle.load(f)
-
-print(separation_gammaness.shape)
+# with open(dump_name, 'rb') as f:
+#     separation_gammaness = pickle.load(f)
+#
+# print(separation_gammaness.shape)
 # prova = crab_generator[1840]
 # %%
 import matplotlib.pyplot as plt
@@ -77,9 +77,19 @@ plt.figure()
 plt.hist(y_pred_test, bins=100, log=True)
 plt.xlabel('Gammaness')
 plt.ylabel('Counts')
-plt.title(f'Gammaness of {y_pred_test.shape[0]} Triggered Crab events (Cleaning 10-5)')
-plt.savefig(f'output_data/pictures/EHI_gammaness_crab_{net_name}_log.png')
+plt.title(f'Gammaness of {y_pred_test.shape[0]} Triggered Crab events')
+plt.savefig(f'/data4T/CNN4MAGIC/results/MC_classification/plots/crab__gammaness_{net_name}_log.png')
 plt.close()
+
+#%%
+plt.figure()
+plt.hist(-np.log(1-y_pred_test+1e-10), bins=100, log=True)
+plt.xlabel('-Log (1-Gammaness)')
+plt.ylabel('Counts')
+plt.title(f'Gammaness of {y_pred_test.shape[0]} Triggered Crab events')
+plt.savefig(f'/data4T/CNN4MAGIC/results/MC_classification/plots/log_gammaness_{net_name}_log.png')
+plt.close()
+
 
 # %%
 import numpy as np
@@ -93,14 +103,18 @@ from itertools import compress
 gamma_like_id = list(compress(evt_list, gamma_like))
 
 # %%
+#%%%%% To delete
+a_batch = diffuse_test_gn[0][0]
+print(a_batch.shape)
+#%%
 from tqdm import tqdm
 
-crab_folder = '/home/emariott/magic_data/crab_clean10_5/npy_dump'
-for i in tqdm(range(150)):
+crab_folder = '/ssdraptor/magic_data/crab/crab_data/crab_npy'
+for i in tqdm(range(10)):
     event_id = gamma_like_id[i]
     gammaness_id = y_pred_test[gamma_like][i]
-    a = np.load(f'{crab_folder}/{event_id}.npy')
-
+    # a = np.load(f'{crab_folder}/{event_id}.npy')
+    a = a_batch[i]
     plt.figure()
     plt.subplot(2, 2, 1)
     plt.imshow(a[:, :, 0])
@@ -126,5 +140,5 @@ for i in tqdm(range(150)):
     # plt.tight_layout()
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     plt.suptitle(f'Gammaness: {gammaness_id}')
-    plt.savefig(f'/data/new_magic/output_data/pictures/ss433_gamma_like/hadroness_1e-6/{event_id}.png')
+    plt.savefig(f'/data4T/CNN4MAGIC/results/MC_classification/plots/some_gammas/{i}.png')
     plt.close()
