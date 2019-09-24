@@ -23,7 +23,7 @@ def pickle_dump(filepath, object):
         pickle.dump(object, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-# %%
+# %
 # % Load complement
 folder_complement = '/ssdraptor/magic_data/classification_MC/complementary'
 diffuse_filenames_list, diffuse_labels, diffuse_energies, diffuse_positions = pickle_read(
@@ -127,19 +127,20 @@ val_gn = MAGIC_Generator(list_IDs=validation_list_global,
 # from keras_radam import RAdam
 from CNN4MAGIC.Generator.models import MobileNetV2_separation
 
-model = MobileNetV2_separation(include_time=False)
+# %
+model = MobileNetV2_separation(include_time=False, drop_rate=0.5)
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 model.summary()
 # %%
 result = model.fit_generator(generator=train_gn,
-                             validation_data=val_gn,
+                             # validation_data=val_gn,
                              epochs=1,
                              verbose=1,
                              # callbacks=callbacks,
                              use_multiprocessing=False,
                              workers=8)
 
-# %%
+# %
 hadron_test_gn = MAGIC_Generator(list_IDs=list(ids_protons_test),
                                  labels=global_lookup_labels,
                                  separation=True,
@@ -170,16 +171,29 @@ point_test_gn = MAGIC_Generator(list_IDs=list(ids_point_te),
                                 include_time=False
                                 )
 
-# %%
+# %
 prediction_hadron_test = model.predict_generator(hadron_test_gn, verbose=1, workers=8, max_queue_size=50)
 prediction_diffuse_test = model.predict_generator(diffuse_test_gn, verbose=1, workers=8, max_queue_size=50)
 prediction_point_test = model.predict_generator(point_test_gn, verbose=1, workers=8, max_queue_size=50)
 dump_folder = '/data4T/CNN4MAGIC/results/MC_classification/computed_data'
-pickle_dump(f'{dump_folder}/notime_pred_hadr_te.pkl', prediction_hadron_test)
-pickle_dump(f'{dump_folder}/notime_pred_diff_te.pkl', prediction_diffuse_test)
-pickle_dump(f'{dump_folder}/notime_pred_point_te.pkl', prediction_point_test)
-#%
-model.save(f'{dump_folder}/notime_one-epoch-MV2.h5')
+pickle_dump(f'{dump_folder}/notime_drop_pred_hadr_te.pkl', prediction_hadron_test)
+pickle_dump(f'{dump_folder}/notime_drop_pred_diff_te.pkl', prediction_diffuse_test)
+pickle_dump(f'{dump_folder}/notime_drop_pred_point_te.pkl', prediction_point_test)
+# %
+model.save(f'{dump_folder}/notime_drop_one-epoch-MV2.h5')
+# %
+# prediction_hadron_test = pickle_read(
+#     '/data4T/CNN4MAGIC/results/MC_classification/computed_data/pred_hadr_te.pkl')
+# prediction_diffuse_test = pickle_read(
+#     '/data4T/CNN4MAGIC/results/MC_classification/computed_data/pred_diff_te.pkl')
+# prediction_point_test = pickle_read(
+#     '/data4T/CNN4MAGIC/results/MC_classification/computed_data/pred_point_te.pkl')
+# %
+import numpy as np
+
+print(np.mean(prediction_point_test>0.5))
+print(np.mean(prediction_diffuse_test>.5))
+print(np.mean(prediction_hadron_test<.5))
 # %%
 import matplotlib.pyplot as plt
 
@@ -192,7 +206,7 @@ plt.legend()
 plt.xlabel('Gammaness')
 plt.ylabel('Counts (Log scale)')
 plt.tight_layout()
-plt.savefig('/data4T/CNN4MAGIC/results/MC_classification/plots/notime_one-epoch-MV2-gammaness.png')
+plt.savefig('/data4T/CNN4MAGIC/results/MC_classification/plots/notime_one-epoch-MV2-gammaness-2.png')
 plt.close()
 # %%
 import numpy as np
@@ -220,7 +234,7 @@ plt.title('Q Factor (MC classification)')
 plt.savefig('/data4T/CNN4MAGIC/results/MC_classification/plots/notime_q_factor.png')
 plt.close()
 
-# %
+# %%
 dump_folder = '/data4T/CNN4MAGIC/results/MC_classification/computed_data'
 prediction_hadron_test = pickle_read(f'{dump_folder}/notime_pred_hadr_te.pkl')
 # %
@@ -228,48 +242,52 @@ misclassified_hadrons_bool = prediction_hadron_test[:, 0] > 0.5
 # %
 import numpy as np
 
-idx_misclassified=np.where(misclassified_hadrons_bool)[0]
+idx_misclassified = np.where(misclassified_hadrons_bool)[0]
 # %
 batch_numbers = np.floor(idx_misclassified / BATCH_SIZE)
 idx_in_batches = np.mod(idx_misclassified, BATCH_SIZE)
 print(batch_numbers, idx_in_batches)
-#%
-misclassified_hadrons_events = [hadron_test_gn[int(batch_number)][0][idx_in_batch] for batch_number, idx_in_batch in zip(batch_numbers, idx_in_batches)]
+# %
+misclassified_hadrons_events = [hadron_test_gn[int(batch_number)][0][idx_in_batch] for batch_number, idx_in_batch in
+                                zip(batch_numbers, idx_in_batches)]
 # %
 import matplotlib.pyplot as plt
 
 folder_misc_had = '/data4T/CNN4MAGIC/results/MC_classification/plots/misclassified_hadrons'
-gammaness=model.predict(np.array(misclassified_hadrons_events))
+gammaness = model.predict(np.array(misclassified_hadrons_events))
 
 for misclassified_number, single_event in enumerate(misclassified_hadrons_events):
     fig, axes = plt.subplots(2, 2, figsize=(10, 10))
     i = 0
     for ax in axes:
-        ax[0].imshow(single_event[:, :, i ])
+        ax[0].imshow(single_event[:, :, i])
         ax[1].imshow(single_event[:, :, i + 1])
         i += 2
     plt.suptitle(f'Gammaness: {gammaness[misclassified_number]}')
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     plt.savefig(f'{folder_misc_had}/notime_event_{misclassified_number}.png')
     plt.close()
-#%
+# %
 from tqdm import tqdm
+
+
 def plot_misclassified(generator, predictions, gammaness_threshold=0.5, folder_misc=''):
     misclassified_bool = predictions[:, 0] < gammaness_threshold
-    idx_misclassified=np.where(misclassified_bool)[0]
+    idx_misclassified = np.where(misclassified_bool)[0]
 
     batch_numbers = np.floor(idx_misclassified / BATCH_SIZE)
     idx_in_batches = np.mod(idx_misclassified, BATCH_SIZE)
 
-    misclassified_events = [generator[int(batch_number)][0][idx_in_batch] for batch_number, idx_in_batch in zip(batch_numbers, idx_in_batches)]
+    misclassified_events = [generator[int(batch_number)][0][idx_in_batch] for batch_number, idx_in_batch in
+                            zip(batch_numbers, idx_in_batches)]
 
-    gammaness=model.predict(np.array(misclassified_events))
+    gammaness = model.predict(np.array(misclassified_events))
 
     for misclassified_number, single_event in enumerate(tqdm(misclassified_events)):
         fig, axes = plt.subplots(2, 2, figsize=(10, 10))
         i = 0
         for ax in axes:
-            ax[0].imshow(single_event[:, :, i ])
+            ax[0].imshow(single_event[:, :, i])
             ax[1].imshow(single_event[:, :, i + 1])
             i += 2
         plt.suptitle(f'Gammaness: {gammaness[misclassified_number]}')
@@ -277,9 +295,12 @@ def plot_misclassified(generator, predictions, gammaness_threshold=0.5, folder_m
         plt.savefig(f'{folder_misc}/notime_event_{misclassified_number}.png')
         plt.close()
 
-#%
+
+# %
 prediction_diffuse_test = pickle_read(f'{dump_folder}/notime_pred_diff_te.pkl')
-plot_misclassified(diffuse_test_gn, prediction_diffuse_test, folder_misc='/data4T/CNN4MAGIC/results/MC_classification/plots/misclassified_diffuse')
-#%
+plot_misclassified(diffuse_test_gn, prediction_diffuse_test,
+                   folder_misc='/data4T/CNN4MAGIC/results/MC_classification/plots/misclassified_diffuse')
+# %
 prediction_point_test = pickle_read(f'{dump_folder}/notime_pred_point_te.pkl')
-plot_misclassified(point_test_gn, prediction_point_test, folder_misc='/data4T/CNN4MAGIC/results/MC_classification/plots/misclassified_point')
+plot_misclassified(point_test_gn, prediction_point_test,
+                   folder_misc='/data4T/CNN4MAGIC/results/MC_classification/plots/misclassified_point')

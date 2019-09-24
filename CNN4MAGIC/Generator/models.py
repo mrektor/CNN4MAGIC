@@ -795,7 +795,7 @@ def dummy_cnn_2filter5():
     return model_dummy
 
 
-def MobileNetV2_separation(alpha=1.0, include_time=True):
+def MobileNetV2_separation(alpha=1.0, include_time=True, drop_rate=0.5):
     if include_time:
         input_img = Input(shape=(67, 68, 4), name='m1m2')
     else:
@@ -805,6 +805,7 @@ def MobileNetV2_separation(alpha=1.0, include_time=True):
                                                         weights=None, input_tensor=input_img, pooling='max')
 
     x = model.layers[-1].output
+    x = Dropout(drop_rate)(x)
     x = Dense(1, name='gammaness', activation='sigmoid')(x)
     model1 = Model(inputs=input_img, output=x)
     return model1
