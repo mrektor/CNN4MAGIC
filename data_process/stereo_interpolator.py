@@ -1202,8 +1202,8 @@ def stereo_interp_from_root(filenames):
         print('Empty file: ' + filenameM2)
         return None
 
-    df1, phe1, time1 = read_from_root(filenameM1, want_extra=False, pruning=False, clean=True)
-    df2, phe2, time2 = read_from_root(filenameM2, want_extra=False, pruning=False, clean=True)
+    df1, phe1, time1 = read_from_root(filenameM1, want_extra=False, pruning=False, clean=False)
+    df2, phe2, time2 = read_from_root(filenameM2, want_extra=False, pruning=False, clean=False)
 
     interpolator = InterpolateMagic(15)
     num_events = phe1.shape[0]
@@ -1240,10 +1240,10 @@ def stereo_interp_from_root(filenames):
                                                                              posX1=result['src_X1'],
                                                                              posY1=result['src_Y1'],
                                                                              filename=filenameM1[-27:-5],
-                                                                             dump_folder='/second_data/missing_point/npy_dump')
+                                                                             dump_folder='/ssdraptor/magic_data/classification_MC/protons_not_cleaned_npy')
 
         with open(
-                '/second_data/missing_point/complementary/complement' + filenameM1[-27:-5] + '.pkl', 'wb') as f:
+                '/ssdraptor/magic_data/classification_MC/protons_not_cleaned_complement/complement' + filenameM1[-27:-5] + '.pkl', 'wb') as f:
             pickle.dump((event_idx_list, labels, energy_labels, position_labels, df1, df2), f,
                         protocol=2)
 
@@ -1266,33 +1266,33 @@ def stereo_interp_from_root(filenames):
 #### MONTECARLOS
 # Load all the filenames
 
-
-# fileM1 = glob.glob('/data/magic_data/crab/*M1*05075237.011_Y_CrabNebula-W0.40+035.root')
-# fileM2 = glob.glob('/data/magic_data/crab/*M2*05075237.011_Y_CrabNebula-W0.40+035.root')
+import glob
+fileM1 = glob.glob('/data4T/magic_data/protons/*M1*')
+fileM2 = glob.glob('/data4T/magic_data/protons/*M2*')
 
 #### OPERAZIONE RECUPERO POINT-LIKE
-from glob import glob
-
-complement_list = glob('/data/magic_data/clean_10_5/point_MC/complement/*pkl')
-root_list = glob('/second_data/point_like_root/*M1*.root')
-
-complement_id = [id_file[58:-4] for id_file in complement_list]
-root_id = [id_file[35:-5] for id_file in root_list]
-
-res = set(root_id) - set(complement_id)
-
-missing_files_m1 = [glob(f'/second_data/point_like_root/*M1*{single_id}.root')[0] for single_id in res]
-missing_files_m2 = [glob(f'/second_data/point_like_root/*M2*{single_id}.root')[0] for single_id in res]
-
-fileM1 = missing_files_m1
-fileM2 = missing_files_m2
+# from glob import glob
+#
+# complement_list = glob('/data/magic_data/clean_10_5/point_MC/complement/*pkl')
+# root_list = glob('/second_data/point_like_root/*M1*.root')
+#
+# complement_id = [id_file[58:-4] for id_file in complement_list]
+# root_id = [id_file[35:-5] for id_file in root_list]
+#
+# res = set(root_id) - set(complement_id)
+#
+# missing_files_m1 = [glob(f'/second_data/point_like_root/*M1*{single_id}.root')[0] for single_id in res]
+# missing_files_m2 = [glob(f'/second_data/point_like_root/*M2*{single_id}.root')[0] for single_id in res]
+#
+# fileM1 = missing_files_m1
+# fileM2 = missing_files_m2
 
 # %%
 def get_pair_match(a, b):
     result = []
     for i in a:
         for j in b:
-            if i[35:-5] == j[35:-5]:  # -28:-5 for MC. -42:-6 for ROOT. -40:-5 for Crab. 35,-5 for MC MISSING
+            if i[-28:-5] == j[-28:-5]:  # -28:-5 for MC. -42:-6 for ROOT. -40:-5 for Crab. 35,-5 for MC MISSING
                 result.append((i, j))
     return result
 
