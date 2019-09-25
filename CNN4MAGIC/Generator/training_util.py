@@ -3,11 +3,12 @@ import time
 
 from keras.callbacks import ModelCheckpoint, EarlyStopping, CSVLogger
 
-from ..CNN_Models.BigData.clr import OneCycleLR
-from ..CNN_Models.BigData.snapshot import SnapshotCallbackBuilder
-from ..Other_utilities.dl_bot import DLBot
-from ..Other_utilities.swa import SWA
-from ..Other_utilities.telegram_bot_callback import TelegramBotCallback
+# from ..CNN_Models.BigData.clr import OneCycleLR
+# from ..CNN_Models.BigData.snapshot import SnapshotCallbackBuilder
+# from CNN4MAGIC.Other_utilities
+from CNN4MAGIC.Other_utilities.dl_bot import DLBot
+# from ..Other_utilities.swa import SWA
+from CNN4MAGIC.Other_utilities.telegram_bot_callback import TelegramBotCallback
 
 
 def get_telegram_callback(net_name='', machine='towerino'):

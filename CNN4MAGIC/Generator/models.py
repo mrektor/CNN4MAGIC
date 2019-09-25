@@ -9,7 +9,7 @@ from CNN4MAGIC.CNN_Models.BigData.se_DenseNet import SEDenseNet, SEDenseNetImage
 from CNN4MAGIC.CNN_Models.BigData.se_resinc import SEInceptionResNetV2
 from CNN4MAGIC.Generator.SqueezeExciteInceptionV3gencopy import SEInceptionV3
 from CNN4MAGIC.Other_utilities.keras_efficientnets.efficientnet import EfficientNetB0, EfficientNetB1, EfficientNetB2, \
-    EfficientNetB3
+    EfficientNetB3, EfficientNetB4
 
 
 # %%
@@ -865,6 +865,17 @@ def efficientNet_B3_separation(include_time=True):
     model1 = Model(inputs=input_img, output=x)
     return model1
 
+def efficientNet_B4_separation(include_time=True):
+    if include_time:
+        input_img = Input(shape=(67, 68, 4), name='m1m2')
+    else:
+        input_img = Input(shape=(67, 68, 2), name='m1m2')
+
+    model = EfficientNetB4(input_tensor=input_img, pooling='max', include_top=False, weights=None)
+    x = model.layers[-1].output
+    x = Dense(1, name='gammaness', activation='sigmoid')(x)
+    model1 = Model(inputs=input_img, output=x)
+    return model1
 
 def MobileNetV2_4dense_energy_dropout():
     input_img = Input(shape=(67, 68, 4), name='m1')
