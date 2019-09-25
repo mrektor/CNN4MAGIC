@@ -8,6 +8,8 @@ from keras.models import load_model, Model
 from CNN4MAGIC.CNN_Models.BigData.se_DenseNet import SEDenseNet, SEDenseNetImageNet121
 from CNN4MAGIC.CNN_Models.BigData.se_resinc import SEInceptionResNetV2
 from CNN4MAGIC.Generator.SqueezeExciteInceptionV3gencopy import SEInceptionV3
+from CNN4MAGIC.Other_utilities.keras_efficientnets.efficientnet import EfficientNetB0, EfficientNetB1, EfficientNetB2, \
+    EfficientNetB3
 
 
 # %%
@@ -317,6 +319,7 @@ def SE_InceptionV3_SingleDense_direction(include_time=True, input=None):
 
     return model1
 
+
 # %%
 
 def SE_incres_TripleDense_energy(include_time=True):
@@ -392,7 +395,7 @@ def SE_incres_energy(include_time=True):
 # m = SE_incres_SingleDense_energy()
 # m.summary()
 
-#%%
+# %%
 def MobileNetV2_slim_energy():
     input_img = Input(shape=(67, 68, 4), name='m1')
 
@@ -806,6 +809,58 @@ def MobileNetV2_separation(alpha=1.0, include_time=True, drop_rate=0.5):
 
     x = model.layers[-1].output
     x = Dropout(drop_rate)(x)
+    x = Dense(1, name='gammaness', activation='sigmoid')(x)
+    model1 = Model(inputs=input_img, output=x)
+    return model1
+
+
+def efficientNet_B0_separation(include_time=True):
+    if include_time:
+        input_img = Input(shape=(67, 68, 4), name='m1m2')
+    else:
+        input_img = Input(shape=(67, 68, 2), name='m1m2')
+
+    model = EfficientNetB0(input_tensor=input_img, pooling='max', include_top=False, weights=None)
+    x = model.layers[-1].output
+    x = Dense(1, name='gammaness', activation='sigmoid')(x)
+    model1 = Model(inputs=input_img, output=x)
+    return model1
+
+
+def efficientNet_B1_separation(include_time=True):
+    if include_time:
+        input_img = Input(shape=(67, 68, 4), name='m1m2')
+    else:
+        input_img = Input(shape=(67, 68, 2), name='m1m2')
+
+    model = EfficientNetB1(input_tensor=input_img, pooling='max', include_top=False, weights=None)
+    x = model.layers[-1].output
+    x = Dense(1, name='gammaness', activation='sigmoid')(x)
+    model1 = Model(inputs=input_img, output=x)
+    return model1
+
+
+def efficientNet_B2_separation(include_time=True):
+    if include_time:
+        input_img = Input(shape=(67, 68, 4), name='m1m2')
+    else:
+        input_img = Input(shape=(67, 68, 2), name='m1m2')
+
+    model = EfficientNetB2(input_tensor=input_img, pooling='max', include_top=False, weights=None)
+    x = model.layers[-1].output
+    x = Dense(1, name='gammaness', activation='sigmoid')(x)
+    model1 = Model(inputs=input_img, output=x)
+    return model1
+
+
+def efficientNet_B3_separation(include_time=True):
+    if include_time:
+        input_img = Input(shape=(67, 68, 4), name='m1m2')
+    else:
+        input_img = Input(shape=(67, 68, 2), name='m1m2')
+
+    model = EfficientNetB3(input_tensor=input_img, pooling='max', include_top=False, weights=None)
+    x = model.layers[-1].output
     x = Dense(1, name='gammaness', activation='sigmoid')(x)
     model1 = Model(inputs=input_img, output=x)
     return model1

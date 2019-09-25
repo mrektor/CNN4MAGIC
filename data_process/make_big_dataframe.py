@@ -5,7 +5,7 @@ import pandas as pd
 from tqdm import tqdm
 
 # %%
-filelist = glob.glob('/data4T/magic_data/complement_protons/*.pkl')
+filelist = glob.glob('/ssdraptor/magic_data/classification_MC/protons_not_cleaned_complement/*.pkl')
 
 # %%
 print(len(filelist))
@@ -53,5 +53,5 @@ print(golden_df.shape)
 with open('/data4T/magic_data/complement_protons/protons_big_df_ID_Labels.pkl', 'wb') as f:
     pickle.dump(big_df, f)
 #%%
-with open('/ssdraptor/magic_data/classification_MC/protons_big_df_ID_Labels.pkl', 'wb') as f:
+with open('/ssdraptor/magic_data/classification_MC/protons_noclean_big_df_ID_Labels.pkl', 'wb') as f:
     pickle.dump(big_df, f)

@@ -104,16 +104,22 @@ gamma_like_id = list(compress(evt_list, gamma_like))
 
 # %%
 #%%%%% To delete
-a_batch = diffuse_test_gn[0][0]
+a_batch = hadron_test_gn[0][0]
 print(a_batch.shape)
 #%%
-from tqdm import tqdm
+import glob
+proton_list = glob.glob('/ssdraptor/magic_data/classification_MC/protons_not_cleaned_npy/*.npy')
 
+#%%
+from tqdm import tqdm
+import matplotlib.pyplot as plt
+import numpy as np
 crab_folder = '/ssdraptor/magic_data/crab/crab_data/crab_npy'
-for i in tqdm(range(10)):
-    event_id = gamma_like_id[i]
-    gammaness_id = y_pred_test[gamma_like][i]
+for i in range(10):
+    # event_id = gamma_like_id[i]
+    # gammaness_id = y_pred_test[gamma_like][i]
     # a = np.load(f'{crab_folder}/{event_id}.npy')
+    # a = np.load(proton_single_path)
     a = a_batch[i]
     plt.figure()
     plt.subplot(2, 2, 1)
@@ -139,6 +145,6 @@ for i in tqdm(range(10)):
 
     # plt.tight_layout()
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
-    plt.suptitle(f'Gammaness: {gammaness_id}')
-    plt.savefig(f'/data4T/CNN4MAGIC/results/MC_classification/plots/some_gammas/{i}.png')
+    # plt.suptitle(f'Gammaness: {gammaness_id}')
+    plt.savefig(f'/data4T/CNN4MAGIC/results/MC_classification/plots/some_noclean_protons/{i}.png')
     plt.close()
