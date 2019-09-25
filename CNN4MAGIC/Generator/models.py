@@ -820,7 +820,7 @@ def efficientNet_B0_separation(include_time=True):
     else:
         input_img = Input(shape=(67, 68, 2), name='m1m2')
 
-    model = EfficientNetB0(input_tensor=input_img, pooling='max', include_top=False, weights=None)
+    model = EfficientNetB0(input_tensor=input_img, dropout_rate=0.6, pooling='max', include_top=False, weights=None)
     x = model.layers[-1].output
     x = Dense(1, name='gammaness', activation='sigmoid')(x)
     model1 = Model(inputs=input_img, output=x)
@@ -833,7 +833,7 @@ def efficientNet_B1_separation(include_time=True):
     else:
         input_img = Input(shape=(67, 68, 2), name='m1m2')
 
-    model = EfficientNetB1(input_tensor=input_img, pooling='max', include_top=False, weights=None)
+    model = EfficientNetB1(input_tensor=input_img, dropout_rate=0.6, pooling='max', include_top=False, weights=None)
     x = model.layers[-1].output
     x = Dense(1, name='gammaness', activation='sigmoid')(x)
     model1 = Model(inputs=input_img, output=x)

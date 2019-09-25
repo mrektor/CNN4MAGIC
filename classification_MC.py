@@ -19,7 +19,7 @@ from CNN4MAGIC.Generator.models import efficientNet_B0_separation, efficientNet_
 
 max_epochs = 60
 batches = [512, 256, 256, 128, 64]
-net_names = ['EfficientNet_B0', 'EfficientNet_B1', 'EfficientNet_B2', 'EfficientNet_B3', 'EfficientNet_B4']
+net_names = ['EfficientNet_B0_dropout06', 'EfficientNet_B1_dropout06', 'EfficientNet_B2', 'EfficientNet_B3', 'EfficientNet_B4']
 models_fz = [efficientNet_B0_separation, efficientNet_B1_separation, efficientNet_B2_separation,
              efficientNet_B3_separation, efficientNet_B4_separation]
 for net_name, single_model_fz, single_batch_size in zip(net_names, models_fz, batches):
@@ -99,7 +99,7 @@ for net_name, single_model_fz, single_batch_size in zip(net_names, models_fz, ba
     num_point = len(ids_point)
     # ids_point_tr = ids_point[:int(num_point * 0.6)]
     ids_point_va = ids_point[:int(num_point * 0.005)]
-    ids_point_te = ids_point[int(num_point * 0.2):int(num_point * 0.4)]
+    ids_point_te = ids_point[int(num_point * 0.2):int(num_point * 0.2)+len(ids_protons_test)]
 
     # % Define file list
     train_list_global = list(ids_diffuse_tr)
