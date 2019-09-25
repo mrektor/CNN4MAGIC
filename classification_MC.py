@@ -22,8 +22,8 @@ batches = [512, 256, 256, 128, 64]
 net_names = ['EfficientNet_B0', 'EfficientNet_B1', 'EfficientNet_B2', 'EfficientNet_B3', 'EfficientNet_B4']
 models_fz = [efficientNet_B0_separation, efficientNet_B1_separation, efficientNet_B2_separation,
              efficientNet_B3_separation, efficientNet_B4_separation]
-for net_name, single_model_fz in zip(net_names, models_fz, batches):
-    BATCH_SIZE = batches
+for net_name, single_model_fz, single_batch_size in zip(net_names, models_fz, batches):
+    BATCH_SIZE = single_batch_size
     model = single_model_fz(include_time=True)
     model.compile(optimizer=RAdam(), loss='binary_crossentropy', metrics=['accuracy'])
     model.summary()
@@ -290,7 +290,7 @@ for net_name, single_model_fz in zip(net_names, models_fz, batches):
             plt.close()
 
 
-    plot_misclassified(diffuse_test_gn, prediction_hadron_test,
+    plot_misclassified(hadron_test_gn, prediction_hadron_test,
                        folder_misc='misclassified_hadrons')
 
     plot_misclassified(diffuse_test_gn, prediction_diffuse_test,
