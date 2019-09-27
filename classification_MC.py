@@ -18,13 +18,12 @@ from CNN4MAGIC.Generator.models import efficientNet_B0_separation, efficientNet_
     efficientNet_B2_separation, efficientNet_B3_separation, efficientNet_B4_separation
 
 max_epochs = 60
-batches = [512, 256, 256, 128, 64]
-net_names = ['EfficientNet_B0_dropout06', 'EfficientNet_B1_dropout06', 'EfficientNet_B2', 'EfficientNet_B3', 'EfficientNet_B4']
-models_fz = [efficientNet_B0_separation, efficientNet_B1_separation, efficientNet_B2_separation,
-             efficientNet_B3_separation, efficientNet_B4_separation]
-for net_name, single_model_fz, single_batch_size in zip(net_names, models_fz, batches):
-    BATCH_SIZE = single_batch_size
-    model = single_model_fz(include_time=True)
+name_list = ['efficientNet_B2_last3', 'efficientNet_B3_last3', 'efficientNet_B4_last3']
+model_list = [efficientNet_B2_separation, efficientNet_B3_separation, efficientNet_B4_separation]
+for net_name, model_single in zip(name_list, model_list):
+    BATCH_SIZE = 128
+    # net_name = f'efficientNet_B2_DropConnect_{drop_connect_rate}'
+    model = model_single(dropout=0, drop_connect=0.5, last_is_three=True, nonlinear_last=True)
     model.compile(optimizer=RAdam(), loss='binary_crossentropy', metrics=['accuracy'])
     model.summary()
 
@@ -88,18 +87,18 @@ for net_name, single_model_fz, single_batch_size in zip(net_names, models_fz, ba
 
     num_protons = len(ids_protons)
     ids_protons_tr = ids_protons[:int(num_protons * 0.7)]
-    ids_protons_va = ids_protons[int(num_protons * 0.7):int(num_protons * 0.8)]
+    ids_protons_va = ids_protons[int(num_protons * 0.7):]
     ids_protons_test = ids_protons[int(num_protons * 0.8):]
 
     num_diffuse = len(ids_diffuse)
     ids_diffuse_tr = ids_diffuse[:int(num_diffuse * 0.40)]
-    ids_diffuse_va = ids_diffuse[int(num_diffuse * 0.40):int(num_diffuse * 0.407)]
+    ids_diffuse_va = ids_diffuse[int(num_diffuse * 0.40):int(num_diffuse * 0.4001)]
     ids_diffuse_te = ids_diffuse[int(num_diffuse * 0.40008):int(num_diffuse * 0.80)]
 
     num_point = len(ids_point)
     # ids_point_tr = ids_point[:int(num_point * 0.6)]
-    ids_point_va = ids_point[:int(num_point * 0.005)]
-    ids_point_te = ids_point[int(num_point * 0.2):int(num_point * 0.2)+len(ids_protons_test)]
+    ids_point_va = ids_point[:len(ids_protons_va)]
+    ids_point_te = ids_point[int(num_point * 0.2):int(num_point * 0.2) + len(ids_protons_test)]
 
     # % Define file list
     train_list_global = list(ids_diffuse_tr)
@@ -186,6 +185,17 @@ for net_name, single_model_fz, single_batch_size in zip(net_names, models_fz, ba
                                     include_time=True
                                     )
 
+    big_df_crab, crab_evt_list = pickle_read(
+        '/ssdraptor/magic_data/crab/crab_data/crab_position_dataframe/big_df_complement_position_interpolated_nan.pkl')
+    labels_crab = {ID: 0 for ID in crab_evt_list}  # Dummy
+    crab_generator = MAGIC_Generator(list_IDs=crab_evt_list,
+                                     labels=labels_crab,
+                                     separation=True,
+                                     shuffle=False,
+                                     batch_size=BATCH_SIZE,
+                                     folder='/ssdraptor/magic_data/crab/crab_data/crab_npy',
+                                     include_time=True)
+
     # %%
     prediction_hadron_test = model.predict_generator(hadron_test_gn, verbose=1, workers=8, max_queue_size=50)
     prediction_diffuse_test = model.predict_generator(diffuse_test_gn, verbose=1, workers=8, max_queue_size=50)
@@ -200,14 +210,9 @@ for net_name, single_model_fz, single_batch_size in zip(net_names, models_fz, ba
     pickle_dump(f'{dump_folder}/{net_name}/computed_data/pred_point_te.pkl', prediction_point_test)
     pickle_dump(f'{dump_folder}/{net_name}/computed_data/history.pkl', history)
     model.save(f'{dump_folder}/{net_name}/computed_data/final_{net_name}.h5')
-    # %
-    # prediction_hadron_test = pickle_read(
-    #     '/data4T/CNN4MAGIC/results/MC_classification/computed_data/pred_hadr_te.pkl')
-    # prediction_diffuse_test = pickle_read(
-    #     '/data4T/CNN4MAGIC/results/MC_classification/computed_data/pred_diff_te.pkl')
-    # prediction_point_test = pickle_read(
-    #     '/data4T/CNN4MAGIC/results/MC_classification/computed_data/pred_point_te.pkl')
-    # %
+
+    prediction_crab = model.predict_generator(crab_generator, verbose=1, workers=8, max_queue_size=50)
+    pickle_dump(f'{dump_folder}/{net_name}/computed_data/crab_separation_{net_name}.pkl', prediction_crab)
     # %%
     if not os.path.exists(f'{dump_folder}/{net_name}/plots'):
         os.makedirs(f'{dump_folder}/{net_name}/plots')
@@ -226,6 +231,16 @@ for net_name, single_model_fz, single_batch_size in zip(net_names, models_fz, ba
     plt.close()
 
     plt.figure(figsize=(14, 8))
+    plt.hist(prediction_crab, label='Crab', bins=100, alpha=0.5, log=True)
+    plt.title('Distribution of Gammaness on Crab (MC Classifcation)')
+    plt.legend()
+    plt.xlabel('Gammaness')
+    plt.ylabel('Counts (Log scale)')
+    plt.tight_layout()
+    plt.savefig(f'{folder_pic}/gammaness_Crab_plot.png')
+    plt.close()
+
+    plt.figure(figsize=(14, 8))
     plt.hist(-np.log(1 - prediction_hadron_test + 1e-11), label='Hadrons', bins=100, alpha=0.5, log=True)
     plt.hist(-np.log(1 - prediction_diffuse_test + 1e-11), label='Diffuse $\gamma$', bins=100, alpha=0.5, log=True)
     plt.hist(-np.log(1 - prediction_point_test + 1e-11), label='Point-Like $\gamma$', bins=100, alpha=0.5, log=True)
@@ -238,63 +253,65 @@ for net_name, single_model_fz, single_batch_size in zip(net_names, models_fz, ba
     plt.close()
 
 
-    def efficiency(prob_vector, num_cuts=100):
-        total_number_events = len(prob_vector)
+    def efficiency(prob_vector, num_cuts=200):
         eff_list = []
-        gammaness_range = np.linspace(1e-9, 1 - 1e-9, num_cuts)
+        chi_range = np.linspace(0, 20, num_cuts)
+        gammaness_range = 1 - 10 ** (-chi_range)
         for gammaness_cut in gammaness_range:
-            num_selected = np.sum(prob_vector > gammaness_cut)
-            eff_list.append(num_selected / total_number_events)
-        return np.array(eff_list)
+            eff_list.append(np.mean(prob_vector > gammaness_cut))
+        return chi_range, np.array(eff_list)
 
 
-    point_eff = efficiency(prediction_point_test)
-    hadron_eff = efficiency(prediction_hadron_test)
+    chi_range, point_eff = efficiency(prediction_point_test)
+    chi_range, hadron_eff = efficiency(prediction_hadron_test)
     q_factor = point_eff / np.sqrt(hadron_eff)
 
     plt.figure(figsize=(14, 8))
-    plt.plot(np.linspace(1e-9, 1 - 1e-9, 100), q_factor, '-o')
+    plt.plot(chi_range, q_factor, '-o')
     plt.ylabel('Q Factor')
-    plt.xlabel('Gammaness')
+    plt.xlabel('-Log[1-Gammaness]')
     plt.title('Q Factor (MC classification)')
+    plt.grid(linestyle=':')
     plt.savefig(f'{folder_pic}/notime_q_factor.png')
     plt.close()
 
 
-    def plot_misclassified(generator, predictions, gammaness_threshold=0.5, folder_misc=''):
-        if not os.path.exists(f'{folder_pic}/{folder_misc}'):
-            os.makedirs(f'{folder_pic}/{folder_misc}')
+    # def plot_misclassified(generator, predictions, gammaness_threshold=0.5, folder_misc='', is_gamma=True):
+    #     if not os.path.exists(f'{folder_pic}/{folder_misc}'):
+    #         os.makedirs(f'{folder_pic}/{folder_misc}')
+    #
+    #     folder_misc_complete = f'{folder_pic}/{folder_misc}'
+    #     if is_gamma:
+    #         misclassified_bool = predictions[:, 0] < gammaness_threshold
+    #     else:
+    #         misclassified_bool = predictions[:, 0] > gammaness_threshold
+    #     idx_misclassified = np.where(misclassified_bool)[0]
+    #
+    #     batch_numbers = np.floor(idx_misclassified / BATCH_SIZE)
+    #     idx_in_batches = np.mod(idx_misclassified, BATCH_SIZE)
+    #
+    #     misclassified_events = [generator[int(batch_number)][0][idx_in_batch] for batch_number, idx_in_batch in
+    #                             zip(batch_numbers, idx_in_batches)]
+    #
+    #     gammaness = model.predict(np.array(misclassified_events))
+    #
+    #     for misclassified_number, single_event in enumerate(tqdm(misclassified_events[:15])):
+    #         fig, axes = plt.subplots(2, 2, figsize=(10, 10))
+    #         i = 0
+    #         for ax in axes:
+    #             ax[0].imshow(single_event[:, :, i])
+    #             ax[1].imshow(single_event[:, :, i + 1])
+    #             i += 2
+    #         plt.suptitle(f'Gammaness: {gammaness[misclassified_number]}')
+    #         plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+    #         plt.savefig(f'{folder_misc_complete}/event_{misclassified_number}.png')
+    #         plt.close()
 
-        folder_misc_complete = f'{folder_pic}/{folder_misc}'
-        misclassified_bool = predictions[:, 0] < gammaness_threshold
-        idx_misclassified = np.where(misclassified_bool)[0]
-
-        batch_numbers = np.floor(idx_misclassified / BATCH_SIZE)
-        idx_in_batches = np.mod(idx_misclassified, BATCH_SIZE)
-
-        misclassified_events = [generator[int(batch_number)][0][idx_in_batch] for batch_number, idx_in_batch in
-                                zip(batch_numbers, idx_in_batches)]
-
-        gammaness = model.predict(np.array(misclassified_events))
-
-        for misclassified_number, single_event in enumerate(tqdm(misclassified_events[:15])):
-            fig, axes = plt.subplots(2, 2, figsize=(10, 10))
-            i = 0
-            for ax in axes:
-                ax[0].imshow(single_event[:, :, i])
-                ax[1].imshow(single_event[:, :, i + 1])
-                i += 2
-            plt.suptitle(f'Gammaness: {gammaness[misclassified_number]}')
-            plt.tight_layout(rect=[0, 0.03, 1, 0.95])
-            plt.savefig(f'{folder_misc_complete}/event_{misclassified_number}.png')
-            plt.close()
-
-
-    plot_misclassified(hadron_test_gn, prediction_hadron_test,
-                       folder_misc='misclassified_hadrons')
-
-    plot_misclassified(diffuse_test_gn, prediction_diffuse_test,
-                       folder_misc='misclassified_diffuse')
-
-    plot_misclassified(point_test_gn, prediction_point_test,
-                       folder_misc='misclassified_point')
+    # plot_misclassified(hadron_test_gn, prediction_hadron_test,
+    #                    folder_misc='misclassified_hadrons', is_gamma=False)
+    #
+    # plot_misclassified(diffuse_test_gn, prediction_diffuse_test,
+    #                    folder_misc='misclassified_diffuse')
+    #
+    # plot_misclassified(point_test_gn, prediction_point_test,
+    #                    folder_misc='misclassified_point')

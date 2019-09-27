@@ -9,7 +9,7 @@ from CNN4MAGIC.CNN_Models.BigData.se_DenseNet import SEDenseNet, SEDenseNetImage
 from CNN4MAGIC.CNN_Models.BigData.se_resinc import SEInceptionResNetV2
 from CNN4MAGIC.Generator.SqueezeExciteInceptionV3gencopy import SEInceptionV3
 from CNN4MAGIC.Other_utilities.keras_efficientnets.efficientnet import EfficientNetB0, EfficientNetB1, EfficientNetB2, \
-    EfficientNetB3, EfficientNetB4
+    EfficientNetB3, EfficientNetB4, EfficientNetB5, EfficientNetB6, EfficientNetB7
 
 
 # %%
@@ -814,14 +814,22 @@ def MobileNetV2_separation(alpha=1.0, include_time=True, drop_rate=0.5):
     return model1
 
 
-def efficientNet_B0_separation(include_time=True):
+def efficientNet_B0_separation(include_time=True, drop_connect=0, dropout=0.2):
     if include_time:
         input_img = Input(shape=(67, 68, 4), name='m1m2')
     else:
         input_img = Input(shape=(67, 68, 2), name='m1m2')
 
-    model = EfficientNetB0(input_tensor=input_img, dropout_rate=0.6, pooling='max', include_top=False, weights=None)
+    model = EfficientNetB0(input_tensor=input_img,
+                           dropout_rate=dropout,
+                           drop_connect_rate=drop_connect,
+                           pooling='max',
+                           include_top=False,
+                           weights=None)
     x = model.layers[-1].output
+    x = BatchNormalization()(x)
+    x = Dense(3)(x)
+    # x = Activation('selu')(x)
     x = Dense(1, name='gammaness', activation='sigmoid')(x)
     model1 = Model(inputs=input_img, output=x)
     return model1
@@ -840,39 +848,91 @@ def efficientNet_B1_separation(include_time=True):
     return model1
 
 
-def efficientNet_B2_separation(include_time=True):
+def efficientNet_B2_separation(include_time=True, dropout=0, drop_connect=0, last_is_three=False, nonlinear_last=False):
     if include_time:
         input_img = Input(shape=(67, 68, 4), name='m1m2')
     else:
         input_img = Input(shape=(67, 68, 2), name='m1m2')
 
-    model = EfficientNetB2(input_tensor=input_img, pooling='max', include_top=False, weights=None)
+    model = EfficientNetB2(input_tensor=input_img,
+                           dropout_rate=dropout,
+                           drop_connect_rate=drop_connect,
+                           pooling='max',
+                           include_top=False,
+                           weights=None)
     x = model.layers[-1].output
+    if last_is_three:
+        x = BatchNormalization()(x)
+        x = Dense(3)(x)
+        if nonlinear_last:
+            x = Activation('selu')(x)
     x = Dense(1, name='gammaness', activation='sigmoid')(x)
     model1 = Model(inputs=input_img, output=x)
     return model1
 
 
-def efficientNet_B3_separation(include_time=True):
+def efficientNet_B3_separation(include_time=True, dropout=0, drop_connect=0, last_is_three=False, nonlinear_last=False):
     if include_time:
         input_img = Input(shape=(67, 68, 4), name='m1m2')
     else:
         input_img = Input(shape=(67, 68, 2), name='m1m2')
 
-    model = EfficientNetB3(input_tensor=input_img, pooling='max', include_top=False, weights=None)
+    model = EfficientNetB3(input_tensor=input_img,
+                           dropout_rate=dropout,
+                           drop_connect_rate=drop_connect,
+                           pooling='max',
+                           include_top=False,
+                           weights=None)
     x = model.layers[-1].output
+    if last_is_three:
+        x = BatchNormalization()(x)
+        x = Dense(3)(x)
+        if nonlinear_last:
+            x = Activation('selu')(x)
     x = Dense(1, name='gammaness', activation='sigmoid')(x)
     model1 = Model(inputs=input_img, output=x)
     return model1
 
-def efficientNet_B4_separation(include_time=True):
+def efficientNet_B4_separation(include_time=True, dropout=0, drop_connect=0, last_is_three=False, nonlinear_last=False):
     if include_time:
         input_img = Input(shape=(67, 68, 4), name='m1m2')
     else:
         input_img = Input(shape=(67, 68, 2), name='m1m2')
 
-    model = EfficientNetB4(input_tensor=input_img, pooling='max', include_top=False, weights=None)
+    model = EfficientNetB4(input_tensor=input_img,
+                           dropout_rate=dropout,
+                           drop_connect_rate=drop_connect,
+                           pooling='max',
+                           include_top=False,
+                           weights=None)
     x = model.layers[-1].output
+    if last_is_three:
+        x = BatchNormalization()(x)
+        x = Dense(3)(x)
+        if nonlinear_last:
+            x = Activation('selu')(x)
+    x = Dense(1, name='gammaness', activation='sigmoid')(x)
+    model1 = Model(inputs=input_img, output=x)
+    return model1
+
+def efficientNet_B5_separation(include_time=True, dropout=0, drop_connect=0, last_is_three=False, nonlinear_last=False):
+    if include_time:
+        input_img = Input(shape=(67, 68, 4), name='m1m2')
+    else:
+        input_img = Input(shape=(67, 68, 2), name='m1m2')
+
+    model = EfficientNetB5(input_tensor=input_img,
+                           dropout_rate=dropout,
+                           drop_connect_rate=drop_connect,
+                           pooling='max',
+                           include_top=False,
+                           weights=None)
+    x = model.layers[-1].output
+    if last_is_three:
+        x = BatchNormalization()(x)
+        x = Dense(3)(x)
+        if nonlinear_last:
+            x = Activation('selu')(x)
     x = Dense(1, name='gammaness', activation='sigmoid')(x)
     model1 = Model(inputs=input_img, output=x)
     return model1
