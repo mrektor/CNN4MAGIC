@@ -18,12 +18,12 @@ from CNN4MAGIC.Generator.models import efficientNet_B0_separation, efficientNet_
     efficientNet_B2_separation, efficientNet_B3_separation, efficientNet_B4_separation
 
 max_epochs = 60
-name_list = ['efficientNet_B2_last3', 'efficientNet_B3_last3', 'efficientNet_B4_last3']
+name_list = ['efficientNet_B2_last3_lin', 'efficientNet_B3_last3_lin', 'efficientNet_B4_last3_lin']
 model_list = [efficientNet_B2_separation, efficientNet_B3_separation, efficientNet_B4_separation]
 for net_name, model_single in zip(name_list, model_list):
     BATCH_SIZE = 128
     # net_name = f'efficientNet_B2_DropConnect_{drop_connect_rate}'
-    model = model_single(dropout=0, drop_connect=0.5, last_is_three=True, nonlinear_last=True)
+    model = model_single(dropout=0, drop_connect=0.5, last_is_three=True, nonlinear_last=False)
     model.compile(optimizer=RAdam(), loss='binary_crossentropy', metrics=['accuracy'])
     model.summary()
 
