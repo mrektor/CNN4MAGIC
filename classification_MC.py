@@ -5,6 +5,7 @@ matplotlib.use('agg')
 import os
 import pickle
 import random
+import pandas as pd
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -14,16 +15,33 @@ from keras_radam import RAdam
 from tqdm import tqdm
 
 from CNN4MAGIC.Generator.keras_generator import MAGIC_Generator
-from CNN4MAGIC.Generator.models import efficientNet_B0_separation, efficientNet_B1_separation, \
-    efficientNet_B2_separation, efficientNet_B3_separation, efficientNet_B4_separation
-
+from CNN4MAGIC.Generator.models import MobileNetV2_separation, MobileNetV2_slim, InceptionV3_separation, VGG16_separation, ResNet50V2_separation, NASNetMobile_separation, VGG19_separation, ResNet101V2_separation, Xception_separation, DenseNet121_separation, InceptionResNetV2_separation
+from compute_significance_crab import optimize_significance
 max_epochs = 60
-name_list = ['efficientNet_B2_last3_lin', 'efficientNet_B3_last3_lin', 'efficientNet_B4_last3_lin']
-model_list = [efficientNet_B2_separation, efficientNet_B3_separation, efficientNet_B4_separation]
+experiment_name = 'KerasApplicationsNets'
+name_list = ['MobileNetV2_separation', 'MobileNetV2_slim', 'InceptionV3_separation', 'VGG16_separation', 'ResNet50V2_separation', 'NASNetMobile_separation', 'VGG19_separation', 'ResNet101V2_separation', 'Xception_separation', 'DenseNet121_separation', 'InceptionResNetV2_separation']
+model_list = [MobileNetV2_separation, MobileNetV2_slim, InceptionV3_separation, VGG16_separation, ResNet50V2_separation, NASNetMobile_separation, VGG19_separation, ResNet101V2_separation, Xception_separation, DenseNet121_separation, InceptionResNetV2_separation]
+
+
+def update_df(data, name='', experiment_name=''):
+    folder = f'/data4T/CNN4MAGIC/results/MC_classification/dataframed_data_experiments/{experiment_name}'
+    csv_name = f'significance_{name}'
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+    try:
+        df = pd.read_csv(f'{folder}/{csv_name}.csv')
+        df = df.append(data, ignore_index=True)
+        df.to_csv(f'{folder}/{csv_name}.csv', index=False)
+    except FileNotFoundError:
+        df = pd.DataFrame()
+        df = df.append(data, ignore_index=True)
+        df.to_csv(f'{folder}/{csv_name}.csv', index=False)
+
+
 for net_name, model_single in zip(name_list, model_list):
     BATCH_SIZE = 128
     # net_name = f'efficientNet_B2_DropConnect_{drop_connect_rate}'
-    model = model_single(dropout=0, drop_connect=0.5, last_is_three=True, nonlinear_last=False)
+    model = model_single()
     model.compile(optimizer=RAdam(), loss='binary_crossentropy', metrics=['accuracy'])
     model.summary()
 
@@ -274,6 +292,11 @@ for net_name, model_single in zip(name_list, model_list):
     plt.grid(linestyle=':')
     plt.savefig(f'{folder_pic}/notime_q_factor.png')
     plt.close()
+
+    s_train, s_val, e_cut, th_cut, gamma_cut = optimize_significance(net_name)
+    print(f'Significance:')
+    print(s_train, s_val, e_cut, th_cut, gamma_cut)
+    update_df({net_name: [s_train, s_val, e_cut, th_cut, gamma_cut]}, name='keras_application', experiment_name=experiment_name)
 
 
     # def plot_misclassified(generator, predictions, gammaness_threshold=0.5, folder_misc='', is_gamma=True):

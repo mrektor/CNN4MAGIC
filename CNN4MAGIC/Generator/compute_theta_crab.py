@@ -126,6 +126,11 @@ theta_sq_off2 = ((pos_true_deg[:, 0] + pos_pred_deg[:, 0]) ** 2) + ((pos_true_de
 theta_sq_off3 = ((pos_true_deg[:, 0] - pos_pred_deg[:, 0]) ** 2) + ((pos_true_deg[:, 1] + pos_pred_deg[:, 1]) ** 2)
 
 theta_sq_off_all = np.concatenate([theta_sq_off1, theta_sq_off2, theta_sq_off3])
+
+#%%
+pickle_dump('/data4T/CNN4MAGIC/results/MC_classification/crab_reconstructions/off_1.pkl', theta_sq_off1)
+pickle_dump('/data4T/CNN4MAGIC/results/MC_classification/crab_reconstructions/off_2.pkl', theta_sq_off2)
+pickle_dump('/data4T/CNN4MAGIC/results/MC_classification/crab_reconstructions/off_3.pkl', theta_sq_off3)
 # %%
 test_fold = '/home/emariott/software_magic/output_data/pictures/crab_theta2_hist/tests'
 plt.figure()
@@ -194,9 +199,10 @@ num_bins = 50
 
 theta_sq_limato = theta_sq[:len(separation_gammaness)]
 theta_sq_off_1_limato = theta_sq_off_1[:len(separation_gammaness)]
-gammaness_list = [1 - 10 ** (-2.78)]
+gammaness_list = [0.206]
 for gammaness in tqdm(gammaness_list):
     is_gamma = separation_gammaness.flatten() > gammaness
+
     theta_sq_off_all = np.concatenate([theta_sq_off1[is_gamma], theta_sq_off2[is_gamma], theta_sq_off3[is_gamma]])
 
     print(np.sum(is_gamma))
@@ -210,7 +216,7 @@ for gammaness in tqdm(gammaness_list):
              log=False,
              color='C3')
 
-    # plt.xlim([0, 0.01])
+    plt.xlim([0, 0.01])
     plt.vlines(0.015, 0, 190, linestyles='-.', label='$\Theta^2$ Off', alpha=0.6)
 
     plt.ylim([0, 110])

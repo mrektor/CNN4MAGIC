@@ -1134,3 +1134,114 @@ def Slim_MobileNetV2_2dense_position(input=None, alpha=0.1, depth_m=1):
     x = Dense(2, name='position')(x)
     model1 = Model(inputs=input_img, output=x)
     return model1
+
+#%%
+def InceptionV3_separation(include_time=True):
+    if include_time:
+        input_img = Input(shape=(67, 68, 4), name='m1m2')
+    else:
+        input_img = Input(shape=(67, 68, 2), name='m1m2')
+
+    model = InceptionV3(input_tensor=input_img, dropout_rate=0.5, pooling='max', include_top=False, weights=None)
+    x = model.layers[-1].output
+    x = Dense(1, name='gammaness', activation='sigmoid')(x)
+    model1 = Model(inputs=input_img, output=x)
+    return model1
+#%%
+from keras.applications import ResNet50V2, ResNet101V2, Xception, DenseNet121, InceptionResNetV2, NASNetMobile, VGG16, VGG19
+
+def ResNet50V2_separation(include_time=True):
+    if include_time:
+        input_img = Input(shape=(67, 68, 4), name='m1m2')
+    else:
+        input_img = Input(shape=(67, 68, 2), name='m1m2')
+
+    model = ResNet50V2(input_tensor=input_img, dropout_rate=0.5, pooling='max', include_top=False, weights=None)
+    x = model.layers[-1].output
+    x = Dense(1, name='gammaness', activation='sigmoid')(x)
+    model1 = Model(inputs=input_img, output=x)
+    return model1
+
+def VGG16_separation(include_time=True):
+    if include_time:
+        input_img = Input(shape=(67, 68, 4), name='m1m2')
+    else:
+        input_img = Input(shape=(67, 68, 2), name='m1m2')
+
+    model = VGG16(input_tensor=input_img, dropout_rate=0.5, pooling='max', include_top=False, weights=None)
+    x = model.layers[-1].output
+    x = Dense(1, name='gammaness', activation='sigmoid')(x)
+    model1 = Model(inputs=input_img, output=x)
+    return model1
+
+def VGG19_separation(include_time=True):
+    if include_time:
+        input_img = Input(shape=(67, 68, 4), name='m1m2')
+    else:
+        input_img = Input(shape=(67, 68, 2), name='m1m2')
+
+    model = VGG16(input_tensor=input_img, dropout_rate=0.5, pooling='max', include_top=False, weights=None)
+    x = model.layers[-1].output
+    x = Dense(1, name='gammaness', activation='sigmoid')(x)
+    model1 = Model(inputs=input_img, output=x)
+    return model1
+
+def ResNet101V2_separation(include_time=True):
+    if include_time:
+        input_img = Input(shape=(67, 68, 4), name='m1m2')
+    else:
+        input_img = Input(shape=(67, 68, 2), name='m1m2')
+
+    model = ResNet101V2(input_tensor=input_img, dropout_rate=0.5, pooling='max', include_top=False, weights=None)
+    x = model.layers[-1].output
+    x = Dense(1, name='gammaness', activation='sigmoid')(x)
+    model1 = Model(inputs=input_img, output=x)
+    return model1
+
+def Xception_separation(include_time=True):
+    if include_time:
+        input_img = Input(shape=(67, 68, 4), name='m1m2')
+    else:
+        input_img = Input(shape=(67, 68, 2), name='m1m2')
+
+    model = Xception(input_tensor=input_img, dropout_rate=0.5, pooling='max', include_top=False, weights=None)
+    x = model.layers[-1].output
+    x = Dense(1, name='gammaness', activation='sigmoid')(x)
+    model1 = Model(inputs=input_img, output=x)
+    return model1
+
+def DenseNet121_separation(include_time=True):
+    if include_time:
+        input_img = Input(shape=(67, 68, 4), name='m1m2')
+    else:
+        input_img = Input(shape=(67, 68, 2), name='m1m2')
+
+    model = DenseNet121(input_tensor=input_img, dropout_rate=0.5, pooling='max', include_top=False, weights=None)
+    x = model.layers[-1].output
+    x = Dense(1, name='gammaness', activation='sigmoid')(x)
+    model1 = Model(inputs=input_img, output=x)
+    return model1
+
+def InceptionResNetV2_separation(include_time=True):
+    if include_time:
+        input_img = Input(shape=(67, 68, 4), name='m1m2')
+    else:
+        input_img = Input(shape=(67, 68, 2), name='m1m2')
+
+    model = InceptionResNetV2(input_tensor=input_img, dropout_rate=0.5, pooling='max', include_top=False, weights=None)
+    x = model.layers[-1].output
+    x = Dense(1, name='gammaness', activation='sigmoid')(x)
+    model1 = Model(inputs=input_img, output=x)
+    return model1
+
+def NASNetMobile_separation(include_time=True):
+    if include_time:
+        input_img = Input(shape=(67, 68, 4), name='m1m2')
+    else:
+        input_img = Input(shape=(67, 68, 2), name='m1m2')
+
+    model = NASNetMobile(input_tensor=input_img, dropout_rate=0.5, pooling='max', include_top=False, weights=None)
+    x = model.layers[-1].output
+    x = Dense(1, name='gammaness', activation='sigmoid')(x)
+    model1 = Model(inputs=input_img, output=x)
+    return model1
