@@ -50,4 +50,24 @@ def maximize_gridsearch(energy_estimated, theta_sq_on, theta_sq_off_global, gamm
     print(f'Energy th: {en_range[idxs[0]]}\nTheta2 cut: {th_range[idxs[1]]}\nGammaness cut: {gammaness_range[idxs[2]]}')
     return max_significance, en_range[idxs[0]], th_range[idxs[1]], gammaness_range[idxs[2]]
 #%%
-s_train, e_cut, th_cut, gamma_cut = maximize_gridsearch(energy_estimated, theta_sq_on, theta_sq_off_global, gammaness))
+tr_ratio_wrt_total = .8
+
+num_values_tr = int(len(energy_estimated)*0.8)
+en_train = energy_estimated[:num_values_tr]
+en_val = energy_estimated[num_values_tr:]
+
+theta_sq_on_train = theta_sq_on[:num_values_tr]
+theta_sq_on_val = theta_sq_on[num_values_tr:]
+
+theta_sq_off_global_train = theta_sq_off_global[:num_values_tr]
+theta_sq_off_global_val = theta_sq_off_global[num_values_tr:]
+
+gammaness_train = gammaness[:num_values_tr]
+gammaness_val = gammaness[num_values_tr:]
+
+
+s_train, e_cut, th_cut, gamma_cut = maximize_gridsearch(en_train, theta_sq_on_train, theta_sq_off_global_train, gammaness_train, num_grid_steps=50)
+
+s_val = significance(e_cut, th_cut, gamma_cut, en_val, theta_sq_on_val, theta_sq_off_global_val, gammaness_val)
+#%%
+print(s_train, s_val)
