@@ -65,16 +65,57 @@ pickle_dump(
 # %%
 crab_gammaness = pickle_read(
     '/data4T/CNN4MAGIC/results/MC_classification/experiments/efficientNet_B3_last3_lin/computed_data/crab_separation_efficientNet_B3_last3_lin.pkl')
-# %%
+# %
 print(crab_embedding.shape, crab_gammaness.shape)
-# %%
+# %
 print(crab_embedding[0], crab_gammaness[0])
 
 # %%
+from mpl_toolkits.mplot3d import Axes3D
 fig = plt.figure(figsize=(20, 20))
-ax = plt.axes(projection="3d")
-
-ax.scatter3D(crab_embedding[:, 0], crab_embedding[:, 1], crab_embedding[:, 2], c=crab_gammaness, marker='.')
+ax = fig.add_subplot(1, 1, 1, projection='3d')
+ax.scatter3D(crab_embedding[:, 0], crab_embedding[:, 1], crab_embedding[:, 2], c=crab_gammaness[:,0], marker='o')
 plt.savefig(
     '/data4T/CNN4MAGIC/results/MC_classification/experiments/efficientNet_B3_last3_lin/plots/crab_embedding.png')
 plt.close()
+#%%
+from sklearn.decomposition import PCA
+pca = PCA(2)
+projected_embedding = pca.fit_transform(crab_embedding)
+#%%
+projected_embedding.shape
+#%%
+plt.figure(figsize=(20,20))
+plt.scatter(projected_embedding[:,0],projected_embedding[:,1] , c=crab_gammaness[:,0])
+plt.title('PCA 2D embedding (from 3)')
+plt.tight_layout()
+plt.savefig('/data4T/CNN4MAGIC/results/MC_classification/experiments/efficientNet_B3_last3_lin/plots/pca_2d_crab_embedding.png')
+plt.close()
+
+#%%
+outliers = projected_embedding[projected_embedding[:, 1] > 5]
+print(outliers.shape)
+#%%
+outliers_bool = projected_embedding[:, 1] > 5
+idx_misclassified = np.where(outliers_bool)[0]
+
+batch_numbers = np.floor(idx_misclassified / BATCH_SIZE)
+idx_in_batches = np.mod(idx_misclassified, BATCH_SIZE)
+
+misclassified_events = [crab_generator[int(batch_number)][0][idx_in_batch] for batch_number, idx_in_batch in
+                        zip(batch_numbers, idx_in_batches)]
+#%%
+print(np.array(misclassified_events).shape)
+#%%
+folder_misc_complete = '/data4T/CNN4MAGIC/results/MC_classification/experiments/efficientNet_B3_last3_lin/plots/bizzarre_crab_events'
+for misclassified_number, single_event in enumerate(tqdm(misclassified_events)):
+    fig, axes = plt.subplots(2, 2, figsize=(8, 8))
+    i = 0
+    for ax in axes:
+        ax[0].imshow(single_event[:, :, i])
+        ax[1].imshow(single_event[:, :, i + 1])
+        i += 2
+    plt.suptitle(f'Bizzarre event {misclassified_number}')
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+    plt.savefig(f'{folder_misc_complete}/event_{misclassified_number}.png')
+    plt.close()

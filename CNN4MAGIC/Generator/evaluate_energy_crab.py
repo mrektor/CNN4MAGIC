@@ -33,15 +33,15 @@ crab_generator = MAGIC_Generator(list_IDs=evt_list,
 
 # %%
 model = load_model(
-    '/home/emariott/software_magic/output_data/checkpoints/Tranfer_Ensemble_SE_InceptionV3_SingleDense_energy_from40_last6_nofreeze_dense64_adam4e-4.hdf5')
+    '/data4T/qualcosadiquellocheeranellahomeemariott/deepmagic/output_data/checkpoints/Tranfer_Ensemble_SE_InceptionV3_SingleDense_energy_from40_last6_nofreeze_dense64_adam4e-4.hdf5')
 model.load_weights(
-    '/home/emariott/software_magic/output_data/swa_models/transfer-SE-inc-v3-snap_2019-03-19_10-57-34_SWA.h5')
+    '/data4T/qualcosadiquellocheeranellahomeemariott/deepmagic/output_data/swa_models/transfer-SE-inc-v3-snap_2019-03-19_10-57-34_SWA.h5')
 net_name = 'transfer-SE-inc-v3-snap-lowLR_SWA'
 # %
-y_pred_test = model.predict_generator(crab_generator, workers=8, verbose=1, use_multiprocessing=True)
-# %
+crab_energy = model.predict_generator(crab_generator, workers=8, verbose=1, use_multiprocessing=True)
+# %%
 # net_name = 'MobileNetV2_separation_10_5_notime_alpha1'
-dump_name = f'output_data/reconstructions/crab_energy_{net_name}.pkl'
+dump_name = f'/data4T/CNN4MAGIC/results/MC_classification/crab_reconstructions/crab_energy_{net_name}.pkl'
 with open(dump_name, 'wb') as f:
-    pickle.dump(y_pred_test, f)
+    pickle.dump(crab_energy, f)
 # %%
