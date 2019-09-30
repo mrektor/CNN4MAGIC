@@ -15,14 +15,12 @@ from keras_radam import RAdam
 from tqdm import tqdm
 
 from CNN4MAGIC.Generator.keras_generator import MAGIC_Generator
-from CNN4MAGIC.Generator.models import InceptionV3_separation,small_SeDenseNet_separation, VGG16_separation, ResNet50V2_separation, NASNetMobile_separation, VGG19_separation, ResNet101V2_separation, Xception_separation, DenseNet121_separation, InceptionResNetV2_separation
+from CNN4MAGIC.Generator.models import pos_vgg_like_16_separation, pos_vgg_like_16_bn_separation, pos_vgg_like_19_separation, pos_vgg_like_19_bn_separation, pos_vgg_like_21_separation, pos_vgg_like_24_separation, efficientNet_B0_separation
 from compute_significance_crab import optimize_significance
 max_epochs = 60
-experiment_name = 'KerasApplicationsNets_4'
-name_list = ['small_SeDenseNet_separation', 'VGG19_separation', 'ResNet101V2_separation', 'Xception_separation', 'DenseNet121_separation', 'InceptionResNetV2_separation']
-model_list = [small_SeDenseNet_separation, VGG19_separation, ResNet101V2_separation, Xception_separation, DenseNet121_separation, InceptionResNetV2_separation]
-
-
+experiment_name = 'NoStridesTrial'
+name_list = ['pos_vgg_like_16_separation', 'pos_vgg_like_16_bn_separation', 'pos_vgg_like_19_separation', 'pos_vgg_like_19_bn_separation', 'pos_vgg_like_21_separation', 'pos_vgg_like_24_separation', 'efficientNet_B0_separation_stride1']
+model_list = [pos_vgg_like_16_separation, pos_vgg_like_16_bn_separation, pos_vgg_like_19_separation, pos_vgg_like_19_bn_separation, pos_vgg_like_21_separation, pos_vgg_like_24_separation, efficientNet_B0_separation]
 
 def update_df(data, name='', experiment_name=''):
     folder = f'/data4T/CNN4MAGIC/results/MC_classification/dataframed_data_experiments/{experiment_name}'

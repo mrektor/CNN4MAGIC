@@ -1298,7 +1298,6 @@ def coord_conv2d(input, filters, kernel_size, act):
 
 
 
-
 def vgg_like_position_net(include_time=True, depth_multiplier=3, do_batchnorm=False):
     if include_time:
         input_img = Input(shape=(67, 68, 4), name='m1m2')
@@ -1335,3 +1334,27 @@ def vgg_like_position_net(include_time=True, depth_multiplier=3, do_batchnorm=Fa
     x = Dense(1, name='gammaness', activation='sigmoid')(x)
     model1 = Model(inputs=input_img, output=x)
     return model1
+
+def pos_vgg_like_16_separation():
+    vgg_like_position_net(include_time=True, depth_multiplier=3, do_batchnorm=False)
+    return
+
+def pos_vgg_like_19_separation():
+    vgg_like_position_net(include_time=True, depth_multiplier=4, do_batchnorm=False)
+    return
+
+def pos_vgg_like_16_bn_separation():
+    vgg_like_position_net(include_time=True, depth_multiplier=3, do_batchnorm=True)
+    return
+
+def pos_vgg_like_19_bn_separation():
+    vgg_like_position_net(include_time=True, depth_multiplier=4, do_batchnorm=True)
+    return
+
+def pos_vgg_like_21_separation():
+    vgg_like_position_net(include_time=True, depth_multiplier=5, do_batchnorm=False)
+    return
+
+def pos_vgg_like_24_separation():
+    vgg_like_position_net(include_time=True, depth_multiplier=6, do_batchnorm=False)
+    return
