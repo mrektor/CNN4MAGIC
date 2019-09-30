@@ -45,9 +45,7 @@ def maximize_gridsearch(energy_estimated, theta_sq_on, theta_sq_off_global, gamm
     print(f'Energy th: {en_range[idxs[0]]}\nTheta2 cut: {th_range[idxs[1]]}\nGammaness cut: {gammaness_range[idxs[2]]}')
     return max_significance, en_range[idxs[0]], th_range[idxs[1]], gammaness_range[idxs[2]]
 
-
 # %%
-
 
 def optimize_significance(net_name):
     theta_sq_on = pickle_read('/data4T/CNN4MAGIC/results/MC_classification/crab_reconstructions/theta_sq_on.pkl')
@@ -83,19 +81,22 @@ def optimize_significance(net_name):
 
     gammaness_train = gammaness[:num_values_tr]
     gammaness_val = gammaness[num_values_tr:]
+    print(f'Tr / va: {gammaness_train.shape} / {gammaness_val.shape}')
     # %
     s_train, e_cut, th_cut, gamma_cut = maximize_gridsearch(en_train, theta_sq_on_train, theta_sq_off_global_train,
                                                             gammaness_train, num_grid_steps=40)
     # %
-    s_val = significance(e_cut, th_cut, gamma_cut, en_val, theta_sq_on_val, theta_sq_off_global_val, gammaness_val)
+    print(f'Significance on train: {s_train}')
+    print(e_cut.shape, en_val.shape, theta_sq_on_val.shape, theta_sq_off_global_val.shape, gammaness_val.shape)
+    s_val = significance(e_cut[0], th_cut[0], gamma_cut[0], en_val, theta_sq_on_val, theta_sq_off_global_val, gammaness_val)
     # %
     print(s_train, s_val)
 
     # %
-    gammaness_list = [gamma_cut]
+    gammaness_list = [gamma_cut[0]]
     num_bins = 50
-    energy_th = e_cut
-    thetha_cut = th_cut
+    energy_th = e_cut[0]
+    thetha_cut = th_cut[0]
     for gammaness_single in tqdm(gammaness_list):
         is_gamma = gammaness_val.flatten() > gammaness_single
         energy_ok = en_val.flatten() > energy_th
@@ -103,7 +104,7 @@ def optimize_significance(net_name):
 
         print(np.sum(is_gamma & energy_ok))
         plt.figure()
-        plt.hist(theta_sq_off_all, alpha=0.5, weights=1 / 3 * np.ones(len(theta_sq_off_all)),
+        plt.hist(theta_sq_off_all[is_gamma & energy_ok], alpha=0.5, weights=1 / 1 * np.ones(len(theta_sq_off_all[is_gamma & energy_ok])),
                  bins=np.linspace(0, 0.16, num_bins), log=False, label='$\Theta^2$ Off')
         plt.hist(theta_sq_on_val[is_gamma & energy_ok], alpha=1, histtype='step', bins=np.linspace(0, 0.16, num_bins),
                  log=False,
@@ -113,61 +114,90 @@ def optimize_significance(net_name):
                  log=False,
                  color='C3')
 
-        plt.xlim([0, thetha_cut * 2])
-        plt.vlines(thetha_cut, 0, 190, linestyles='-.', label='$\Theta^2$ Off', alpha=0.6)
+        plt.vlines(thetha_cut, 0, 35, linestyles='-.', label='$\Theta^2$ Off', alpha=0.6)
         # plt.ylim([0, 110])
         plt.xlabel('$\Theta^2$')
         plt.ylabel('Counts')
         plt.legend()
         plt.title(f'$\Theta^2$ plot')
+        plt.xlim([0, thetha_cut * 2])
+        plt.savefig(
+            f'/data4T/CNN4MAGIC/results/MC_classification/crab_reconstructions/plots/significances/theta2_crab_{net_name}_zoom_tr_va.png')
+        plt.xlim([0, 0.4])
         plt.savefig(
             f'/data4T/CNN4MAGIC/results/MC_classification/crab_reconstructions/plots/significances/theta2_crab_{net_name}_tr_va.png')
 
-    return s_train, s_val, e_cut, th_cut, gamma_cut
+    return s_train, s_val, e_cut[0], th_cut[0], gamma_cut[0]
+#%%
+
+
+#%%
+# import os
+# import pandas as pd
+# def update_df(data, name='', experiment_name=''):
+#     folder = f'/data4T/CNN4MAGIC/results/MC_classification/dataframed_data_experiments/{experiment_name}'
+#     csv_name = f'significance_{name}'
+#     if not os.path.exists(folder):
+#         os.makedirs(folder)
+#     try:
+#         df = pd.read_csv(f'{folder}/{csv_name}.csv')
+#         df = df.append(data, ignore_index=True)
+#         df.to_csv(f'{folder}/{csv_name}.csv', index=False)
+#     except FileNotFoundError:
+#         df = pd.DataFrame()
+#         df = df.append(data, ignore_index=True)
+#         df.to_csv(f'{folder}/{csv_name}.csv', index=False)
+#
+# experiment_name='KerasApplicationsNets_3_VGG16_Res50v2'
+# s_train, s_val, e_cut, th_cut, gamma_cut = optimize_significance('ResNet50V2_separation')
+# update_df({'ResNet50V2_separation': np.array([s_train, s_val, e_cut, th_cut, gamma_cut]).flatten()}, name='keras_application', experiment_name=experiment_name)
+#
+# s_train, s_val, e_cut, th_cut, gamma_cut = optimize_significance('VGG16_separation')
+# update_df({'VGG16_separation': np.array([s_train, s_val, e_cut, th_cut, gamma_cut]).flatten()}, name='keras_application', experiment_name=experiment_name)
 
 
 # %%
-import os
-
-experiment_names = os.listdir('/data4T/CNN4MAGIC/results/MC_classification/experiments')
-#%%
-experiment_names.remove('EfficientNet_B1')
-experiment_names.remove('EfficientNet_B0')
-experiment_names.remove('EfficientNet_B0_dropout06')
-#%%
-results_global = {name: optimize_significance(name) for name in experiment_names}
-
-# %
-import pandas as pd
-
-#%%
-df = pd.DataFrame(results_global).transpose()
-df.columns = ['S_tr','S_va','E_cut','Th_cut','Gamma_cut']
-# %% Try with scipy optimize
-
-from scipy.optimize import minimize
-
-
-def significance_forscipy(ths, energy_estimated, theta_sq_on, theta_sq_off_global, gammaness):
-    energy_threshold = ths[0]
-    theta_sq_threshold = ths[1]
-    gammaness_threshold = ths[2]
-    on_events = np.sum(
-        (energy_estimated.flatten() > energy_threshold) & (theta_sq_on.flatten() < theta_sq_threshold) & (
-                gammaness.flatten() > gammaness_threshold))
-    off_events = np.sum(
-        (energy_estimated.flatten() > energy_threshold) & (theta_sq_off_global.flatten() < theta_sq_threshold) & (
-                gammaness.flatten() > gammaness_threshold))
-    return (on_events - off_events) / np.sqrt(off_events)
-
-
-fun = lambda x: -significance_forscipy(x, energy_estimated=en_train, theta_sq_on=theta_sq_on_train,
-                                       theta_sq_off_global=theta_sq_off_global_train, gammaness=gammaness_train)
-
-# %%
-result = minimize(fun,
-                  np.array([1, 0.1, 0.9]),
-                  method='Nelder-Mead',
-                  options={'maxfev': 1e6, 'maxiter': 1e6, 'disp': True})
-# %%
-result.x
+# import os
+#
+# experiment_names = os.listdir('/data4T/CNN4MAGIC/results/MC_classification/experiments')
+# #%%
+# experiment_names.remove('EfficientNet_B1')
+# experiment_names.remove('EfficientNet_B0')
+# experiment_names.remove('EfficientNet_B0_dropout06')
+# #%%
+# results_global = {name: optimize_significance(name) for name in experiment_names}
+#
+# # %
+# import pandas as pd
+#
+# #%%
+# df = pd.DataFrame(results_global).transpose()
+# df.columns = ['S_tr','S_va','E_cut','Th_cut','Gamma_cut']
+# # %% Try with scipy optimize
+#
+# from scipy.optimize import minimize
+#
+#
+# def significance_forscipy(ths, energy_estimated, theta_sq_on, theta_sq_off_global, gammaness):
+#     energy_threshold = ths[0]
+#     theta_sq_threshold = ths[1]
+#     gammaness_threshold = ths[2]
+#     on_events = np.sum(
+#         (energy_estimated.flatten() > energy_threshold) & (theta_sq_on.flatten() < theta_sq_threshold) & (
+#                 gammaness.flatten() > gammaness_threshold))
+#     off_events = np.sum(
+#         (energy_estimated.flatten() > energy_threshold) & (theta_sq_off_global.flatten() < theta_sq_threshold) & (
+#                 gammaness.flatten() > gammaness_threshold))
+#     return (on_events - off_events) / np.sqrt(off_events)
+#
+#
+# fun = lambda x: -significance_forscipy(x, energy_estimated=en_train, theta_sq_on=theta_sq_on_train,
+#                                        theta_sq_off_global=theta_sq_off_global_train, gammaness=gammaness_train)
+#
+# # %%
+# result = minimize(fun,
+#                   np.array([1, 0.1, 0.9]),
+#                   method='Nelder-Mead',
+#                   options={'maxfev': 1e6, 'maxiter': 1e6, 'disp': True})
+# # %%
+# result.x

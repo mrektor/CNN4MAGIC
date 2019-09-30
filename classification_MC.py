@@ -15,12 +15,13 @@ from keras_radam import RAdam
 from tqdm import tqdm
 
 from CNN4MAGIC.Generator.keras_generator import MAGIC_Generator
-from CNN4MAGIC.Generator.models import MobileNetV2_separation, MobileNetV2_slim, InceptionV3_separation, VGG16_separation, ResNet50V2_separation, NASNetMobile_separation, VGG19_separation, ResNet101V2_separation, Xception_separation, DenseNet121_separation, InceptionResNetV2_separation
+from CNN4MAGIC.Generator.models import InceptionV3_separation,small_SeDenseNet_separation, VGG16_separation, ResNet50V2_separation, NASNetMobile_separation, VGG19_separation, ResNet101V2_separation, Xception_separation, DenseNet121_separation, InceptionResNetV2_separation
 from compute_significance_crab import optimize_significance
 max_epochs = 60
-experiment_name = 'KerasApplicationsNets'
-name_list = ['MobileNetV2_separation', 'MobileNetV2_slim', 'InceptionV3_separation', 'VGG16_separation', 'ResNet50V2_separation', 'NASNetMobile_separation', 'VGG19_separation', 'ResNet101V2_separation', 'Xception_separation', 'DenseNet121_separation', 'InceptionResNetV2_separation']
-model_list = [MobileNetV2_separation, MobileNetV2_slim, InceptionV3_separation, VGG16_separation, ResNet50V2_separation, NASNetMobile_separation, VGG19_separation, ResNet101V2_separation, Xception_separation, DenseNet121_separation, InceptionResNetV2_separation]
+experiment_name = 'KerasApplicationsNets_4'
+name_list = ['small_SeDenseNet_separation', 'VGG19_separation', 'ResNet101V2_separation', 'Xception_separation', 'DenseNet121_separation', 'InceptionResNetV2_separation']
+model_list = [small_SeDenseNet_separation, VGG19_separation, ResNet101V2_separation, Xception_separation, DenseNet121_separation, InceptionResNetV2_separation]
+
 
 
 def update_df(data, name='', experiment_name=''):
@@ -296,7 +297,7 @@ for net_name, model_single in zip(name_list, model_list):
     s_train, s_val, e_cut, th_cut, gamma_cut = optimize_significance(net_name)
     print(f'Significance:')
     print(s_train, s_val, e_cut, th_cut, gamma_cut)
-    update_df({net_name: [s_train, s_val, e_cut, th_cut, gamma_cut]}, name='keras_application', experiment_name=experiment_name)
+    update_df({net_name: np.array([s_train, s_val, e_cut, th_cut, gamma_cut]).flatten()}, name='keras_application', experiment_name=experiment_name)
 
 
     # def plot_misclassified(generator, predictions, gammaness_threshold=0.5, folder_misc='', is_gamma=True):

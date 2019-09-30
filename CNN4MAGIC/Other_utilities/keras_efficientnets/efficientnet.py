@@ -348,7 +348,7 @@ def EfficientNet(input_shape,
         filters=round_filters(32, width_coefficient,
                               depth_divisor, min_depth),
         kernel_size=[3, 3],
-        strides=[2, 2],
+        strides=[1, 1], # was 2,2
         kernel_initializer=EfficientNetConvInitializer(),
         padding='same',
         use_bias=False)(x)
