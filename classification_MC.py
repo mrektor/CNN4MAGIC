@@ -18,7 +18,7 @@ from CNN4MAGIC.Generator.keras_generator import MAGIC_Generator
 from CNN4MAGIC.Generator.models import pos_vgg_like_16_separation, pos_vgg_like_16_bn_separation, pos_vgg_like_19_separation, pos_vgg_like_19_bn_separation, pos_vgg_like_21_separation, pos_vgg_like_24_separation, efficientNet_B0_separation
 from compute_significance_crab import optimize_significance
 max_epochs = 60
-experiment_name = 'NoStridesTrial'
+experiment_name = 'enhanced_vgg_01'
 name_list = ['pos_vgg_like_16_separation', 'pos_vgg_like_16_bn_separation', 'pos_vgg_like_19_separation', 'pos_vgg_like_19_bn_separation', 'pos_vgg_like_21_separation', 'pos_vgg_like_24_separation', 'efficientNet_B0_separation_stride1']
 model_list = [pos_vgg_like_16_separation, pos_vgg_like_16_bn_separation, pos_vgg_like_19_separation, pos_vgg_like_19_bn_separation, pos_vgg_like_21_separation, pos_vgg_like_24_separation, efficientNet_B0_separation]
 
