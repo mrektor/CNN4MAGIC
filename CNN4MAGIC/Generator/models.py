@@ -1297,7 +1297,6 @@ def coord_conv2d(input, filters, kernel_size, act):
     return x
 
 
-
 def vgg_like_position_net(include_time=True, depth_multiplier=3, do_batchnorm=False):
     if include_time:
         input_img = Input(shape=(67, 68, 4), name='m1m2')
@@ -1306,7 +1305,7 @@ def vgg_like_position_net(include_time=True, depth_multiplier=3, do_batchnorm=Fa
 
     x = coord_conv2d(input_img, 64, (3, 3), 'selu')
     x = coord_conv2d(x, 64, (3, 3), 'selu')
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool')(x)
+    # x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool')(x)
 
     if do_batchnorm:
         x = BatchNormalization()(x)
@@ -1314,7 +1313,7 @@ def vgg_like_position_net(include_time=True, depth_multiplier=3, do_batchnorm=Fa
     # Block 2
     x = coord_conv2d(x, 128, (3, 3), 'selu')
     x = coord_conv2d(x, 128, (3, 3), 'selu')
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool')(x)
+    # x = MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool')(x)
 
     # Block 3
     for _ in range(depth_multiplier):
@@ -1329,32 +1328,206 @@ def vgg_like_position_net(include_time=True, depth_multiplier=3, do_batchnorm=Fa
     # Block 5
     for _ in range(depth_multiplier):
         x = coord_conv2d(x, 512, (3, 3), 'selu')
-    x = GlobalMaxPool2D(x)
+    x = GlobalMaxPool2D()(x)
 
     x = Dense(1, name='gammaness', activation='sigmoid')(x)
     model1 = Model(inputs=input_img, output=x)
     return model1
 
+
 def pos_vgg_like_16_separation():
-    vgg_like_position_net(include_time=True, depth_multiplier=3, do_batchnorm=False)
-    return
+    return vgg_like_position_net(include_time=True, depth_multiplier=3, do_batchnorm=False)
+
 
 def pos_vgg_like_19_separation():
-    vgg_like_position_net(include_time=True, depth_multiplier=4, do_batchnorm=False)
-    return
+    return vgg_like_position_net(include_time=True, depth_multiplier=4, do_batchnorm=False)
+
 
 def pos_vgg_like_16_bn_separation():
-    vgg_like_position_net(include_time=True, depth_multiplier=3, do_batchnorm=True)
-    return
+    return vgg_like_position_net(include_time=True, depth_multiplier=3, do_batchnorm=True)
+
 
 def pos_vgg_like_19_bn_separation():
     vgg_like_position_net(include_time=True, depth_multiplier=4, do_batchnorm=True)
     return
 
+
 def pos_vgg_like_21_separation():
-    vgg_like_position_net(include_time=True, depth_multiplier=5, do_batchnorm=False)
-    return
+    return vgg_like_position_net(include_time=True, depth_multiplier=5, do_batchnorm=False)
+
 
 def pos_vgg_like_24_separation():
-    vgg_like_position_net(include_time=True, depth_multiplier=6, do_batchnorm=False)
-    return
+    return vgg_like_position_net(include_time=True, depth_multiplier=6, do_batchnorm=False)
+
+
+from keras import layers
+
+
+def modded_vgg19(drop_rate=0., pooling='max'):
+    """Instantiates the VGG19 architecture.
+
+    Optionally loads weights pre-trained on ImageNet.
+    Note that the data format convention used by the model is
+    the one specified in your Keras config at `~/.keras/keras.json`.
+
+    # Arguments
+        include_top: whether to include the 3 fully-connected
+            layers at the top of the network.
+        weights: one of `None` (random initialization),
+              'imagenet' (pre-training on ImageNet),
+              or the path to the weights file to be loaded.
+        input_tensor: optional Keras tensor
+            (i.e. output of `layers.Input()`)
+            to use as image input for the model.
+        input_shape: optional shape tuple, only to be specified
+            if `include_top` is False (otherwise the input shape
+            has to be `(224, 224, 3)`
+            (with `channels_last` data format)
+            or `(3, 224, 224)` (with `channels_first` data format).
+            It should have exactly 3 inputs channels,
+            and width and height should be no smaller than 32.
+            E.g. `(200, 200, 3)` would be one valid value.
+        pooling: Optional pooling mode for feature extraction
+            when `include_top` is `False`.
+            - `None` means that the output of the model will be
+                the 4D tensor output of the
+                last convolutional block.
+            - `avg` means that global average pooling
+                will be applied to the output of the
+                last convolutional block, and thus
+                the output of the model will be a 2D tensor.
+            - `max` means that global max pooling will
+                be applied.
+        classes: optional number of classes to classify images
+            into, only to be specified if `include_top` is True, and
+            if no `weights` argument is specified.
+
+    # Returns
+        A Keras model instance.
+
+    # Raises
+        ValueError: in case of invalid argument for `weights`,
+            or invalid input shape.
+    """
+    input_img = Input(shape=(67, 68, 4), name='m1m2')
+    # Block 1
+    x = layers.Conv2D(64, (3, 3),
+                      activation='relu',
+                      padding='same',
+                      name='block1_conv1')(input_img)
+    x = Dropout(drop_rate)(x)
+    x = layers.Conv2D(64, (3, 3),
+                      activation='relu',
+                      padding='same',
+                      name='block1_conv2')(x)
+    x = layers.MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool')(x)
+
+    # Block 2
+    x = Dropout(drop_rate)(x)
+    x = layers.Conv2D(128, (3, 3),
+                      activation='relu',
+                      padding='same',
+                      name='block2_conv1')(x)
+    x = Dropout(drop_rate)(x)
+    x = layers.Conv2D(128, (3, 3),
+                      activation='relu',
+                      padding='same',
+                      name='block2_conv2')(x)
+    x = layers.MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool')(x)
+
+    # Block 3
+    x = Dropout(drop_rate)(x)
+
+    x = layers.Conv2D(256, (3, 3),
+                      activation='relu',
+                      padding='same',
+                      name='block3_conv1')(x)
+    x = Dropout(drop_rate)(x)
+
+    x = layers.Conv2D(256, (3, 3),
+                      activation='relu',
+                      padding='same',
+                      name='block3_conv2')(x)
+    x = Dropout(drop_rate)(x)
+
+    x = layers.Conv2D(256, (3, 3),
+                      activation='relu',
+                      padding='same',
+                      name='block3_conv3')(x)
+    x = Dropout(drop_rate)(x)
+
+    x = layers.Conv2D(256, (3, 3),
+                      activation='relu',
+                      padding='same',
+                      name='block3_conv4')(x)
+    x = layers.MaxPooling2D((2, 2), strides=(2, 2), name='block3_pool')(x)
+
+    # Block 4
+    x = Dropout(drop_rate)(x)
+
+    x = layers.Conv2D(512, (3, 3),
+                      activation='relu',
+                      padding='same',
+                      name='block4_conv1')(x)
+    x = Dropout(drop_rate)(x)
+
+    x = layers.Conv2D(512, (3, 3),
+                      activation='relu',
+                      padding='same',
+                      name='block4_conv2')(x)
+
+    x = Dropout(drop_rate)(x)
+
+    x = layers.Conv2D(512, (3, 3),
+                      activation='relu',
+                      padding='same',
+                      name='block4_conv3')(x)
+
+    x = Dropout(drop_rate)(x)
+
+    x = layers.Conv2D(512, (3, 3),
+                      activation='relu',
+                      padding='same',
+                      name='block4_conv4')(x)
+    x = layers.MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool')(x)
+
+    # Block 5
+    x = Dropout(drop_rate)(x)
+
+    x = layers.Conv2D(512, (3, 3),
+                      activation='relu',
+                      padding='same',
+                      name='block5_conv1')(x)
+
+    x = Dropout(drop_rate)(x)
+
+    x = layers.Conv2D(512, (3, 3),
+                      activation='relu',
+                      padding='same',
+                      name='block5_conv2')(x)
+
+    x = Dropout(drop_rate)(x)
+
+    x = layers.Conv2D(512, (3, 3),
+                      activation='relu',
+                      padding='same',
+                      name='block5_conv3')(x)
+
+    x = Dropout(drop_rate)(x)
+
+    x = layers.Conv2D(512, (3, 3),
+                      activation='relu',
+                      padding='same',
+                      name='block5_conv4')(x)
+    x = layers.MaxPooling2D((2, 2), strides=(2, 2), name='block5_pool')(x)
+
+    if pooling == 'avg':
+        x = layers.GlobalAveragePooling2D()(x)
+    elif pooling == 'max':
+        x = layers.GlobalMaxPooling2D()(x)
+
+    x = Dense(1, activation='sigmoid', name='gammaness')(x)
+
+    model = Model(input_img, x, name='vgg19_mine')
+
+    return model

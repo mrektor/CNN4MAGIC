@@ -15,13 +15,14 @@ from keras_radam import RAdam
 from tqdm import tqdm
 
 from CNN4MAGIC.Generator.keras_generator import MAGIC_Generator
-from CNN4MAGIC.Generator.models import pos_vgg_like_16_separation, pos_vgg_like_16_bn_separation, pos_vgg_like_19_separation, pos_vgg_like_19_bn_separation, pos_vgg_like_21_separation, pos_vgg_like_24_separation, efficientNet_B0_separation
+from CNN4MAGIC.Generator.models import modded_vgg19, efficientNet_B0_separation
+
 from compute_significance_crab import optimize_significance
 max_epochs = 60
 experiment_name = 'enhanced_vgg_01'
-name_list = ['pos_vgg_like_16_separation', 'pos_vgg_like_16_bn_separation', 'pos_vgg_like_19_separation', 'pos_vgg_like_19_bn_separation', 'pos_vgg_like_21_separation', 'pos_vgg_like_24_separation', 'efficientNet_B0_separation_stride1']
-model_list = [pos_vgg_like_16_separation, pos_vgg_like_16_bn_separation, pos_vgg_like_19_separation, pos_vgg_like_19_bn_separation, pos_vgg_like_21_separation, pos_vgg_like_24_separation, efficientNet_B0_separation]
-
+# name_list = ['pos_vgg_like_16_separation', 'pos_vgg_like_16_bn_separation', 'pos_vgg_like_19_separation', 'pos_vgg_like_19_bn_separation', 'pos_vgg_like_21_separation', 'pos_vgg_like_24_separation', 'efficientNet_B0_separation_stride1']
+# model_list = [pos_vgg_like_16_separation, pos_vgg_like_16_bn_separation, pos_vgg_like_19_separation, pos_vgg_like_19_bn_separation, pos_vgg_like_21_separation, pos_vgg_like_24_separation, efficientNet_B0_separation]
+drop_rates= [0.1, 0.3, 0.5, 0.7, 0.8]
 def update_df(data, name='', experiment_name=''):
     folder = f'/data4T/CNN4MAGIC/results/MC_classification/dataframed_data_experiments/{experiment_name}'
     csv_name = f'significance_{name}'
@@ -37,10 +38,10 @@ def update_df(data, name='', experiment_name=''):
         df.to_csv(f'{folder}/{csv_name}.csv', index=False)
 
 
-for net_name, model_single in zip(name_list, model_list):
+for drop in drop_rates:
     BATCH_SIZE = 128
-    # net_name = f'efficientNet_B2_DropConnect_{drop_connect_rate}'
-    model = model_single()
+    net_name = f'modded_vgg19_drop_{drop}'
+    model = modded_vgg19(drop_rate=drop)
     model.compile(optimizer=RAdam(), loss='binary_crossentropy', metrics=['accuracy'])
     model.summary()
 
